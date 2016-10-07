@@ -10,5 +10,6 @@ include("lattice.jl")
 include("model.jl")
 include("SW.jl")
 include("local_update.jl")
+include("observables/MCObservables.jl")
 
 end # of module
