@@ -14,7 +14,7 @@ isroot(u::UnionFind, n::Integer) = u.parents[n] == n
 
 function root_and_weight(u::UnionFind, n::Integer)
   r = n
-  @inbounds while !is_root(u,r)
+  @inbounds while !isroot(u,r)
     r = u.parents[r]
   end
   return r,u.weights[r]
@@ -52,7 +52,7 @@ end
 function clusterize!(u::UnionFind)
   u.nclusters = 0
   @inbounds for i in 1:length(u.parents)
-    if is_root(u,i)
+    if isroot(u,i)
       u.nclusters += 1
       u.ids[i] = u.nclusters
     end

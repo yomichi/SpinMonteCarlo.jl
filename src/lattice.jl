@@ -9,6 +9,7 @@ type Lattice
 end
 
 import Base.size
+import Distributions.dim
 
 """
     dim(lat::Lattice)
