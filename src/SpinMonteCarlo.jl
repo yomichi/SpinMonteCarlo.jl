@@ -7,6 +7,7 @@ export SW_update!, local_update!
 export magnetizations
 export chain_lattice, square_lattice, triangular_lattice
 export Lattice, dim, size, numsites, numbonds, neighbors, source, target
+export UnionFind, addnode!, unify!, clusterize!, clusterid
 
 include("union_find.jl")
 include("lattice.jl")
