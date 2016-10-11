@@ -24,6 +24,31 @@ function local_update!(model::Ising, T::Real)
     return DM, DE
 end
 
+function local_update!(model::Potts, T::Real)
+    nsites = numsites(model.lat)
+    nbonds = numbonds(model.lat)
+    mbeta = -1.0/T
+
+    DM = 0
+    DE = 0.0
+    @inbounds for site in 1:nsites
+        center = model.spins[site]
+        new_center = mod1(center+rand(1:(model.Q-1)), model.Q)
+        de = 0.0
+        for n in neighbors(model.lat, site)
+            de += ifelse(center == model.spins[n], 1.0, 0.0)
+            de -= ifelse(new_center == model.spins[n], 1.0, 0.0)
+        end
+        if rand() < exp(mbeta*de)
+            model.spins[site] = new_center
+            DE += de
+            DM -= ifelse(center==1, 1, 0)
+            DM += ifelse(new_center==1, 1, 0)
+        end
+    end
+    return DM, DE
+end
+
 function local_update!(model::XY, T::Real)
     nsites = numsites(model.lat)
     nbonds = numbonds(model.lat)

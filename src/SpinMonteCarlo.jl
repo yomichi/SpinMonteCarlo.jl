@@ -2,7 +2,7 @@ VERSION >= v"0.4.0-dev+6521" && __precompile__()
 
 module SpinMonteCarlo
 
-export Ising, XY, Model
+export Model, Ising, XY, Potts
 export SW_update!, local_update!
 export magnetizations
 export chain_lattice, square_lattice, triangular_lattice

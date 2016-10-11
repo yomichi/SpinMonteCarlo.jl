@@ -12,6 +12,17 @@ type Ising <: Model
     end
 end
 
+type Potts <: Model
+    lat :: Lattice
+    Q :: Int
+    spins :: Vector{Int}
+
+    function Potts(lat::Lattice, Q::Integer=2)
+        spins = rand(1:Q, numsites(lat))
+        return new(lat, Q, spins)
+    end
+end
+
 type XY <: Model
     lat :: Lattice
     spins :: Vector{Float64}

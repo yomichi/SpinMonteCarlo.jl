@@ -3,7 +3,8 @@ include("../src/SpinMonteCarlo.jl")
 using SpinMonteCarlo
 
 const Ls = [16, 24, 32]
-const Tc = 1.0/log1p(sqrt(2))
+const Q = 10
+const Tc = 1.0/log1p(sqrt(Q))
 const Ts = Tc*linspace(0.8, 1.2, 21)
 const MCS = 8192
 const Therm = MCS >> 3
@@ -11,7 +12,7 @@ const Therm = MCS >> 3
 
 for L in Ls
     lat = square_lattice(L)
-    model = Ising(lat)
+    model = Potts(lat)
     nsites = numsites(lat)
     for T in Ts
         for i in 1:Therm
