@@ -16,7 +16,7 @@ function local_update!(model::Ising, T::Real)
             de += 2center * model.spins[n]
         end
         if rand() < exp(mbeta*de)
-            model.spins[site] *= -1.0
+            model.spins[site] *= -1
             DE += de
             DM += 2model.spins[site]
         end
