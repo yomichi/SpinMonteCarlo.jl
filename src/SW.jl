@@ -75,16 +75,16 @@ function SW_update!(model::XY, T::Real)
         end
     end
     nc = clusterize!(uf)
-    clusters = Cluster[ Cluster(rand([1,-1]), 0) for i in 1:nc]
+    toflips = rand([1,-1], nc)
+    clustersize = zeros(Int, nc)
     @inbounds for site in 1:nsites
         id = clusterid(uf, site)
-        cl = clusters[id]
         s = model.spins[site]
-        s = ifelse(cl.spin > 0, s, 2m+0.5-s)
+        s = ifelse(toflips[id] > 0, s, 2m+0.5-s)
         s = mod(s, 1.0)
-        cl.size += 1
+        clustersize[id] += 1
         model.spins[site] = s
     end
-    return clusters
+    return clusterssize
 end
 
