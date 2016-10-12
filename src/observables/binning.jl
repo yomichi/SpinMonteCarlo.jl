@@ -70,7 +70,7 @@ function push!(b::BinningObservable, x::Real)
     b.entries[1] += 1
     level = 2
     bsize = 2
-    while i & 1 > 0
+    @inbounds while i & 1 > 0
         if level > length(b.sum)
             push!(b.sum, 0)
             push!(b.sum2, 0)
