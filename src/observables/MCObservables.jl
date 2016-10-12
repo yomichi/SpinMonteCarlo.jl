@@ -17,19 +17,19 @@ isempty(obs::MCObservable) = count(obs) == 0
 zero{Obs<:MCObservable}(::Type{Obs}) = Obs()
 zero(obs::MCObservable) = zero(typeof(obs))
 function zeros{Obs<:MCObservable}(::Type{Obs}, dim...)
-  reshape(Obs[Obs() for i in 1:prod(dim)], dim)
+    reshape(Obs[Obs() for i in 1:prod(dim)], dim)
 end
 
 function show(io::IO, obs::MCObservable)
-  if !isempty(obs)
-    print(io, mean(obs), " +/- ", stderror(obs))
-  else
-    print(io, "No Entries")
-  end
+    if !isempty(obs)
+        print(io, mean(obs), " +/- ", stderror(obs))
+    else
+        print(io, "No Entries")
+    end
 end
 
 function dump_plot(io::IO, obs::MCObservable)
-  print(io, mean(obs), " ", stderror(obs))
+    print(io, mean(obs), " ", stderror(obs))
 end
 
 const confidence_rate_1sigma = 0.5erf(0.5sqrt(2.0))
