@@ -124,6 +124,6 @@ function SW_update!(model::XY, T::Real)
         clustersize[id] += 1
         model.spins[site] = s
     end
-    return clusterssize
+    return clustersize
 end
 

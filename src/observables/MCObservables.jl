@@ -28,8 +28,14 @@ function show(io::IO, obs::MCObservable)
     end
 end
 
-function dump_plot(io::IO, obs::MCObservable)
+function dump_plot(io::IO, obs::MCObservable; put_following_space::Bool=false, newline::Bool=false)
     print(io, mean(obs), " ", stderror(obs))
+    if put_following_space
+        print(io, " ")
+    end
+    if newline
+        println(io)
+    end
 end
 
 const confidence_rate_1sigma = 0.5erf(0.5sqrt(2.0))

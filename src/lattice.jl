@@ -129,7 +129,7 @@ function square_lattice(L::Integer, W::Integer)
         coords[1,s] = x
         coords[2,s] = y
         bond_dirs[:, 2s-1] = [1.0, 0.0]
-        bond_dirs[:, 2s] = [1.0, 0.0]
+        bond_dirs[:, 2s] = [0.0, 1.0]
     end
     Lattice(dim,[L,W],nsites,nbonds,coords,bond_dirs,neighbors,source,target)
 end
