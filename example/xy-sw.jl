@@ -7,6 +7,18 @@ const Ts = linspace(1.5, 0.5, 11)
 const MCS = 8192
 const Therm = MCS >> 3
 
+const io = open("res-ising-sw.dat", "w")
+
+for (i, name) in ("L", "T",
+                  "M^2", "error of M^2",
+                  "M^4", "error of M^4", 
+                  "Binder ratio", "error of Binder ratio", 
+                 )
+    println(io, "# \$$i : $name")
+end
+
+println(io, "# \$9- : Helicity modulus")
+
 
 for L in Ls
     lat = square_lattice(L)
@@ -34,15 +46,16 @@ for L in Ls
         end
         jk = jackknife(obs)
         jk["Binder Ratio"] = jk["Magnetization^4"] / (jk["Magnetization^2"] ^ 2)
-        print(L, " ", T, " ")
-        dump_plot(STDOUT, jk["Magnetization^2"], put_following_space=true)
-        dump_plot(STDOUT, jk["Magnetization^4"], put_following_space=true)
-        dump_plot(STDOUT, jk["Binder Ratio"], put_following_space=true)
+        print(io, L, " ", T, " ")
+        dump_plot(io, jk["Magnetization^2"], put_following_space=true)
+        dump_plot(io, jk["Magnetization^4"], put_following_space=true)
+        dump_plot(io, jk["Binder Ratio"], put_following_space=true)
         for d in 1:dim(lat)
-            dump_plot(STDOUT, jk["Helicity Modulus $d"], put_following_space=true)
+            dump_plot(io, jk["Helicity Modulus $d"], put_following_space=true)
         end
         println()
     end
     println()
     println()
 end
+close(io)
