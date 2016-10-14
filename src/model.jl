@@ -17,9 +17,24 @@ type Potts <: Model
     Q :: Int
     spins :: Vector{Int}
 
-    function Potts(lat::Lattice, Q::Integer=2)
+    function Potts(lat::Lattice, Q::Integer)
         spins = rand(1:Q, numsites(lat))
         return new(lat, Q, spins)
+    end
+end
+
+type Clock <: Model
+    lat :: Lattice
+    Q :: Int
+    spins :: Vector{Int}
+    cosines :: Vector{Float64}
+    sines :: Vector{Float64}
+
+    function Clock(lat::Lattice, Q::Integer)
+        spins = rand(1:Q, numsites(lat))
+        cosines = [cospi(2s/Q) for s in 1:Q]
+        sines = [cospi(2s/Q) for s in 1:Q]
+        return new(lat, Q, spins, cosines, sines)
     end
 end
 

@@ -97,6 +97,34 @@ function SW_update!(model::Potts, T::Real)
     return SWInfo(activated_bonds, clustersize, clusterspin)
 end
 
+function SW_update!(model::Clock, T::Real)
+    nsites = numsites(model.lat)
+    nbonds = numbonds(model.lat)
+    m2b = -2/T
+    m = rand(1:model.Q)
+    rspins = zeros(Int, nsites)
+    @inbounds for s in 1:nsites
+        rspins[s] = mod1(model.spins[s]-m, model.Q)
+    end
+    uf = UnionFind(nsites)
+    @inbounds for bond in 1:nbonds
+        s1,s2 = source(model.lat, bond), target(model.lat, bond)
+        if rand() < -expm1(m2b*model.sines[rspins[s1]]*model.sines[rspins[s2]])
+            unify!(uf, s1,s2)
+        end
+    end
+    nc = clusterize!(uf)
+    toflips = rand([1,-1], nc)
+    clustersize = zeros(Int, nc)
+    @inbounds for site in 1:nsites
+        id = clusterid(uf, site)
+        s = ifelse(toflips[id] > 0, model.Q-rspins[site], rspins[site])
+        clustersize[id] += 1
+        model.spins[site] = mod1(s+m, model.Q)
+    end
+    return clustersize
+end
+
 function SW_update!(model::XY, T::Real)
     nsites = numsites(model.lat)
     nbonds = numbonds(model.lat)
