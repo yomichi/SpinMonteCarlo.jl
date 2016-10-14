@@ -1,7 +1,48 @@
 """
-    measure(model, T)
+    measure(model::Ising, T::Real)
+    measure(model::Potts, T::Real)
 
-return magnetization `M`, energy `E`, and helicity modulus `U`.
+return magnetization density `M` and total energy `E`.
+"""
+function measure(model::Ising, T::Real)
+    lat = model.lat
+    nsites = numsites(lat)
+    nbonds = numbonds(lat)
+
+    M = mean(model.spins)
+    E = 0.0
+    @inbounds for b in 1:nbonds
+        s1, s2 = source(lat, b), target(lat, b)
+        E += ifelse(model.spins[s1] == model.spins[s2], -1.0, 1.0)
+    end
+    return M,E
+end
+
+function measure(model::Potts, T::Real)
+    lat = model.lat
+    nsites = numsites(lat)
+    nbonds = numbonds(lat)
+    invQ = 1.0/model.Q
+
+    M = 0.0
+    @inbounds for s in 1:nsites
+        M += ifelse(model.spins[s]==1, 1.0-invQ, -invQ)
+    end
+    M /= nsites
+    E = 0.0
+    @inbounds for b in 1:nbonds
+        s1, s2 = source(lat, b), target(lat, b)
+        E -= ifelse(model.spins[s1] == model.spins[s2], 1.0, 0.0)
+    end
+    return M,E
+end
+
+
+"""
+    measure(model::Clock, T::Real)
+    measure(model::XY, T::Real)
+
+return magnetization density `M`, total energy `E`, and helicity modulus `U`.
 """
 function measure(model::Clock, T::Real)
     lat = model.lat

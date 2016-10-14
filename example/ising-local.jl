@@ -8,7 +8,7 @@ const Ts = Tc*linspace(0.8, 1.2, 21)
 const MCS = 8192
 const Therm = MCS >> 3
 
-const io = open("res-ising-sw.dat", "w")
+const io = open("res-ising-local.dat", "w")
 
 for (i, name) in enumerate(["L", "T",
                             "Seconds per step", "Steps per second",
@@ -25,7 +25,7 @@ for L in Ls
     nsites = numsites(lat)
     for T in Ts
         for i in 1:Therm
-            SW_update!(model, T)
+            local_update!(model, T)
         end
         obs = BinningObservableSet()
         makeMCObservable!(obs, "Time")
@@ -34,8 +34,10 @@ for L in Ls
         makeMCObservable!(obs, "Magnetization^4")
         for i in 1:MCS
             tic()
-            swinfo = SW_update!(model, T)
-            m2, m4 = magnetizations(swinfo, model)
+            local_update!(model, T)
+            M, E = measure(model, T)
+            m2 = M*M
+            m4 = m2*m2
             t = toq()
             obs["Time"] << t
             obs["Speed"] << 1.0/t
