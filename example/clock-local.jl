@@ -9,7 +9,7 @@ const MCS = 8192
 const Therm = MCS >> 3
 
 for Q in Qs
-    io = open("res-clock$Q-sw.dat", "w")
+    io = open("res-clock$Q-local.dat", "w")
     for (i, name) in enumerate(["L", "T",
                                 "Seconds per step", "Steps per second",
                                 "M^2", "error of M^2",
@@ -25,7 +25,7 @@ for Q in Qs
         nsites = numsites(lat)
         for T in Ts
             for i in 1:Therm
-                SW_update!(model, T)
+                local_update!(model, T)
             end
             obs = BinningObservableSet()
             makeMCObservable!(obs, "Time")
@@ -38,7 +38,7 @@ for Q in Qs
             end
             for i in 1:MCS
                 tic()
-                SW_update!(model, T)
+                local_update!(model, T)
                 M, E, U = measure(model, T)
                 t = toq()
                 obs["Activated Bonds"] << abonds

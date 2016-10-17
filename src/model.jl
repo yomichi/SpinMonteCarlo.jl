@@ -33,7 +33,7 @@ type Clock <: Model
     function Clock(lat::Lattice, Q::Integer)
         spins = rand(1:Q, numsites(lat))
         cosines = [cospi(2s/Q) for s in 1:Q]
-        sines = [cospi(2s/Q) for s in 1:Q]
+        sines = [sinpi(2s/Q) for s in 1:Q]
         return new(lat, Q, spins, cosines, sines)
     end
 end
