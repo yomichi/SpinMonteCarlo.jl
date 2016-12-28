@@ -170,3 +170,48 @@ function triangular_lattice(L::Integer, W::Integer)
     end
     Lattice(dim,[L,W],nsites,nbonds,coords,bond_dirs,neighbors,source,target)
 end
+
+"""
+    cubic_lattice(L::Integer, W::Integer=L, H::Integer=W)
+    
+generate cubic lattice with size `L` \\times `W` \\times `H`.
+"""
+cubic_lattice(L::Integer) = cubic_lattice(L,L,L)
+cubic_lattice(L::Integer, W::Integer) = cubic_lattice(L,W,W)
+function cubic_lattice(L::Integer, W::Integer, H::Integer)
+    function s2xyz(s::Integer)
+        z = div(s-1, L*W)
+        xy = mod(s-1, L*W)
+        x = mod(xy, L)
+        y = div(xy, L)
+        return x, y, z
+    end
+    xyz2s(x::Integer, y::Integer, z::Integer) = mod(z,H)*W*L + mod(y,W)*L + mod(x,L) + 1
+
+    dim = 3
+    nsites = L*W*H
+    nbonds = 3nsites
+    coords = zeros(dim, nsites)
+    bond_dirs = zeros(dim, nbonds)
+    neighbors = zeros(Int,6,nsites)
+    source = zeros(Int,nbonds)
+    target = zeros(Int,nbonds)
+    @inbounds for s in 1:nsites
+        x,y,z = s2xyz(s)
+        neighbors[1,s] = xyz2s(x+1,y,z)
+        neighbors[2,s] = xyz2s(x,y+1,z)
+        neighbors[3,s] = xyz2s(x,y,z+1)
+        neighbors[4,s] = xyz2s(x-1,y,z)
+        neighbors[5,s] = xyz2s(x,y-1,z)
+        neighbors[6,s] = xyz2s(x,y,z-1)
+        source[3s-2:3s] = s
+        target[3s-2:3s] = neighbors[1:3,s]
+        coords[1,s] = x
+        coords[2,s] = y
+        coords[3,s] = z
+        bond_dirs[:, 3s-2] = [1.0, 0.0, 0.0]
+        bond_dirs[:, 3s-1] = [0.0, 1.0, 0.0]
+        bond_dirs[:, 3s-0] = [0.0, 0.0, 1.0]
+    end
+    Lattice(dim,[L,W,H],nsites,nbonds,coords,bond_dirs,neighbors,source,target)
+end
