@@ -6,8 +6,10 @@ end
 
 numclusters(sw::SWInfo) = length(sw.clustersize)
 
+
 """
-    magnetizations(sw::SWInfo, model)
+    magnetizations(sw::SWInfo, model::Ising)
+    magnetizations(sw::SWInfo, model::Potts)
 
 return square and biquadratic of magnetization density.
 """
@@ -43,6 +45,40 @@ function magnetizations(sw::SWInfo, model::Potts)
 end
 
 """
+    energy(sw::SWInfo, model::Ising, T::Real)
+    energy(sw::SWInfo, model::Potts, T::Real)
+
+return energy density and square of energy density.
+"""
+function energy(sw::SWInfo, model::Ising, T::Real)
+    nsites = numsites(model.lat)
+    nbonds = numbonds(model.lat)
+    invV = 1.0/nsites
+    beta = 1.0/T
+    lambda = expm1(2beta)
+    A = exp(2beta)/lambda
+    n = sw.activated_bonds
+    E = (-2A*n + nbonds)*invV
+    E2 = (4A*A*n*(n-1) + 4A*n*(1-nbonds) + nbonds*nbonds) * invV*invV
+    return E, E2
+end
+
+function energy(sw::SWInfo, model::Potts, T::Real)
+    nsites = numsites(model.lat)
+    invV = 1.0/nsites
+    beta = 1.0/T
+    lambda = expm1(beta)
+    A = exp(beta)/lambda
+    n = sw.activated_bonds
+    E = -A*n
+    E2 = A*A*n*(n-1) + A*n
+    E *= invV
+    E2 *= invV*invV
+    return E, E2
+end
+
+
+"""
     SW_update!(model, T::Real)
     
 update spin configuration by Swendsen-Wang algorithm under the temperature `T`, and return clusters.
@@ -61,7 +97,7 @@ function SW_update!(model::Ising, T::Real)
         end
     end
     nc = clusterize!(uf)
-    clustersize = ones(Int, nc)
+    clustersize = zeros(Int, nc)
     clusterspin = rand([1,-1], nc)
 
     @inbounds for site in 1:nsites
@@ -86,7 +122,7 @@ function SW_update!(model::Potts, T::Real)
         end
     end
     nc = clusterize!(uf)
-    clustersize = ones(Int, nc)
+    clustersize = zeros(Int, nc)
     clusterspin = rand(1:model.Q, nc)
 
     @inbounds for site in 1:nsites

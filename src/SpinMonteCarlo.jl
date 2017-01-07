@@ -4,7 +4,7 @@ module SpinMonteCarlo
 
 export Model, Ising, XY, Potts, Clock
 export SW_update!, local_update!
-export magnetizations
+export magnetizations, energy
 export chain_lattice, square_lattice, triangular_lattice, cubic_lattice
 export Lattice, dim, size, numsites, numbonds, neighbors, source, target
 export UnionFind, addnode!, unify!, clusterize!, clusterid
