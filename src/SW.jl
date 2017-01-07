@@ -9,24 +9,31 @@ numclusters(sw::SWInfo) = length(sw.clustersize)
 
 """
     magnetizations(sw::SWInfo, model::Ising)
-    magnetizations(sw::SWInfo, model::Potts)
 
-return square and biquadratic of magnetization density.
+    return magnetization density `M` (simple estimator) , square of `M` (improved estimator), and biquadratic of `M` (improved estimator).
 """
 function magnetizations(sw::SWInfo, model::Ising)
     nsites = numsites(model.lat)
     nc = numclusters(sw)
     invV = 1.0/nsites
+    M = 0.0
     M2 = 0.0
     M4 = 0.0
-    for m in sw.clustersize
+    for (m,s) in zip(sw.clustersize, sw.clusterspin)
+        M += m*invV*s
         m2 = (m*invV)^2
         M4 += m2*m2 + 6M2*m2
         M2 += m2
     end
-    return M2, M4
+    return M, M2, M4
 end
 
+"""
+    magnetizations(sw::SWInfo, model::Potts)
+
+    return magnetization density `M` (simple estimator) , square of `M` (improved estimator), and biquadratic of `M` (improved estimator).
+    local magnetization `M_i` is defined by local spin variable `s_i` as `M_i = \\delta_{s_i, 1}-1/q`.
+"""
 function magnetizations(sw::SWInfo, model::Potts)
     nsites = numsites(model.lat)
     Q = model.Q
@@ -34,14 +41,18 @@ function magnetizations(sw::SWInfo, model::Potts)
     invV = 1.0/nsites
     I2 = (Q-1)/(Q*Q)
     I4 = (Q-1)*((Q-1)^3+1)/(Q^5)
+    M = 0.0
     M2 = 0.0
     M4 = 0.0
-    for m in sw.clustersize
+    s2 = 1.0/Q
+    s1 = 1.0-s2
+    for (m,s) in zip(sw.clustersize, sw.clusterspin)
+        M += (m*invV) * ifelse(s==1, s1, s2)
         m2 = (m*invV)^2
         M4 += I4*m2*m2 + 6*M2*m2
         M2 += I2*m2
     end
-    return M2, M4
+    return M, M2, M4
 end
 
 """
