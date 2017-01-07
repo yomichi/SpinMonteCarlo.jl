@@ -10,6 +10,7 @@ export Lattice, dim, size, numsites, numbonds, neighbors, source, target
 export UnionFind, addnode!, unify!, clusterize!, clusterid
 export measure
 export gen_snapshot!, gensave_snapshot!, load_snapshot
+export runMC, print_result
 
 include("union_find.jl")
 include("lattice.jl")
@@ -19,5 +20,6 @@ include("local_update.jl")
 include("measure.jl")
 include("snapshot.jl")
 include("observables/MCObservables.jl")
+include("calculation.jl")
 
 end # of module
