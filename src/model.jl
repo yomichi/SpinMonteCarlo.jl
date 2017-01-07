@@ -11,6 +11,10 @@ type Ising <: Model
         return model
     end
 end
+function Ising(params::Dict)
+    lat = params["Lattice"](params)
+    return Ising(lat)
+end
 
 type Potts <: Model
     lat :: Lattice
@@ -21,6 +25,11 @@ type Potts <: Model
         spins = rand(1:Q, numsites(lat))
         return new(lat, Q, spins)
     end
+end
+function Potts(params::Dict)
+    lat = params["Lattice"](params)
+    Q = params["Q"]
+    return Potts(lat, Q)
 end
 
 type Clock <: Model
@@ -37,6 +46,11 @@ type Clock <: Model
         return new(lat, Q, spins, cosines, sines)
     end
 end
+function Clock(params::Dict)
+    lat = params["Lattice"](params)
+    Q = params["Q"]
+    return Clock(lat, Q)
+end
 
 type XY <: Model
     lat :: Lattice
@@ -48,5 +62,9 @@ type XY <: Model
         model.spins = rand(numsites(lat))
         return model
     end
+end
+function XY(params::Dict)
+    lat = params["Lattice"](params)
+    return XY(lat)
 end
 

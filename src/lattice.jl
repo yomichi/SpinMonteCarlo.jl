@@ -79,8 +79,9 @@ bonddirectory(lat::Lattice, bond::Integer) = lat.bond_dirs[:, bond]
 
 """
     chain_lattice(L::Integer)
+    chain_lattice(params::Dict)
     
-generate chain lattice with length `L`.
+generate chain lattice with length `L` or params["L"].
 """
 function chain_lattice(L::Integer)
     dim = 1
@@ -99,9 +100,11 @@ function chain_lattice(L::Integer)
     end
     Lattice(dim,[L],L,L,coords, bond_dirs, neighbors,source,target)
 end
+chain_lattice(params::Dict) = chain_lattice(params["L"])
 
 """
     square_lattice(L::Integer, W::Integer=L)
+    square_lattice(params::Dict)
     
 generate square lattice with size `L` \\times `W`.
 """
@@ -133,9 +136,15 @@ function square_lattice(L::Integer, W::Integer)
     end
     Lattice(dim,[L,W],nsites,nbonds,coords,bond_dirs,neighbors,source,target)
 end
+function square_lattice(params::Dict)
+    L = params["L"]
+    W = get(params, "W", L)
+    return square_lattice(L, W)
+end
 
 """
     triangular_lattice(L::Integer, W::Integer=L)
+    triangular_lattice(params::Dict)
     
 generate triangular lattice with size `L` \\times `W`.
 """
@@ -169,6 +178,11 @@ function triangular_lattice(L::Integer, W::Integer)
         bond_dirs[:, 3s] = ex+ey
     end
     Lattice(dim,[L,W],nsites,nbonds,coords,bond_dirs,neighbors,source,target)
+end
+function triangular_lattice(params::Dict)
+    L = params["L"]
+    W = get(params, "W", L)
+    return triangular_lattice(L, W)
 end
 
 """
@@ -214,4 +228,10 @@ function cubic_lattice(L::Integer, W::Integer, H::Integer)
         bond_dirs[:, 3s-0] = [0.0, 0.0, 1.0]
     end
     Lattice(dim,[L,W,H],nsites,nbonds,coords,bond_dirs,neighbors,source,target)
+end
+function cubic_lattice(params::Dict)
+    L = params["L"]
+    W = get(params, "W", L)
+    H = get(params, "H", W)
+    return cubic_lattice(L, W, H)
 end
