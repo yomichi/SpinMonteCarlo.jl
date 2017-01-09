@@ -156,7 +156,7 @@ function SW_update!(model::Clock, T::Real)
     uf = UnionFind(nsites)
     @inbounds for bond in 1:nbonds
         s1,s2 = source(model.lat, bond), target(model.lat, bond)
-        if rand() < -expm1(m2b*model.sines[rspins[s1]]*model.sines[rspins[s2]])
+        if rand() < -expm1(m2b*model.sines_sw[rspins[s1]]*model.sines_sw[rspins[s2]])
             unify!(uf, s1,s2)
         end
     end
@@ -165,7 +165,7 @@ function SW_update!(model::Clock, T::Real)
     clustersize = zeros(Int, nc)
     @inbounds for site in 1:nsites
         id = clusterid(uf, site)
-        s = ifelse(toflips[id] > 0, model.Q-rspins[site], rspins[site])
+        s = ifelse(toflips[id] > 0, model.Q-rspins[site]+1, rspins[site])
         clustersize[id] += 1
         model.spins[site] = mod1(s+m, model.Q)
     end

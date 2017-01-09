@@ -38,12 +38,14 @@ type Clock <: Model
     spins :: Vector{Int}
     cosines :: Vector{Float64}
     sines :: Vector{Float64}
+    sines_sw :: Vector{Float64}
 
     function Clock(lat::Lattice, Q::Integer)
         spins = rand(1:Q, numsites(lat))
         cosines = [cospi(2s/Q) for s in 1:Q]
         sines = [sinpi(2s/Q) for s in 1:Q]
-        return new(lat, Q, spins, cosines, sines)
+        sines_sw = [sinpi((2s-1)/Q) for s in 1:Q]
+        return new(lat, Q, spins, cosines, sines, sines_sw)
     end
 end
 function Clock(params::Dict)
