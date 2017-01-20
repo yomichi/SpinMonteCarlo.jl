@@ -29,6 +29,7 @@ function runMC(model::Union{Ising, Potts}, T::Real, MCS::Integer, Therm::Integer
     nsites = numsites(model.lat)
     invV = 1.0/nsites
     obs = BinningObservableSet()
+    makeMCObservable!(obs, "Time per Sweep")
     makeMCObservable!(obs, "Magnetization")
     makeMCObservable!(obs, "|Magnetization|")
     makeMCObservable!(obs, "Magnetization^2")
@@ -38,11 +39,14 @@ function runMC(model::Union{Ising, Potts}, T::Real, MCS::Integer, Therm::Integer
 
     if blocal
         for mcs in 1:MCS
+            tic()
             local_update!(model,T)
             M, E = measure(model, T)
             M2 = M*M
             M4 = M2*M2
             E *= invV
+            t = toq()
+            obs["Time per Sweep"] << t
             obs["Magnetization"] << M
             obs["|Magnetization|"] << abs(M)
             obs["Magnetization^2"] << M2
@@ -52,9 +56,12 @@ function runMC(model::Union{Ising, Potts}, T::Real, MCS::Integer, Therm::Integer
         end
     else
         for mcs in 1:MCS
+            tic()
             sw_info = SW_update!(model,T)
             M, M2, M4 = magnetizations(sw_info, model)
             E, E2 = energy(sw_info, model, T)
+            t = toq()
+            obs["Time per Sweep"] << t
             obs["Magnetization"] << 0.0
             obs["|Magnetization|"] << abs(M)
             obs["Magnetization^2"] << M2
@@ -69,6 +76,7 @@ function runMC(model::Union{Ising, Potts}, T::Real, MCS::Integer, Therm::Integer
     jk["Susceptibility"] = (nsites/T)*jk["Magnetization^2"]
     jk["Connected Susceptibility"] = (nsites/T)*(jk["Magnetization^2"] - jk["|Magnetization|"]^2)
     jk["Specific Heat"] = (nsites/T/T)*(jk["Energy^2"] - jk["Energy"]^2)
+    jk["Sweeps per Second"] = 1.0/jk["Time per Sweep"]
 
     return jk
 end
@@ -85,6 +93,7 @@ function runMC(model::Union{Clock, XY}, T::Real, MCS::Integer, Therm::Integer, b
     end
 
     obs = BinningObservableSet()
+    makeMCObservable!(obs, "Time per Sweep")
     makeMCObservable!(obs, "|Magnetization|")
     makeMCObservable!(obs, "|Magnetization|^2")
     makeMCObservable!(obs, "|Magnetization|^4")
@@ -105,13 +114,19 @@ function runMC(model::Union{Clock, XY}, T::Real, MCS::Integer, Therm::Integer, b
 
     if blocal
         for i in 1:MCS
+            tic()
             local_update!(model, T)
             measure_impl!(obs, model, T, invV)
+            t = toq()
+            obs["Time per Sweep"] << t
         end
     else
         for i in 1:MCS
+            tic()
             SW_update!(model, T)
             measure_impl!(obs, model, T, invV)
+            t = toq()
+            obs["Time per Sweep"] << t
         end
     end
     jk = jackknife(obs)
@@ -125,6 +140,7 @@ function runMC(model::Union{Clock, XY}, T::Real, MCS::Integer, Therm::Integer, b
     jk["Connected Susceptibility y"] = (nsites*beta)*(jk["Magnetization y^2"] - jk["|Magnetization y|"]^2)
     jk["Connected Susceptibility"] = (nsites*beta)*(jk["|Magnetization|^2"] - jk["|Magnetization|"]^2)
     jk["Specific Heat"] = (nsites*beta*beta)*(jk["Energy^2"] - jk["Energy"]^2)
+    jk["Sweeps per Second"] = 1.0 / jk["Time per Sweep"]
 
     return jk
 end
