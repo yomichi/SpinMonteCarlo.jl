@@ -29,7 +29,7 @@ function loop_update!(model::TransverseFieldIsing, T::Real, J::Real, gamma::Real
                 end
             else
                 s = rand(1:nsites)
-                insert!(ops, LocalOperator(LO_Cut, t, s))
+                push!(ops, LocalOperator(LO_Cut, t, s))
                 t += randexp()*op_dt
             end
         else 
@@ -56,7 +56,7 @@ function loop_update!(model::TransverseFieldIsing, T::Real, J::Real, gamma::Real
             c = addnode!(uf)
             op.top_id = c
             currents[s] = c
-            model.spins[s] *= ifelse(model.ops[iops].isdiagonal, 1, -1)
+            model.spins[s] *= ifelse(op.isdiagonal, 1, -1)
         end
     end
     for s in 1:nsites
