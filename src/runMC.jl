@@ -8,13 +8,20 @@ function runMC(params::Dict)
     MCS = get(params, "MCS", 8192)
     Therm = get(params, "Thermalization", MCS>>3)
     blocal = get(params, "LocalUpdate", false)
-    ret = runMC(model, T, MCS, Therm, blocal)
+    ret = runMC(model, params)
     if verbose
         println("Finish: ", params)
     end
     return ret
 end
 
+function runMC(model::Union{Ising, Potts}, params::Dict)
+    T = params["T"]
+    MCS = get(params, "MCS", 8192)
+    Therm = get(params, "Thermalization", MCS>>3)
+    blocal = get(params, "LocalUpdate", false)
+    return runMC(model, T, MCS, Therm, blocal)
+end
 function runMC(model::Union{Ising, Potts}, T::Real, MCS::Integer, Therm::Integer, blocal::Bool)
     if blocal
         for mcs in 1:Therm
@@ -81,6 +88,13 @@ function runMC(model::Union{Ising, Potts}, T::Real, MCS::Integer, Therm::Integer
     return jk
 end
 
+function runMC(model::Union{Clock, XY}, params::Dict)
+    T = params["T"]
+    MCS = get(params, "MCS", 8192)
+    Therm = get(params, "Thermalization", MCS>>3)
+    blocal = get(params, "LocalUpdate", false)
+    return runMC(model, T, MCS, Therm, blocal)
+end
 function runMC(model::Union{Clock, XY}, T::Real, MCS::Integer, Therm::Integer, blocal::Bool)
     if blocal
         for i in 1:Therm
@@ -169,29 +183,51 @@ function measure_impl!(obs, model::Union{Clock, XY}, T, invV)
     obs["Energy^2"] << E*E
 end
 
-function print_result(io::IO, params, obs)
-    i  = 1
-    for name in ["Q", "L", "T"]
-        println(io, "# $i : $name")
-        i += 1
-    end
-    ks = collect(keys(obs[1]))
-    sort!(ks)
-    for name in ks
-        println(io, "# $i, $(i+1) : $name")
-        i += 2
+function runMC(model::TransverseFieldIsing, params::Dict)
+    T = params["T"]
+    J = params["J"]
+    gamma = params["Gamma"]
+    MCS = get(params, "MCS", 8192)
+    Therm = get(params, "Thermalization", MCS>>3)
+    return runMC(model, T, J, gamma, MCS, Therm)
+end
+function runMC(model::TransverseFieldIsing, T::Real, J::Real, gamma::Real,  MCS::Integer, Therm::Integer)
+    for mcs in 1:Therm
+        loop_update!(model,T, J, gamma)
     end
 
-    for (p, o) in zip(params, obs)
-        print(io, get(p, "Q", 0), " ")
-        print(io, p["L"], " ")
-        print(io, p["T"], " ")
+    nsites = numsites(model.lat)
+    invV = 1.0/nsites
+    obs = BinningObservableSet()
+    makeMCObservable!(obs, "Time per Sweep")
+    makeMCObservable!(obs, "Magnetization")
+    makeMCObservable!(obs, "|Magnetization|")
+    makeMCObservable!(obs, "Magnetization^2")
+    makeMCObservable!(obs, "Magnetization^4")
+    # makeMCObservable!(obs, "Energy")
+    # makeMCObservable!(obs, "Energy^2")
 
-        for name in ks
-            print(io, mean(o[name]), " ")
-            print(io, stderror(o[name]), " ")
-        end
-        println(io)
+    for mcs in 1:MCS
+        tic()
+        uf = loop_update!(model,T,J,gamma)
+        M, M2, M4 = measure(model, uf)
+        t = toq()
+        obs["Time per Sweep"] << t
+        obs["Magnetization"] << M
+        obs["|Magnetization|"] << abs(M)
+        obs["Magnetization^2"] << M2
+        obs["Magnetization^4"] << M4
+        # obs["Energy"] << E
+        # obs["Energy^2"] << E*E
     end
+
+    jk = jackknife(obs)
+    jk["Binder Ratio"] = jk["Magnetization^4"] / (jk["Magnetization^2"]^2)
+    jk["Susceptibility"] = (nsites/T)*jk["Magnetization^2"]
+    jk["Connected Susceptibility"] = (nsites/T)*(jk["Magnetization^2"] - jk["|Magnetization|"]^2)
+    # jk["Specific Heat"] = (nsites/T/T)*(jk["Energy^2"] - jk["Energy"]^2)
+    jk["Sweeps per Second"] = 1.0/jk["Time per Sweep"]
+
+    return jk
 end
 

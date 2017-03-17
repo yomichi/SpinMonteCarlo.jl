@@ -118,3 +118,62 @@ function measure(model::XY, T::Real)
     end
     return M, E, U1
 end
+
+function measure(model::QuantumLocalZ2Model, uf::UnionFind)
+    nsites = numsites(model.lat)
+    nbonds = numbonds(model.lat)
+    nc = numclusters(uf)
+
+    spins = model.spins[:]
+    ms = zeros(nc)
+    @inbounds for op in model.ops
+        if op.op_type == LO_Cut
+            s = op.space
+            bid = clusterid(uf, op.bottom_id)
+            tid = clusterid(uf, op.top_id)
+            ms[bid] += spins[s]*op.time
+            ms[tid] -= spins[s]*op.time
+            spins[s] *= ifelse(op.isdiagonal, 1, -1)
+        elseif op.op_type == LO_Vertex
+            b = op.space
+            s1 = source(model.lat, b)
+            s2 = target(model.lat, b)
+            bid = clusterid(uf, op.bottom_id)
+            tid = clusterid(uf, op.top_id)
+            ms[bid] += (spins[s1]+spins[s2])*op.time
+            ms[tid] -= (spins[s1]+spins[s2])*op.time
+            spins[s1] *= ifelse(op.isdiagonal, 1, -1)
+            spins[s2] *= ifelse(op.isdiagonal, 1, -1)
+        elseif op.op_type == LO_Cross
+            b = op.space
+            s1 = source(model.lat, b)
+            s2 = target(model.lat, b)
+            bid = clusterid(uf, op.bottom_id)
+            tid = clusterid(uf, op.top_id)
+            ms[bid] += (spins[s1]-spins[s2])*op.time
+            ms[tid] -= (spins[s1]-spins[s2])*op.time
+            spins[s1] *= ifelse(op.isdiagonal, 1, -1)
+            spins[s2] *= ifelse(op.isdiagonal, 1, -1)
+        end
+    end
+    for s in 1:nsites
+        i = clusterid(uf, s)
+        ms[i] += model.spins[s]
+    end
+
+    coeff = 0.5/nsites
+    @inbounds for i in 1:nc
+        ms[i] *= coeff
+    end
+
+    M = 0.0
+    M2 = 0.0
+    M4 = 0.0
+    for m in ms
+        M += m
+        m2 = m*m
+        M4 += m2*m2 + 6M2*m2
+        M2 += m2
+    end
+    return M, M2, M4
+end
