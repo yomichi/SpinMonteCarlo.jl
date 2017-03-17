@@ -9,6 +9,7 @@ function loop_update!(model::TransverseFieldIsing, T::Real, J::Real, gamma::Real
     currents = collect(1:nsites)
     uf = UnionFind(nsites)
 
+    ops = LocalOperator[]
     iops = 1 # index of the next operator
     t = randexp()*op_dt
     while t <= 1.0 || iops <= length(model.ops)
@@ -20,7 +21,7 @@ function loop_update!(model::TransverseFieldIsing, T::Real, J::Real, gamma::Real
                 s1 = source(model.lat, b)
                 s2 = target(model.lat, b)
                 if J * model.spins[s1] * model.spins[s2] < 0.0
-                    insert!(model.ops, iops, LocalOperator(LO_Link, t, b))
+                    push!(ops, LocalOperator(LO_Link, t, b))
                     t += randexp()*op_dt
                 else
                     t += randexp()*op_dt
@@ -28,18 +29,20 @@ function loop_update!(model::TransverseFieldIsing, T::Real, J::Real, gamma::Real
                 end
             else
                 s = rand(1:nsites)
-                insert!(model.ops, iops, LocalOperator(LO_Cut, t, s))
+                insert!(ops, LocalOperator(LO_Cut, t, s))
                 t += randexp()*op_dt
             end
         else 
-            # DELETE
-            if model.ops[iops].isdiagonal
-                deleteat!(model.ops, iops)
+            if ! model.ops[iops].isdiagonal
+                push!(ops, model.ops[iops])
+                iops += 1
+            else
+                iops += 1
                 continue
             end
         end
         
-        op = model.ops[iops]
+        op = ops[end]
         if op.op_type == LO_Link
             b = op.space
             s1 = source(model.lat, b)
@@ -55,11 +58,12 @@ function loop_update!(model::TransverseFieldIsing, T::Real, J::Real, gamma::Real
             currents[s] = c
             model.spins[s] *= ifelse(model.ops[iops].isdiagonal, 1, -1)
         end
-        iops += 1
     end
     for s in 1:nsites
         unify!(uf, s, currents[s])
     end
+
+    model.ops = ops
 
     nc = clusterize!(uf)
     flips = rand([1,-1], nc)
