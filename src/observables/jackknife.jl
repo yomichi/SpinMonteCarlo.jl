@@ -98,7 +98,7 @@ for op in binary_functions
     @eval ($op)(lhs::Jackknife, rhs::Jackknife) = Jackknife( ($op_bw)(lhs.xs, rhs.xs))
 end
 
-typealias JackknifeSet MCObservableSet{Jackknife}
+const JackknifeSet = MCObservableSet{Jackknife}
 
 jackknife(obs::ScalarObservable) = Jackknife(obs)
 function jackknife(obsset :: MCObservableSet)

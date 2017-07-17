@@ -153,5 +153,5 @@ function show(io::IO, obs::BinningObservable)
 end
 
 
-typealias BinningObservableSet MCObservableSet{BinningObservable}
+const BinningObservableSet = MCObservableSet{BinningObservable}
 

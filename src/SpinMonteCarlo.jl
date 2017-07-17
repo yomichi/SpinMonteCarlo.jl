@@ -1,6 +1,7 @@
 VERSION >= v"0.4.0-dev+6521" && __precompile__()
 
 module SpinMonteCarlo
+using Compat
 
 export Model, Ising, XY, Potts, Clock
 export QuantumLocalZ2Model, TransverseFieldIsing

@@ -72,7 +72,7 @@ end
 merge(lhs::SimpleObservable, rhs::SimpleObservable) = merge!(deepcopy(lhs), rhs)
 
 export SimpleObservableSet
-typealias SimpleObservableSet MCObservableSet{SimpleObservable}
+const SimpleObservableSet = MCObservableSet{SimpleObservable}
 
 function merge!(obs::SimpleObservableSet, other::SimpleObservableSet)
     obs_names = Set(keys(obs))

@@ -125,7 +125,7 @@ for op in binary_functions
     @eval ($op)(lhs::SecondJackknife, rhs::SecondJackknife) = SecondJackknife( ($op_bw)(lhs.xs, rhs.xs))
 end
 
-typealias SecondJackknifeSet MCObservableSet{SecondJackknife}
+const SecondJackknifeSet = MCObservableSet{SecondJackknife}
 
 function second_jackknife(obsset :: BinningObservableSet)
     JK = SecondJackknifeSet()

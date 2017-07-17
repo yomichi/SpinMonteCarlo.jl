@@ -15,7 +15,7 @@ type LocalOperator
 end
 LocalOperator(op_type::LocalOperatorType, time::Real, space::Int) = LocalOperator(op_type, true, time, space, 0,0)
 
-abstract QuantumLocalZ2Model <: Model
+@compat abstract type QuantumLocalZ2Model <: Model end
 
 type TransverseFieldIsing <: QuantumLocalZ2Model
     lat :: Lattice

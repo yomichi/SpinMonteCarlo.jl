@@ -1,5 +1,5 @@
 export MCObservableSet
-typealias MCObservableSet{Obs<:MCObservable} Dict{String, Obs}
+@compat const MCObservableSet{Obs<:MCObservable} = Dict{String, Obs}
 
 export makeMCObservable!
 

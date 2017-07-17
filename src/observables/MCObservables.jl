@@ -8,9 +8,9 @@ export confidence_interval
 
 using Distributions
 
-abstract MCObservable
-abstract ScalarObservable <: MCObservable
-abstract VectorObservable <: MCObservable
+@compat abstract type MCObservable end
+@compat abstract type ScalarObservable <: MCObservable end
+@compat abstract type VectorObservable <: MCObservable end
 
 isempty(obs::MCObservable) = count(obs) == 0
 
