@@ -102,9 +102,9 @@ function var(b::BinningObservable, level::Int = 1)
         v2 = maxzero(v2)
         return v2/(n-1)
     elseif n == 1
-        return inf(Float64)
+        return Inf
     else
-        return nan(Float64)
+        return NaN
     end
 end
 
