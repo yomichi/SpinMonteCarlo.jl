@@ -38,7 +38,7 @@ function stderror(jk::JackknifeVector)
     elseif n == 1
         return Inf
     else
-        m2 = sumabs2(jk.xs)
+        m2 = sum(abs2, jk.xs)
         m2 /= n
         m = mean(jk)
         sigma2 = m2 - m.*m

@@ -31,7 +31,7 @@ size(lat::Lattice, dim::Integer) = lat.size[dim]
 """
     numsites(lat::Lattice)
 
-return the number of bonds.
+return the number of sites.
 """
 numsites(lat::Lattice) = lat.nsites
 
