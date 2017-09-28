@@ -8,7 +8,7 @@ export QuantumLocalZ2Model, TransverseFieldIsing
 export local_update!, SW_update!, loop_update!
 export magnetizations, energy
 export chain_lattice, square_lattice, triangular_lattice, cubic_lattice
-export Lattice, dim, size, numsites, numbonds, neighbors, source, target
+export Lattice, dim, size, numsites, numbonds, neighbors, source, target, siteL2, siteL4
 export UnionFind, addnode!, unify!, clusterize!, clusterid
 export measure
 export gen_snapshot!, gensave_snapshot!, load_snapshot

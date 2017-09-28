@@ -4,10 +4,6 @@ function runMC(params::Dict)
         println("Start: ", params)
     end
     model = params["Model"](params)
-    T = params["T"]
-    MCS = get(params, "MCS", 8192)
-    Therm = get(params, "Thermalization", MCS>>3)
-    blocal = get(params, "LocalUpdate", false)
     ret = runMC(model, params)
     if verbose
         println("Finish: ", params)
