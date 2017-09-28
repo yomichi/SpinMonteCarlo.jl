@@ -8,6 +8,8 @@ type Lattice
     neighbors :: Matrix{Int}
     source :: Vector{Int}
     target :: Vector{Int}
+    site_L2 :: Vector{Int}
+    site_L4 :: Vector{Int}
 end
 
 import Base.size
@@ -78,6 +80,20 @@ return the directory of the `bond` as vector
 bonddirectory(lat::Lattice, bond::Integer) = lat.bond_dirs[:, bond]
 
 """
+    siteL2(lat::Lattice, site::Integer)
+
+return (x+L/2, y+W/2, ...) site
+"""
+siteL2(lat::Lattice, site::Integer) = lat.site_L2[site]
+
+"""
+    siteL4(lat::Lattice, site::Integer)
+
+return (x+L/4, y+W/4, ...) site
+"""
+siteL4(lat::Lattice, site::Integer) = lat.site_L4[site]
+
+"""
     chain_lattice(L::Integer)
     chain_lattice(params::Dict)
     
@@ -90,6 +106,8 @@ function chain_lattice(L::Integer)
     neighbors = zeros(Int,2,L)
     source = zeros(Int,L)
     target = zeros(Int,L)
+    site_L2 = zeros(Int,L)
+    site_L4 = zeros(Int,L)
     for s in 1:L
         coords[1,s] = (s-1)
         bond_dirs[1,s] = 1.0
@@ -97,8 +115,10 @@ function chain_lattice(L::Integer)
         neighbors[2,s] = mod1(s-1,L)
         source[s] = s
         target[s] = neighbors[1,s]
+        site_L2[s] = mod1(s+div(L,2),L)
+        site_L4[s] = mod1(s+div(L,4),L)
     end
-    Lattice(dim,[L],L,L,coords, bond_dirs, neighbors,source,target)
+    Lattice(dim,[L],L,L,coords, bond_dirs, neighbors,source,target, site_L2, site_L4)
 end
 chain_lattice(params::Dict) = chain_lattice(params["L"])
 
@@ -121,6 +141,12 @@ function square_lattice(L::Integer, W::Integer)
     neighbors = zeros(Int,4,nsites)
     source = zeros(Int,nbonds)
     target = zeros(Int,nbonds)
+    site_L2 = zeros(Int,nsites)
+    site_L4 = zeros(Int,nsites)
+    L2 = div(L,2)
+    L4 = div(L,4)
+    W2 = div(W,2)
+    W4 = div(W,4)
     @inbounds for s in 1:nsites
         x,y = s2xy(s)
         neighbors[1,s] = xy2s(x+1,y)
@@ -133,8 +159,10 @@ function square_lattice(L::Integer, W::Integer)
         coords[2,s] = y
         bond_dirs[:, 2s-1] = [1.0, 0.0]
         bond_dirs[:, 2s] = [0.0, 1.0]
+        site_L2[s] = xy2s(x+L2, y+W2)
+        site_L4[s] = xy2s(x+L4, y+W4)
     end
-    Lattice(dim,[L,W],nsites,nbonds,coords,bond_dirs,neighbors,source,target)
+    Lattice(dim,[L,W],nsites,nbonds,coords,bond_dirs,neighbors,source,target, site_L2, site_L4)
 end
 function square_lattice(params::Dict)
     L = params["L"]
@@ -162,6 +190,12 @@ function triangular_lattice(L::Integer, W::Integer)
     neighbors = zeros(Int,6,nsites)
     source = zeros(Int,nbonds)
     target = zeros(Int,nbonds)
+    site_L2 = zeros(Int, nsites)
+    site_L4 = zeros(Int, nsites)
+    L2 = div(L,2)
+    L4 = div(L,4)
+    W2 = div(W,2)
+    W4 = div(W,4)
     @inbounds for s in 1:nsites
         x,y = s2xy(s)
         neighbors[1,s] = xy2s(x+1,y)
@@ -176,8 +210,10 @@ function triangular_lattice(L::Integer, W::Integer)
         bond_dirs[:, 3s-2] = ex
         bond_dirs[:, 3s-1] = ey
         bond_dirs[:, 3s] = ex+ey
+        site_L2[s] = xy2s(x+L2, y+W2)
+        site_L4[s] = xy2s(x+L4, y+W4)
     end
-    Lattice(dim,[L,W],nsites,nbonds,coords,bond_dirs,neighbors,source,target)
+    Lattice(dim,[L,W],nsites,nbonds,coords,bond_dirs,neighbors,source,target,site_L2,site_L4)
 end
 function triangular_lattice(params::Dict)
     L = params["L"]
@@ -210,6 +246,14 @@ function cubic_lattice(L::Integer, W::Integer, H::Integer)
     neighbors = zeros(Int,6,nsites)
     source = zeros(Int,nbonds)
     target = zeros(Int,nbonds)
+    site_L2 = zeros(Int,nsites)
+    site_L4 = zeros(Int,nsites)
+    L2 = div(L,2)
+    L4 = div(L,4)
+    W2 = div(W,2)
+    W4 = div(W,4)
+    H2 = div(H,2)
+    H4 = div(H,4)
     @inbounds for s in 1:nsites
         x,y,z = s2xyz(s)
         neighbors[1,s] = xyz2s(x+1,y,z)
@@ -226,8 +270,10 @@ function cubic_lattice(L::Integer, W::Integer, H::Integer)
         bond_dirs[:, 3s-2] = [1.0, 0.0, 0.0]
         bond_dirs[:, 3s-1] = [0.0, 1.0, 0.0]
         bond_dirs[:, 3s-0] = [0.0, 0.0, 1.0]
+        site_L2[s] = xyz2s(x+L2,y+W2,z+H2)
+        site_L4[s] = xyz4s(x+L4,y+W4,z+H4)
     end
-    Lattice(dim,[L,W,H],nsites,nbonds,coords,bond_dirs,neighbors,source,target)
+    Lattice(dim,[L,W,H],nsites,nbonds,coords,bond_dirs,neighbors,source,target,site_L2,site_L4)
 end
 function cubic_lattice(params::Dict)
     L = params["L"]
