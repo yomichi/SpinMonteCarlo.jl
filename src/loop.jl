@@ -1,4 +1,4 @@
-function loop_update!(model::TransverseFieldIsing, T::Real, J::Real, gamma::Real)
+function loop_update!(model::TransverseFieldIsing, T::Real, J::Real, gamma::Real; measure::Bool=true)
     nsites = numsites(model.lat)
     nbonds = numbonds(model.lat)
     ising_weight = 0.5*abs(J)*nbonds
@@ -78,5 +78,12 @@ function loop_update!(model::TransverseFieldIsing, T::Real, J::Real, gamma::Real
         end
     end
 
-    return uf
+    res = Measurement()
+    if measure
+        M, M2, M4 = improved_estimate(model, uf)
+        res[:M] = M
+        res[:M2] = M2
+        res[:M4] = M4
+    end
+    return res
 end

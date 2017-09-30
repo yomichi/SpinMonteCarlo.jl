@@ -1,14 +1,12 @@
 """
-    local_update!(model, T::Real)
-update spin configuration by local spin flip and Metropolice algorithm under the temperature `T`, and return the difference of total magnetization and energy.
+    local_update!(model, T::Real; measure::Bool=true)
+update spin configuration by local spin flip and Metropolice algorithm under the temperature `T`
 """
-function local_update!(model::Ising, T::Real)
+function local_update!(model::Ising, T::Real; measure::Bool=true)
     nsites = numsites(model.lat)
     nbonds = numbonds(model.lat)
     mbeta = -1.0/T
 
-    DM = 0
-    DE = 0.0
     @inbounds for site in 1:nsites
         center = model.spins[site]
         de = 0.0
@@ -17,20 +15,27 @@ function local_update!(model::Ising, T::Real)
         end
         if rand() < exp(mbeta*de)
             model.spins[site] *= -1
-            DE += de
-            DM += 2model.spins[site]
         end
     end
-    return DM, DE
+
+    res = Measurement()
+    if measure
+        M, E = simple_estimate(model, T)
+        res[:M] = M
+        res[:M2] = M^2
+        res[:M4] = M^4
+        res[:E] = E
+        res[:E2] = E^2
+    end
+
+    return res
 end
 
-function local_update!(model::Potts, T::Real)
+function local_update!(model::Potts, T::Real; measure::Bool=true)
     nsites = numsites(model.lat)
     nbonds = numbonds(model.lat)
     mbeta = -1.0/T
 
-    DM = 0
-    DE = 0.0
     @inbounds for site in 1:nsites
         center = model.spins[site]
         new_center = mod1(center+rand(1:(model.Q-1)), model.Q)
@@ -41,22 +46,28 @@ function local_update!(model::Potts, T::Real)
         end
         if rand() < exp(mbeta*de)
             model.spins[site] = new_center
-            DE += de
-            DM -= ifelse(center==1, 1, 0)
-            DM += ifelse(new_center==1, 1, 0)
         end
     end
-    return DM, DE
+
+    res = Measurement()
+    if measure
+        M, E = simple_estimate(model, T)
+        res[:M] = M
+        res[:M2] = M^2
+        res[:M4] = M^4
+        res[:E] = E
+        res[:E2] = E^2
+    end
+
+    return res
 end
 
-function local_update!(model::Clock, T::Real)
+function local_update!(model::Clock, T::Real; measure::Bool=true)
     nsites = numsites(model.lat)
     nbonds = numbonds(model.lat)
     mbeta = -1.0/T
     iQ2 = 2.0/model.Q
 
-    DM = 0.0
-    DE = 0.0
     @inbounds for site in 1:nsites
         center = model.spins[site]
         new_center = mod1(center+rand(1:(model.Q-1)), model.Q)
@@ -67,21 +78,29 @@ function local_update!(model::Clock, T::Real)
         end
         if rand() < exp(mbeta*de)
             model.spins[site] = new_center
-            DE += de
-            DM -= model.cosines[center]
-            DM += model.cosines[new_center]
         end
     end
-    return DM, DE
+
+    res = Measurement()
+    if measure
+        M, E, U = simple_estimate(model, T)
+        M2 = sum(abs2,M)
+        res[:M] = M
+        res[:M2] = M2
+        res[:M4] = M2^2
+        res[:E] = E
+        res[:E2] = E^2
+        res[:U] = U
+    end
+
+    return res
 end
 
-function local_update!(model::XY, T::Real)
+function local_update!(model::XY, T::Real; measure::Bool=true)
     nsites = numsites(model.lat)
     nbonds = numbonds(model.lat)
     mbeta = 1.0/T
 
-    DM = zeros(2)
-    DE = 0.0
     @inbounds for site in 1:nsites
         center = model.spins[site]
         new_center = rand()
@@ -91,12 +110,22 @@ function local_update!(model::XY, T::Real)
             de -= cospi(2(new_center - model.spins[n]))
         end
         if rand() < exp(mbeta*de)
-            DM -= [cospi(2center), sinpi(2center)]
-            DM += [cospi(2new_center), sinpi(2new_center)]
             model.spins[site] = new_center
-            DE += de
         end
     end
-    return DM, DE
+
+    res = Measurement()
+    if measure
+        M, E, U = simple_estimate(model, T)
+        M2 = sum(abs2,M)
+        res[:M] = M
+        res[:M2] = M2
+        res[:M4] = M2^2
+        res[:E] = E
+        res[:E2] = E^2
+        res[:U] = U
+    end
+
+    return res
 end
 

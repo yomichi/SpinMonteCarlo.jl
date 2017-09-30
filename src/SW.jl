@@ -6,95 +6,12 @@ end
 
 numclusters(sw::SWInfo) = length(sw.clustersize)
 
-
 """
-    magnetizations(sw::SWInfo, model::Ising)
-
-    return magnetization density `M` (simple estimator) , square of `M` (improved estimator), and biquadratic of `M` (improved estimator).
-"""
-function magnetizations(sw::SWInfo, model::Ising)
-    nsites = numsites(model.lat)
-    nc = numclusters(sw)
-    invV = 1.0/nsites
-    M = 0.0
-    M2 = 0.0
-    M4 = 0.0
-    for (m,s) in zip(sw.clustersize, sw.clusterspin)
-        M += m*invV*s
-        m2 = (m*invV)^2
-        M4 += m2*m2 + 6M2*m2
-        M2 += m2
-    end
-    return M, M2, M4
-end
-
-"""
-    magnetizations(sw::SWInfo, model::Potts)
-
-    return magnetization density `M` (simple estimator) , square of `M` (improved estimator), and biquadratic of `M` (improved estimator).
-    local magnetization `M_i` is defined by local spin variable `s_i` as `M_i = \\delta_{s_i, 1}-1/q`.
-"""
-function magnetizations(sw::SWInfo, model::Potts)
-    nsites = numsites(model.lat)
-    Q = model.Q
-    nc = numclusters(sw)
-    invV = 1.0/nsites
-    I2 = (Q-1)/(Q*Q)
-    I4 = (Q-1)*((Q-1)^3+1)/(Q^5)
-    M = 0.0
-    M2 = 0.0
-    M4 = 0.0
-    s2 = 1.0/Q
-    s1 = 1.0-s2
-    for (m,s) in zip(sw.clustersize, sw.clusterspin)
-        M += (m*invV) * ifelse(s==1, s1, s2)
-        m2 = (m*invV)^2
-        M4 += I4*m2*m2 + 6*M2*m2
-        M2 += I2*m2
-    end
-    return M, M2, M4
-end
-
-"""
-    energy(sw::SWInfo, model::Ising, T::Real)
-    energy(sw::SWInfo, model::Potts, T::Real)
-
-return energy density and square of energy density.
-"""
-function energy(sw::SWInfo, model::Ising, T::Real)
-    nsites = numsites(model.lat)
-    nbonds = numbonds(model.lat)
-    invV = 1.0/nsites
-    beta = 1.0/T
-    lambda = expm1(2beta)
-    A = exp(2beta)/lambda
-    n = sw.activated_bonds
-    E = (-2A*n + nbonds)*invV
-    E2 = (4A*A*n*(n-1) + 4A*n*(1-nbonds) + nbonds*nbonds) * invV*invV
-    return E, E2
-end
-
-function energy(sw::SWInfo, model::Potts, T::Real)
-    nsites = numsites(model.lat)
-    invV = 1.0/nsites
-    beta = 1.0/T
-    lambda = expm1(beta)
-    A = exp(beta)/lambda
-    n = sw.activated_bonds
-    E = -A*n
-    E2 = A*A*n*(n-1) + A*n
-    E *= invV
-    E2 *= invV*invV
-    return E, E2
-end
-
-
-"""
-    SW_update!(model, T::Real)
+    SW_update!(model, T::Real; measure::Bool=true)
     
-update spin configuration by Swendsen-Wang algorithm under the temperature `T`, and return clusters.
+update spin configuration by Swendsen-Wang algorithm under the temperature `T`.
 """
-function SW_update!(model::Ising, T::Real)
+function SW_update!(model::Ising, T::Real; measure::Bool=true)
     p = -expm1(-2.0/T)
     nsites = numsites(model.lat)
     nbonds = numbonds(model.lat)
@@ -116,10 +33,21 @@ function SW_update!(model::Ising, T::Real)
         model.spins[site] = clusterspin[id]
         clustersize[id] += 1
     end
-    return SWInfo(activated_bonds, clustersize, clusterspin)
+    swinfo = SWInfo(activated_bonds, clustersize, clusterspin)
+
+    res = Measurement()
+    if measure
+        M, M2, M4, E, E2 = improved_estimate(model, T, swinfo)
+        res[:M] = M
+        res[:M2] = M2
+        res[:M4] = M4
+        res[:E] = E
+        res[:E2] = E2
+    end
+    return res
 end
 
-function SW_update!(model::Potts, T::Real)
+function SW_update!(model::Potts, T::Real; measure::Bool=true)
     p = -expm1(-1.0/T)
     nsites = numsites(model.lat)
     nbonds = numbonds(model.lat)
@@ -141,10 +69,21 @@ function SW_update!(model::Potts, T::Real)
         model.spins[site] = clusterspin[id]
         clustersize[id] += 1
     end
-    return SWInfo(activated_bonds, clustersize, clusterspin)
+    swinfo =  SWInfo(activated_bonds, clustersize, clusterspin)
+
+    res = Measurement()
+    if measure
+        M, M2, M4, E, E2 = improved_estimate(model, T, swinfo)
+        res[:M] = M
+        res[:M2] = M2
+        res[:M4] = M4
+        res[:E] = E
+        res[:E2] = E2
+    end
+    return res
 end
 
-function SW_update!(model::Clock, T::Real)
+function SW_update!(model::Clock, T::Real; measure::Bool=true)
     nsites = numsites(model.lat)
     nbonds = numbonds(model.lat)
     m2b = -2/T
@@ -169,10 +108,23 @@ function SW_update!(model::Clock, T::Real)
         clustersize[id] += 1
         model.spins[site] = mod1(s+m, model.Q)
     end
-    return clustersize
+
+    res = Measurement()
+    if measure
+        M, E, U = simple_estimate(model, T)
+        M2 = sum(abs2,M)
+        res[:M] = M
+        res[:M2] = M2
+        res[:M4] = M2^2
+        res[:E] = E
+        res[:E2] = E^2
+        res[:U] = U
+    end
+
+    return res
 end
 
-function SW_update!(model::XY, T::Real)
+function SW_update!(model::XY, T::Real; measure::Bool=true)
     nsites = numsites(model.lat)
     nbonds = numbonds(model.lat)
     m2b = -2/T
@@ -199,6 +151,19 @@ function SW_update!(model::XY, T::Real)
         clustersize[id] += 1
         model.spins[site] = s
     end
-    return clustersize
+
+    res = Measurement()
+    if measure
+        M, E, U = simple_estimate(model, T)
+        M2 = sum(abs2,M)
+        res[:M] = M
+        res[:M2] = M2
+        res[:M4] = M2^2
+        res[:E] = E
+        res[:E2] = E^2
+        res[:U] = U
+    end
+
+    return res
 end
 
