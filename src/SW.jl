@@ -87,7 +87,7 @@ function SW_update!(model::Clock, T::Real; measure::Bool=true)
     nsites = numsites(model.lat)
     nbonds = numbonds(model.lat)
     m2b = -2/T
-    m = rand(1:model.Q)
+    m = rand(1:model.Q)-1
     rspins = zeros(Int, nsites)
     @inbounds for s in 1:nsites
         rspins[s] = mod1(model.spins[s]-m, model.Q)

@@ -44,7 +44,7 @@ type Clock <: Model
         spins = rand(1:Q, numsites(lat))
         cosines = [cospi(2s/Q) for s in 1:Q]
         sines = [sinpi(2s/Q) for s in 1:Q]
-        sines_sw = [sinpi((2s-1)/Q) for s in 1:Q]
+        sines_sw = [sinpi(2(s-0.5)/Q) for s in 1:Q]
         return new(lat, Q, spins, cosines, sines, sines_sw)
     end
 end

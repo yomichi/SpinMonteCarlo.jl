@@ -2,23 +2,23 @@ include("../src/SpinMonteCarlo.jl")
 
 using SpinMonteCarlo
 
-const Ls = [8, 16]
+const ups = [0,1,2]
+const Ls = [8,12,16]
 const MCS = 8192
 const Therm = MCS >> 3
 const Ts = linspace(0.5, 2.0, 16)
 
+
 params = Dict{String, Any}[]
-for update in [0,1]
+for update in ups
     for L in Ls
         for T in Ts
             push!(params,
-                  Dict{String,Any}("Model"=>XY,
-                                   "Lattice"=>square_lattice,
-                                   "L"=>L,
-                                   "T"=>T,
-                                   "MCS"=>MCS,
-                                   "Thermalization"=>Therm,
-                                   "UpdateMethod"=> (update==0 ? local_update! : SW_update!),
+                  Dict{String,Any}("Model"=>XY, "Lattice"=>square_lattice,
+                                   "L"=>L, "T"=>T,
+                                   "MCS"=>MCS, "Thermalization"=>Therm,
+                                   "UpdateMethod"=> (update==0 ? local_update! :
+                                                     update==1 ? SW_update! : Wolff_update!),
                                    "update"=>update,
                                    "Verbose"=>true,
                                   ))

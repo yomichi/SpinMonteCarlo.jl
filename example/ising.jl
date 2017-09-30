@@ -2,10 +2,10 @@ include("../src/SpinMonteCarlo.jl")
 
 using SpinMonteCarlo
 
-const ups = [0,1]
-const Ls = [8, 16, 32]
+const ups = [0,1,2]
+const Ls = [8, 16, 24]
 const Tc = 2.0/log1p(sqrt(2))
-const Ts = Tc*linspace(0.8, 1.2, 21)
+const Ts = Tc*linspace(0.85, 1.15, 11)
 const MCS = 8192
 const Therm = MCS >> 3
 
@@ -17,7 +17,8 @@ for update in ups
                   Dict{String,Any}("Model"=>Ising, "Lattice"=>square_lattice,
                                    "L"=>L, "T"=>T,
                                    "MCS"=>MCS, "Thermalization"=>Therm,
-                                   "UpdateMethod"=> (update==0 ? local_update! : SW_update!),
+                                   "UpdateMethod"=> (update==0 ? local_update! :
+                                                     update==1 ? SW_update! : Wolff_update!),
                                    "update"=>update,
                                    "Verbose"=>true,
                                   ))
