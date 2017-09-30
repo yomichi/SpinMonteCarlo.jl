@@ -42,9 +42,10 @@ end
 ## Model
 - Classical spin model
     - `Ising` model
-    - `Potts` model
+    - `Q` state `Potts` model
+        - order parameter defined as `M = (Q-1)/Q * n_1 - (1-n_1)/Q`, where `n_1` is the number density of `q=1` spins and `N` is the number of all spins.
     - `XY` model
-    - `Clock` model
+    - `Q` state `Clock` model
 - Quantum spin model
     - S=1/2 `TransverseFieldIsing` model
 
