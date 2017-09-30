@@ -127,6 +127,9 @@ end
 - `UpdateMethod`
     - worm algorithm
 - Others
+    - resume and restart
+    - random number parallelization
+        - NOTE: parameter parallelization can be realized simply by using `@parallel for` or `pmap`.
     - write algorithmic note
         - especially, Foutuin-Kasteleyn representaion and improved estimators
 
