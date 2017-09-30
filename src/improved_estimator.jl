@@ -67,7 +67,7 @@ function improved_estimate(model::Potts, T::Real, sw::SWInfo)
     for (m,s) in zip(sw.clustersize, sw.clusterspin)
         M += (m*invV) * ifelse(s==1, s1, s2)
         m2 = (m*invV)^2
-        M4 += I4*m2*m2 + 6*M2*m2
+        M4 += I4*m2*m2 + 6*I2*M2*m2
         M2 += I2*m2
     end
 
