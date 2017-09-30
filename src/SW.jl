@@ -100,11 +100,11 @@ function SW_update!(model::Clock, T::Real; measure::Bool=true)
         end
     end
     nc = clusterize!(uf)
-    toflips = rand([1,-1], nc)
+    toflips = rand(Bool, nc)
     clustersize = zeros(Int, nc)
     @inbounds for site in 1:nsites
         id = clusterid(uf, site)
-        s = ifelse(toflips[id] > 0, model.Q-rspins[site]+1, rspins[site])
+        s = ifelse(toflips[id], model.Q-rspins[site]+1, rspins[site])
         clustersize[id] += 1
         model.spins[site] = mod1(s+m, model.Q)
     end
@@ -141,12 +141,12 @@ function SW_update!(model::XY, T::Real; measure::Bool=true)
         end
     end
     nc = clusterize!(uf)
-    toflips = rand([1,-1], nc)
+    toflips = rand(Bool, nc)
     clustersize = zeros(Int, nc)
     @inbounds for site in 1:nsites
         id = clusterid(uf, site)
         s = model.spins[site]
-        s = ifelse(toflips[id] > 0, s, 2m+0.5-s)
+        s = ifelse(toflips[id], s, 2m+0.5-s)
         s = mod(s, 1.0)
         clustersize[id] += 1
         model.spins[site] = s
