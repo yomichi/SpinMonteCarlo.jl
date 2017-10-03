@@ -10,7 +10,7 @@ julia> Pkg.clone("https://github.com/yomichi/SpinMonteCarlo.jl")
 
 # Simple example
 
-The following program calculates temperature v.s. specific heat of the ferromagnet Ising model on a 16x16 square lattice by Swendsen-Wang algorithm.
+The following program calculates temperature v.s. specific heat of the ferromagnet Ising model on a 8x8 square lattice by Swendsen-Wang algorithm.
 
 ``` julia
 using SpinMonteCarlo
@@ -134,6 +134,6 @@ end
         - especially, Foutuin-Kasteleyn representaion and improved estimators
 
 # Author
-Yuichi Motoyama, the University of Tokyo
+[Yuichi Motoyama](https://github.com/yomichi), the University of Tokyo
 
 This package distributed under the MIT license.
