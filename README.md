@@ -10,14 +10,14 @@ julia> Pkg.clone("https://github.com/yomichi/SpinMonteCarlo.jl")
 
 # Simple example
 
-The following program calculates temperature v.s. specific heat of the ferromagnet Ising model on a 8x8 square lattice by Swendsen-Wang algorithm.
+[The following program](https://github.com/yomichi/SpinMonteCarlo.jl/blob/master/example/ising.jl) calculates temperature v.s. specific heat of the ferromagnet Ising model on a 16x16 square lattice by Swendsen-Wang algorithm.
 
 ``` julia
 using SpinMonteCarlo
 
 const model = Ising
 const lat = square_lattice
-const L = 8
+const L = 16
 const update = SW_update!
 
 const Tc = 2.0/log1p(sqrt(2))
