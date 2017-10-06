@@ -1,5 +1,5 @@
 """
-    local_update!(model, T::Real; measure::Bool=true)
+    local_update!(model, T::Real, J::Vector, h::Vector; measure::Bool=true)
 update spin configuration by local spin flip and Metropolice algorithm under the temperature `T`
 """
 function local_update!(model::Ising, T::Real; measure::Bool=true)
