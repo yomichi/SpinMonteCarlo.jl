@@ -103,7 +103,7 @@ function dimer_lattice()
     dim = 1
     coords = zeros(dim, 2)
     bond_dirs = zeros(dim, 1)
-    neighbors = zeros(Int,2,2)
+    neighbors = zeros(Int,1,2)
     source = zeros(Int,1)
     target = zeros(Int,1)
     site_L2 = zeros(Int,2)
