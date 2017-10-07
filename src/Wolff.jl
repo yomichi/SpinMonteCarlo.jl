@@ -13,7 +13,7 @@ function Wolff_update!(model::Ising, T::Real; measure::Bool=true)
     sp = model.spins[center]
     model.spins[center] *= -1
     push!(st, center)
-    while !isempty(st)
+    @inbounds while !isempty(st)
         clustersize += 1
         s = pop!(st)
         for n in neighbors(model.lat, s)
@@ -49,7 +49,7 @@ function Wolff_update!(model::Potts, T::Real; measure::Bool=true)
     newsp = mod1(sp+rand(1:(model.Q-1)), model.Q)
     model.spins[center] = newsp
     push!(st, center)
-    while !isempty(st)
+    @inbounds while !isempty(st)
         clustersize += 1
         s = pop!(st)
         for n in neighbors(model.lat, s)
@@ -87,7 +87,7 @@ function Wolff_update!(model::Clock, T::Real; measure::Bool=true)
     r = mod1(model.spins[center]-m, model.Q)
     model.spins[center] = mod1(m-r+1, model.Q)
 
-    while !isempty(st)
+    @inbounds while !isempty(st)
         clustersize += 1
         center = pop!(st)
         cr = mod1(model.spins[center]-m, model.Q)
@@ -129,7 +129,7 @@ function Wolff_update!(model::XY, T::Real; measure::Bool=true)
 
     model.spins[center] = mod(2m+0.5-model.spins[center], 1.0)
 
-    while !isempty(st)
+    @inbounds while !isempty(st)
         clustersize += 1
         center = pop!(st)
         cp = cospi(2(model.spins[center]-m))
