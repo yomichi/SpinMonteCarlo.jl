@@ -1,4 +1,5 @@
 # SpinMonteCarlo.jl
+[![Build Status](https://travis-ci.org/yomichi/SpinMonteCarlo.jl.svg)](https://travis-ci.org/yomichi/SpinMonteCarlo.jl)
 
 Markov chain Monte Carlo solver for finite temperature problem of lattie spin system implemented by [Julia](https://julialang.org) language.
 
