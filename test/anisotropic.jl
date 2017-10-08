@@ -1,7 +1,7 @@
 @testset "anisotropic" begin
     param = Dict{String,Any}("Model"=>Ising, "UpdateMethod"=>Wolff_update!,
                              "T"=>1.0, "L"=>8,
-                             "MCS"=>8192, "Thermalization"=>8192,
+                             "MCS"=>MCS, "Thermalization"=>Therm,
                             )
     @testset "dimer-chain" begin
         srand(SEED)
@@ -13,11 +13,11 @@
         param["J"] = [1.0, 0.0]
         obs = runMC(param)
         diff = obs["Energy"] - ref["Energy"]
-        @test mean(diff) < confidence_interval(diff, 0.99)
+        @test mean(diff) < confidence_interval(diff, conf_ratio)
         param["J"] = [0.0, 1.0]
         obs = runMC(param)
         diff = obs["Energy"] - ref["Energy"]
-        @test mean(diff) < confidence_interval(diff, 0.99)
+        @test mean(diff) < confidence_interval(diff, conf_ratio)
     end
     @testset "chain-square" begin
         srand(SEED)
@@ -28,12 +28,12 @@
         param["J"] = [1.0, 0.0]
         obs = runMC(param)
         diff = obs["Energy"] - ref["Energy"]
-        @test mean(diff) < confidence_interval(diff, 0.99)
+        @test mean(diff) < confidence_interval(diff, conf_ratio)
 
         param["J"] = [0.0, 1.0]
         obs = runMC(param)
         diff = obs["Energy"] - ref["Energy"]
-        @test mean(diff) < confidence_interval(diff, 0.99)
+        @test mean(diff) < confidence_interval(diff, conf_ratio)
     end
 
     @testset "chain-triangular" begin
@@ -45,15 +45,15 @@
         param["J"] = [1.0, 0.0, 0.0]
         obs = runMC(param)
         diff = obs["Energy"] - ref["Energy"]
-        @test mean(diff) < confidence_interval(diff, 0.99)
+        @test mean(diff) < confidence_interval(diff, conf_ratio)
         param["J"] = [0.0, 1.0, 0.0]
         obs = runMC(param)
         diff = obs["Energy"] - ref["Energy"]
-        @test mean(diff) < confidence_interval(diff, 0.99)
+        @test mean(diff) < confidence_interval(diff, conf_ratio)
         param["J"] = [0.0, 0.0, 1.0]
         obs = runMC(param)
         diff = obs["Energy"] - ref["Energy"]
-        @test mean(diff) < confidence_interval(diff, 0.99)
+        @test mean(diff) < confidence_interval(diff, conf_ratio)
     end
 
     @testset "chain-cubic" begin
@@ -66,17 +66,17 @@
         param["J"] = [1.0, 0.0, 0.0]
         obs = runMC(param)
         diff = obs["Energy"] - ref["Energy"]
-        @test mean(diff) < confidence_interval(diff, 0.99)
+        @test mean(diff) < confidence_interval(diff, conf_ratio)
 
         param["J"] = [0.0, 1.0, 0.0]
         obs = runMC(param)
         diff = obs["Energy"] - ref["Energy"]
-        @test mean(diff) < confidence_interval(diff, 0.99)
+        @test mean(diff) < confidence_interval(diff, conf_ratio)
 
         param["J"] = [0.0, 0.0, 1.0]
         obs = runMC(param)
         diff = obs["Energy"] - ref["Energy"]
-        @test mean(diff) < confidence_interval(diff, 0.99)
+        @test mean(diff) < confidence_interval(diff, conf_ratio)
     end
 
     @testset "square-cubic" begin
@@ -89,14 +89,14 @@
         param["J"] = [1.0, 1.0, 0.0]
         obs = runMC(param)
         diff = obs["Energy"] - ref["Energy"]
-        @test mean(diff) < confidence_interval(diff, 0.99)
+        @test mean(diff) < confidence_interval(diff, conf_ratio)
         param["J"] = [1.0, 0.0, 1.0]
         obs = runMC(param)
         diff = obs["Energy"] - ref["Energy"]
-        @test mean(diff) < confidence_interval(diff, 0.99)
+        @test mean(diff) < confidence_interval(diff, conf_ratio)
         param["J"] = [0.0, 1.0, 1.0]
         obs = runMC(param)
         diff = obs["Energy"] - ref["Energy"]
-        @test mean(diff) < confidence_interval(diff, 0.99)
+        @test mean(diff) < confidence_interval(diff, conf_ratio)
     end
 end
