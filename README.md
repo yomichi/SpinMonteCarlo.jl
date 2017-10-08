@@ -1,4 +1,6 @@
 # SpinMonteCarlo.jl
+[![Build Status](https://travis-ci.org/yomichi/SpinMonteCarlo.jl.svg)](https://travis-ci.org/yomichi/SpinMonteCarlo.jl)
+[![Build status](https://ci.appveyor.com/api/projects/status/ooxw9wusg26bklq3?svg=true)](https://ci.appveyor.com/project/yomichi/spinmontecarlo-jl)
 
 Markov chain Monte Carlo solver for finite temperature problem of lattie spin system implemented by [Julia](https://julialang.org) language.
 
@@ -10,14 +12,14 @@ julia> Pkg.clone("https://github.com/yomichi/SpinMonteCarlo.jl")
 
 # Simple example
 
-The following program calculates temperature v.s. specific heat of the ferromagnet Ising model on a 16x16 square lattice by Swendsen-Wang algorithm.
+[The following program](example/ising.jl) calculates temperature v.s. specific heat of the ferromagnet Ising model on a 16x16 square lattice by Swendsen-Wang algorithm.
 
 ``` julia
 using SpinMonteCarlo
 
 const model = Ising
 const lat = square_lattice
-const L = 8
+const L = 16
 const update = SW_update!
 
 const Tc = 2.0/log1p(sqrt(2))
@@ -127,10 +129,13 @@ end
 - `UpdateMethod`
     - worm algorithm
 - Others
+    - resume and restart
+    - random number parallelization
+        - NOTE: parameter parallelization can be realized simply by using `@parallel for` or `pmap`.
     - write algorithmic note
         - especially, Foutuin-Kasteleyn representaion and improved estimators
 
 # Author
-Yuichi Motoyama, the University of Tokyo
+[Yuichi Motoyama](https://github.com/yomichi), the University of Tokyo
 
 This package distributed under the MIT license.

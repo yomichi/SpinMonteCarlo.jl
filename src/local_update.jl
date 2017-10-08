@@ -99,7 +99,7 @@ end
 function local_update!(model::XY, T::Real; measure::Bool=true)
     nsites = numsites(model.lat)
     nbonds = numbonds(model.lat)
-    mbeta = 1.0/T
+    mbeta = -1.0/T
 
     @inbounds for site in 1:nsites
         center = model.spins[site]

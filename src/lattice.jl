@@ -124,6 +124,38 @@ return (x+L/4, y+W/4, ...) site
 siteL4(lat::Lattice, site::Integer) = lat.site_L4[site]
 
 """
+    dimer_lattice()
+    dimer_lattice(params::Dict)
+    
+generate dimer lattice (indeed, this is not a "lattice")
+"""
+function dimer_lattice()
+    dim = 1
+    coords = zeros(dim, 2)
+    bond_dirs = zeros(dim, 1)
+    neighbors = zeros(Int,1,2)
+    source = zeros(Int,1)
+    target = zeros(Int,1)
+    site_L2 = zeros(Int,2)
+    site_L4 = zeros(Int,2)
+
+    coords[1,1] = 0.0
+    coords[1,2] = 1.0
+    bond_dirs[1,1] = 1.0
+    neighbors[1,1] = 2
+    neighbors[1,2] = 1
+    source[1] = 1
+    target[1] = 2
+    site_L2[1] = 2
+    site_L2[2] = 1
+    site_L4[1] = 2
+    site_L4[2] = 1
+
+    Lattice(dim,[2],2,1,coords, bond_dirs, neighbors,source,target, site_L2, site_L4)
+end
+dimer_lattice(params::Dict) = dimer_lattice()
+
+"""
     chain_lattice(L::Integer)
     chain_lattice(params::Dict)
     
