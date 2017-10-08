@@ -70,7 +70,7 @@ end
                 param["T"] = T
                 obs = runMC(param)
                 exact = energy_dimer(param)
-                @test abs(mean(obs["Energy"]) - exact) < 3.0*stderror(obs["Energy"])
+                @test abs(mean(obs["Energy"]) - exact) < confidence_interval(obs["Energy"],conf_ratio)
             end
         end
     end

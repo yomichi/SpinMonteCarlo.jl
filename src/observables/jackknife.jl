@@ -47,6 +47,16 @@ function stderror(jk::Jackknife)
     end
 end
 
+function confidence_interval(jk::Jackknife, confidence_rate::Real)
+    q = 0.5+0.5*confidence_rate
+    correction = quantile( TDist(count(jk)-1), q)
+    serr = stderror(jk)
+    return correction * serr
+end
+function confidence_interval(jk::Jackknife, confidence_rate_symbol::Symbol = :sigma1)
+    n = parsesigma(confidence_rate_symbol)
+    return confidence_interval(jk, erf(0.5n*sqrt(2.0)))
+end
 
 unary_functions = (
                    :-,

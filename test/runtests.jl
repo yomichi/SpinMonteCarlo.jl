@@ -4,7 +4,27 @@ include("../src/SpinMonteCarlo.jl")
 using SpinMonteCarlo
 
 const SEED = 19937
+const conf_ratio = 0.999
+const obsnames_ising = ["Magnetization", "|Magnetization|", "Magnetization^2", "Magnetization^4", "Binder Ratio",
+                        "Susceptibility", "Connected Susceptibility",
+                        "Energy", "Energy^2", "Specific Heat",
+                       ]
+const obsnames_potts = obsnames_ising
 
-include("lattice.jl")
-include("dimer.jl")
-include("square.jl")
+const obsnames_xy = ["|Magnetization|", "|Magnetization|^2", "|Magnetization|^4",
+                        "Binder Ratio", "Susceptibility", "Connected Susceptibility",
+                        "Magnetization x", "|Magnetization x|", "Magnetization x^2", "Magnetization x^4",
+                        "Binder Ratio x", "Susceptibility x", "Connected Susceptibility x",
+                        "Magnetization y", "|Magnetization y|", "Magnetization y^2", "Magnetization y^4",
+                        "Binder Ratio y", "Susceptibility y", "Connected Susceptibility y",
+                        "Helicity Modulus x", "Helicity Modulus y",
+                        "Energy", "Energy^2", "Specific Heat",
+                       ]
+const obsnames_clock = obsnames_xy
+
+@testset begin
+    include("lattice.jl")
+    include("dimer.jl")
+    include("square.jl")
+    include("anisotropic.jl")
+end

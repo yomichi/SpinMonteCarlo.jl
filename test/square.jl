@@ -1,20 +1,3 @@
-const obsnames_ising = ["Magnetization", "|Magnetization|", "Magnetization^2", "Magnetization^4", "Binder Ratio",
-                        "Susceptibility", "Connected Susceptibility",
-                        "Energy", "Energy^2", "Specific Heat",
-                       ]
-const obsnames_potts = obsnames_ising
-
-const obsnames_xy = ["|Magnetization|", "|Magnetization|^2", "|Magnetization|^4",
-                        "Binder Ratio", "Susceptibility", "Connected Susceptibility",
-                        "Magnetization x", "|Magnetization x|", "Magnetization x^2", "Magnetization x^4",
-                        "Binder Ratio x", "Susceptibility x", "Connected Susceptibility x",
-                        "Magnetization y", "|Magnetization y|", "Magnetization y^2", "Magnetization y^4",
-                        "Binder Ratio y", "Susceptibility y", "Connected Susceptibility y",
-                        "Helicity Modulus x", "Helicity Modulus y",
-                        "Energy", "Energy^2", "Specific Heat",
-                       ]
-const obsnames_clock = obsnames_xy
-
 @testset "square lattice" begin
 
     @testset "Ising" begin
@@ -31,8 +14,10 @@ const obsnames_clock = obsnames_xy
         wolff = runMC(param)
 
         @testset "$name" for name in obsnames_ising
-            @test abs(mean(localupdate[name]) - mean(sw[name])) < 3.0(stderror(localupdate[name])+stderror(sw[name]))
-            @test abs(mean(localupdate[name]) - mean(wolff[name])) < 3.0(stderror(localupdate[name])+stderror(wolff[name]))
+            diff = localupdate[name] - sw[name]
+            @test abs(mean(diff)) < confidence_interval(diff, conf_ratio)
+            diff = localupdate[name] - wolff[name]
+            @test abs(mean(diff)) < confidence_interval(diff, conf_ratio)
         end
     end
 
@@ -50,8 +35,10 @@ const obsnames_clock = obsnames_xy
         wolff = runMC(param)
 
         @testset "$name" for name in obsnames_potts
-            @test abs(mean(localupdate[name]) - mean(sw[name])) < 3.0(stderror(localupdate[name])+stderror(sw[name]))
-            @test abs(mean(localupdate[name]) - mean(wolff[name])) < 3.0(stderror(localupdate[name])+stderror(wolff[name]))
+            diff = localupdate[name] - sw[name]
+            @test abs(mean(diff)) < confidence_interval(diff, conf_ratio)
+            diff = localupdate[name] - wolff[name]
+            @test abs(mean(diff)) < confidence_interval(diff, conf_ratio)
         end
     end
 
@@ -69,8 +56,10 @@ const obsnames_clock = obsnames_xy
         wolff = runMC(param)
 
         @testset "$name" for name in obsnames_xy
-            @test abs(mean(localupdate[name]) - mean(sw[name])) < 3.0(stderror(localupdate[name])+stderror(sw[name]))
-            @test abs(mean(localupdate[name]) - mean(wolff[name])) < 3.0(stderror(localupdate[name])+stderror(wolff[name]))
+            diff = localupdate[name] - sw[name]
+            @test abs(mean(diff)) < confidence_interval(diff, conf_ratio)
+            diff = localupdate[name] - wolff[name]
+            @test abs(mean(diff)) < confidence_interval(diff, conf_ratio)
         end
     end
 
@@ -88,8 +77,10 @@ const obsnames_clock = obsnames_xy
         wolff = runMC(param)
 
         @testset "$name" for name in obsnames_xy
-            @test abs(mean(localupdate[name]) - mean(sw[name])) < 3.0(stderror(localupdate[name])+stderror(sw[name]))
-            @test abs(mean(localupdate[name]) - mean(wolff[name])) < 3.0(stderror(localupdate[name])+stderror(wolff[name]))
+            diff = localupdate[name] - sw[name]
+            @test abs(mean(diff)) < confidence_interval(diff, conf_ratio)
+            diff = localupdate[name] - wolff[name]
+            @test abs(mean(diff)) < confidence_interval(diff, conf_ratio)
         end
     end
 end
