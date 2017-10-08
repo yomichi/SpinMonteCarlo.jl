@@ -66,7 +66,7 @@ function simple_estimate(model::Clock, T::Real)
 
     @inbounds for b in 1:nbonds
         i, j = source(lat, b), target(lat,b)
-        dir = bonddirectory(lat, b)
+        dir = bonddirection(lat, b)
         dt = mod1(model.spins[j] - model.spins[i], model.Q)
         E -= model.cosines[dt]
 
@@ -104,7 +104,7 @@ function simple_estimate(model::XY, T::Real)
 
     @inbounds for b in 1:nbonds
         i, j = source(lat, b), target(lat,b)
-        dir = bonddirectory(lat, b)
+        dir = bonddirection(lat, b)
         dt = mod(model.spins[j] - model.spins[i] + 2.0, 1.0)
         dt = ifelse(0.5 <= dt, dt - 1.0, dt)
         E -= cospi(2dt)

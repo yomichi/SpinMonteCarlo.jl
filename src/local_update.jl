@@ -10,7 +10,7 @@ function local_update!(model::Ising, T::Real; measure::Bool=true)
     @inbounds for site in 1:nsites
         center = model.spins[site]
         de = 0.0
-        for n in neighbors(model.lat, site)
+        for (n,_) in neighbors(model.lat, site)
             de += 2center * model.spins[n]
         end
         if rand() < exp(mbeta*de)
@@ -40,7 +40,7 @@ function local_update!(model::Potts, T::Real; measure::Bool=true)
         center = model.spins[site]
         new_center = mod1(center+rand(1:(model.Q-1)), model.Q)
         de = 0.0
-        for n in neighbors(model.lat, site)
+        for (n,_) in neighbors(model.lat, site)
             de += ifelse(center == model.spins[n], 1.0, 0.0)
             de -= ifelse(new_center == model.spins[n], 1.0, 0.0)
         end
@@ -72,7 +72,7 @@ function local_update!(model::Clock, T::Real; measure::Bool=true)
         center = model.spins[site]
         new_center = mod1(center+rand(1:(model.Q-1)), model.Q)
         de = 0.0
-        for n in neighbors(model.lat, site)
+        for (n,_) in neighbors(model.lat, site)
             de += model.cosines[mod1(model.spins[n]-center, model.Q)]
             de -= model.cosines[mod1(model.spins[n]-new_center, model.Q)]
         end
@@ -105,7 +105,7 @@ function local_update!(model::XY, T::Real; measure::Bool=true)
         center = model.spins[site]
         new_center = rand()
         de = 0.0
-        for n in neighbors(model.lat, site)
+        for (n,_) in neighbors(model.lat, site)
             de += cospi(2(center - model.spins[n]))
             de -= cospi(2(new_center - model.spins[n]))
         end

@@ -16,7 +16,7 @@ function Wolff_update!(model::Ising, T::Real; measure::Bool=true)
     @inbounds while !isempty(st)
         clustersize += 1
         s = pop!(st)
-        for n in neighbors(model.lat, s)
+        for (n,_) in neighbors(model.lat, s)
             if model.spins[n] == sp && rand() < p
                 model.spins[n] *= -1
                 push!(st, n)
@@ -52,7 +52,7 @@ function Wolff_update!(model::Potts, T::Real; measure::Bool=true)
     @inbounds while !isempty(st)
         clustersize += 1
         s = pop!(st)
-        for n in neighbors(model.lat, s)
+        for (n,_) in neighbors(model.lat, s)
             if model.spins[n] == sp && rand() < p
                 model.spins[n] = newsp
                 push!(st, n)
@@ -91,7 +91,7 @@ function Wolff_update!(model::Clock, T::Real; measure::Bool=true)
         clustersize += 1
         center = pop!(st)
         cr = mod1(model.spins[center]-m, model.Q)
-        for n in neighbors(model.lat, center)
+        for (n,_) in neighbors(model.lat, center)
             nr = mod1(model.spins[n]-m, model.Q)
             ## Note: center already flipped
             if rand() < -expm1(b2*model.sines_sw[cr]*model.sines_sw[nr])
@@ -134,7 +134,7 @@ function Wolff_update!(model::XY, T::Real; measure::Bool=true)
         center = pop!(st)
         cp = cospi(2(model.spins[center]-m))
 
-        for n in neighbors(model.lat, center)
+        for (n,_) in neighbors(model.lat, center)
             np = cospi(2(model.spins[n]-m))
             ## Note: center already flipped
             if rand() < -expm1(beta2*cp*np)
