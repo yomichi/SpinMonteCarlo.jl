@@ -12,7 +12,7 @@ julia> Pkg.clone("https://github.com/yomichi/SpinMonteCarlo.jl")
 
 # Simple example
 
-[The following program](example/ising.jl) calculates temperature v.s. specific heat of the ferromagnet Ising model on a 16x16 square lattice by Swendsen-Wang algorithm.
+[The following program](example/ising.jl) calculates temperature v.s. specific heat of the ferromagnetic Ising model on a 16x16 square lattice by Swendsen-Wang algorithm.
 
 ``` julia
 using SpinMonteCarlo
@@ -29,7 +29,7 @@ const Therm = MCS >> 3
 
 for T in Ts
     params = Dict{String,Any}( "Model"=>model, "Lattice"=>lat,
-                                 "L"=>L, "T"=>T,
+                                 "L"=>L, "T"=>T, "J"=>1.0,
                                  "UpdateMethod"=>update,
                                  "MCS"=>MCS, "Thermalization"=>Therm,
                              )
@@ -125,7 +125,6 @@ end
 - `Lattice`
     - ladder
     - tube
-    - anisotropic parameters (e.g. J1-J2)
 - `UpdateMethod`
     - worm algorithm
 - Others
@@ -136,6 +135,6 @@ end
         - especially, Foutuin-Kasteleyn representaion and improved estimators
 
 # Author
-[Yuichi Motoyama](https://github.com/yomichi), the University of Tokyo
+[Yuichi Motoyama](https://github.com/yomichi), the University of Tokyo, 2016-2017
 
 This package distributed under the MIT license.

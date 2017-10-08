@@ -12,7 +12,7 @@ const Therm = MCS >> 3
 
 for T in Ts
     params = Dict{String,Any}( "Model"=>model, "Lattice"=>lat,
-                                 "L"=>L, "T"=>T,
+                                 "L"=>L, "T"=>T, "J"=>1.0,
                                  "UpdateMethod"=>update,
                                  "MCS"=>MCS, "Thermalization"=>Therm,
                              )
