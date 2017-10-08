@@ -1,8 +1,13 @@
 """
+    Wolff_update!(model, T::Real, J::Real)
     Wolff_update!(model, T::Real, Js::AbstractArray)
 
 update spin configuration by Wolff algorithm under the temperature `T`.
 """
+function Wolff_update!(model::Model, T::Real, J::Real; measure::Bool=true)
+    Js = J * ones(numbondtypes(model))
+    return Wolff_update!(model, T, Js, measure=measure)
+end
 function Wolff_update!(model::Ising, T::Real, Js::AbstractArray; measure::Bool=true)
     ps = -expm1.((-2.0/T).*Js)
     nsites = numsites(model)

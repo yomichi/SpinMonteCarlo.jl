@@ -19,7 +19,7 @@ function runMC(model::Union{Ising, Potts}, params::Dict)
     update! = get(params, "UpdateMethod", SW_update!)
     return runMC(model, T, Js, MCS, Therm, update!)
 end
-function runMC(model::Union{Ising, Potts}, T::Real, Js::AbstractArray, MCS::Integer, Therm::Integer, update! = SW_update!)
+function runMC(model::Union{Ising, Potts}, T::Real, Js::Union{Real,AbstractArray}, MCS::Integer, Therm::Integer, update! = SW_update!)
     for mcs in 1:Therm
         update!(model,T,Js,measure=false)
     end
@@ -72,7 +72,7 @@ function runMC(model::Union{Clock, XY}, params::Dict)
     update! = get(params, "UpdateMethod", SW_update!)
     return runMC(model, T, Js, MCS, Therm, update!)
 end
-function runMC(model::Union{Clock, XY}, T::Real, Js::AbstractArray, MCS::Integer, Therm::Integer, update! =SW_update!)
+function runMC(model::Union{Clock, XY}, T::Real, Js::Union{Real,AbstractArray}, MCS::Integer, Therm::Integer, update! =SW_update!)
     for i in 1:Therm
         update!(model, T, Js, measure=false)
     end
