@@ -28,6 +28,15 @@ function energy_clock_dimer(Q,T)
     return 0.5E/Z
 end
 
+function energy_TFI_dimer(T,J,G)
+    sz = [0.5 0.0; 0.0 -0.5]
+    sx = [0.0 0.5; 0.5 0.0]
+    H = J.*kron(sz,sz) .+ G.*(kron(sx,eye(2)) .+ kron(eye(2),sx))
+    enes, _ = eig(H)
+    z = exp.( (-1.0/T).*enes)
+    return dot(enes,z)/sum(z)
+end
+
 function energy_dimer(param::Dict)
     model = param["Model"]
     if model == Ising
@@ -38,6 +47,8 @@ function energy_dimer(param::Dict)
         return energy_xy_dimer(param["T"])
     elseif model == Clock
         return energy_clock_dimer(param["Q"], param["T"])
+    elseif model == TransverseFieldIsing
+        return energy_TFI_dimer(param["T"], param["J"], param["G"])
     else
         error("unknown model")
     end
@@ -45,7 +56,7 @@ end
 
 @testset "dimer energy" begin
     param = Dict{String,Any}("Model" => Ising, "Lattice" => dimer_lattice,
-                              "J" => [1.0],
+                              "J" => 1.0,
                               "MCS" => MCS, "Thermalization" => 0,
                              )
     const Ts = [0.3, 1.0, 3.0]
