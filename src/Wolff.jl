@@ -1,10 +1,10 @@
 """
-    Wolff_update!(model, T::Real)
+    Wolff_update!(model, T::Real, Js::AbstractArray)
 
 update spin configuration by Wolff algorithm under the temperature `T`.
 """
-function Wolff_update!(model::Ising, T::Real; measure::Bool=true)
-    p = -expm1(-2.0/T)
+function Wolff_update!(model::Ising, T::Real, Js::AbstractArray; measure::Bool=true)
+    ps = -expm1.((-2.0/T).*Js)
     nsites = numsites(model)
 
     clustersize = 0
@@ -16,8 +16,9 @@ function Wolff_update!(model::Ising, T::Real; measure::Bool=true)
     @inbounds while !isempty(st)
         clustersize += 1
         s = pop!(st)
-        for (n,_) in neighbors(model, s)
-            if model.spins[n] == sp && rand() < p
+        for (n,b) in neighbors(model, s)
+            bt = bondtype(model,b)
+            if model.spins[n] == sp && rand() < ps[bt]
                 model.spins[n] *= -1
                 push!(st, n)
             end
@@ -26,7 +27,7 @@ function Wolff_update!(model::Ising, T::Real; measure::Bool=true)
 
     res = Measurement()
     if measure
-        M, E = simple_estimate(model, T)
+        M, E = simple_estimate(model, T, Js)
         res[:M] = M
         res[:M2] = clustersize/nsites
         res[:M4] = M^4
@@ -38,8 +39,8 @@ function Wolff_update!(model::Ising, T::Real; measure::Bool=true)
 
 end
 
-function Wolff_update!(model::Potts, T::Real; measure::Bool=true)
-    p = -expm1(-1.0/T)
+function Wolff_update!(model::Potts, T::Real, Js::AbstractArray; measure::Bool=true)
+    ps = -expm1.((-1.0/T).*Js)
     nsites = numsites(model)
 
     clustersize = 0
@@ -52,8 +53,9 @@ function Wolff_update!(model::Potts, T::Real; measure::Bool=true)
     @inbounds while !isempty(st)
         clustersize += 1
         s = pop!(st)
-        for (n,_) in neighbors(model, s)
-            if model.spins[n] == sp && rand() < p
+        for (n,b) in neighbors(model, s)
+            bt = bondtype(model,b)
+            if model.spins[n] == sp && rand() < ps[bt]
                 model.spins[n] = newsp
                 push!(st, n)
             end
@@ -63,7 +65,7 @@ function Wolff_update!(model::Potts, T::Real; measure::Bool=true)
     res = Measurement()
     if measure
         I2 = (model.Q-1)/(model.Q*model.Q)
-        M, E = simple_estimate(model, T)
+        M, E = simple_estimate(model, T, Js)
         res[:M] = M
         res[:M2] = clustersize*I2/nsites
         res[:M4] = M^4
@@ -74,9 +76,9 @@ function Wolff_update!(model::Potts, T::Real; measure::Bool=true)
     return res
 end
 
-function Wolff_update!(model::Clock, T::Real; measure::Bool=true)
+function Wolff_update!(model::Clock, T::Real, Js::AbstractArray; measure::Bool=true)
     nsites = numsites(model)
-    b2 = 2.0/T
+    b2J = (2.0/T).*Js
 
     clustersize = 0
     st = Stack(Int)
@@ -91,10 +93,11 @@ function Wolff_update!(model::Clock, T::Real; measure::Bool=true)
         clustersize += 1
         center = pop!(st)
         cr = mod1(model.spins[center]-m, model.Q)
-        for (n,_) in neighbors(model, center)
+        for (n,b) in neighbors(model, center)
             nr = mod1(model.spins[n]-m, model.Q)
+            bt = bondtype(model,b)
             ## Note: center already flipped
-            if rand() < -expm1(b2*model.sines_sw[cr]*model.sines_sw[nr])
+            if rand() < -expm1(b2J[bt]*model.sines_sw[cr]*model.sines_sw[nr])
                 push!(st, n)
                 model.spins[n] = mod1(m-nr+1,model.Q)
             end
@@ -103,7 +106,7 @@ function Wolff_update!(model::Clock, T::Real; measure::Bool=true)
 
     res = Measurement()
     if measure
-        M, E, U = simple_estimate(model, T)
+        M, E, U = simple_estimate(model, T, Js)
         M2 = sum(abs2,M)
         res[:M] = M
         res[:M2] = M2
@@ -116,9 +119,9 @@ function Wolff_update!(model::Clock, T::Real; measure::Bool=true)
     return res
 end
 
-function Wolff_update!(model::XY, T::Real; measure::Bool=true)
+function Wolff_update!(model::XY, T::Real, Js::AbstractArray; measure::Bool=true)
     nsites = numsites(model)
-    beta2 = 2.0/T
+    b2J = (2.0/T).*Js
 
     clustersize = 0
     st = Stack(Int)
@@ -134,10 +137,11 @@ function Wolff_update!(model::XY, T::Real; measure::Bool=true)
         center = pop!(st)
         cp = cospi(2(model.spins[center]-m))
 
-        for (n,_) in neighbors(model, center)
+        for (n,b) in neighbors(model, center)
             np = cospi(2(model.spins[n]-m))
+            bt = bondtype(model,b)
             ## Note: center already flipped
-            if rand() < -expm1(beta2*cp*np)
+            if rand() < -expm1(b2J[bt]*cp*np)
                 push!(st, n)
                 model.spins[n] = mod(2m+0.5-model.spins[n], 1.0)
             end
@@ -146,7 +150,7 @@ function Wolff_update!(model::XY, T::Real; measure::Bool=true)
 
     res = Measurement()
     if measure
-        M, E, U = simple_estimate(model, T)
+        M, E, U = simple_estimate(model, T, Js)
         M2 = sum(abs2,M)
         res[:M] = M
         res[:M2] = M2

@@ -1,5 +1,5 @@
 """
-    improved_estimate(model::Ising, T::Real, sw::SWInfo)
+    improved_estimate(model::Ising, T::Real, Js::AbstractArray, sw::SWInfo)
 
     return `M`, `M2`, `M4`, `E`, `E2`.
 
@@ -9,7 +9,7 @@
     `E`  : energy density
     `E2` : square of energy density
 """
-function improved_estimate(model::Ising, T::Real, sw::SWInfo)
+function improved_estimate(model::Ising, T::Real, Js::AbstractArray, sw::SWInfo)
     nsites = numsites(model)
     nbonds = numbonds(model)
     nc = numclusters(sw)
@@ -27,18 +27,34 @@ function improved_estimate(model::Ising, T::Real, sw::SWInfo)
     end
 
     # energy
-    beta = 1.0/T
-    lambda = expm1(2beta)
-    A = exp(2beta)/lambda
-    n = sw.activated_bonds
-    E = (-2A*n + nbonds)*invV
-    E2 = (4A*A*n*(n-1) + 4A*n*(1-nbonds) + nbonds*nbonds) * invV*invV
+    aJ = 2.0*abs.(Js)
+    mbeta = -1.0/T
+    ns = sw.activated_bonds
+    As = -aJ ./ expm1.(mbeta.*aJ)
+    Ans = ns.*As
+    E0 = 0.0
+    for b in 1:numbondtypes(model)
+        E0 += Js[b] * numbonds(model,b)
+    end
+    E = 0.0
+    E2 = 0.0
+    for b in 1:numbondtypes(model)
+        E2 += (aJ[b]-2.0*E0)*Ans[b]
+        E2 += Ans[b] * As[b]*(ns[b]-1)
+        E2 += 2.0*Ans[b]*E
+        E += Ans[b]
+    end
+    E -= E0
+    E2 += E0^2
+
+    E *= -invV
+    E2 *= invV*invV
 
     return M, M2, M4, E, E2
 end
 
 """
-    improved_estimate(model::Potts, T::Real, sw::SWInfo)
+    improved_estimate(model::Potts, T::Real, Js::AbstractArray, sw::SWInfo)
 
     return `M`, `M2`, `M4`, `E`, `E2`.
 
@@ -50,7 +66,7 @@ end
 
     local magnetization `M_i` is defined by local spin variable `s_i` as `M_i = \\delta_{s_i, 1}-1/q`.
 """
-function improved_estimate(model::Potts, T::Real, sw::SWInfo)
+function improved_estimate(model::Potts, T::Real, Js::AbstractArray, sw::SWInfo)
     nsites = numsites(model)
     Q = model.Q
     nc = numclusters(sw)
@@ -72,14 +88,23 @@ function improved_estimate(model::Potts, T::Real, sw::SWInfo)
     end
 
     # energy
-    beta = 1.0/T
-    lambda = expm1(beta)
-    A = exp(beta)/lambda
-    n = sw.activated_bonds
-    E = -A*n
-    E2 = A*A*n*(n-1) + A*n
-    E *= invV
+    aJ = abs.(Js)
+    mbeta = -1.0/T
+    ns = sw.activated_bonds
+    As = -aJ ./ expm1.(mbeta.*aJ)
+    Ans = ns.*As
+    E = 0.0
+    E2 = 0.0
+    for b in 1:numbondtypes(model)
+        E2 += aJ[b]*Ans[b]
+        E2 += Ans[b] * As[b]*(ns[b]-1)
+        E2 += 2.0*Ans[b]*E
+        E += Ans[b]
+    end
+
+    E *= -invV
     E2 *= invV*invV
+
     return M, M2, M4, E, E2
 end
 

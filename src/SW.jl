@@ -1,5 +1,5 @@
 type SWInfo
-    activated_bonds :: Int
+    activated_bonds :: Vector{Int}
     clustersize :: Vector{Int}
     clusterspin :: Vector{Int}
 end
@@ -7,20 +7,22 @@ end
 numclusters(sw::SWInfo) = length(sw.clustersize)
 
 """
-    SW_update!(model, T::Real; measure::Bool=true)
+    SW_update!(model, T::Real, Js::AbstractArray; measure::Bool=true)
     
 update spin configuration by Swendsen-Wang algorithm under the temperature `T`.
 """
-function SW_update!(model::Ising, T::Real; measure::Bool=true)
-    p = -expm1(-2.0/T)
+function SW_update!(model::Ising, T::Real, Js::AbstractArray; measure::Bool=true)
+    ps = -expm1.((-2.0/T).*Js)
     nsites = numsites(model)
     nbonds = numbonds(model)
-    activated_bonds = 0
+    nbt = numbondtypes(model)
+    activated_bonds = zeros(Int,nbt)
     uf = UnionFind(nsites)
     @inbounds for bond in 1:nbonds
         s1,s2 = source(model, bond), target(model, bond)
-        if model.spins[s1] == model.spins[s2] && rand() < p
-            activated_bonds += 1
+        bt = bondtype(model,bond)
+        if model.spins[s1] == model.spins[s2] && rand() < ps[bt]
+            activated_bonds[bt] += 1
             unify!(uf, s1,s2)
         end
     end
@@ -37,7 +39,7 @@ function SW_update!(model::Ising, T::Real; measure::Bool=true)
 
     res = Measurement()
     if measure
-        M, M2, M4, E, E2 = improved_estimate(model, T, swinfo)
+        M, M2, M4, E, E2 = improved_estimate(model, T, Js, swinfo)
         res[:M] = M
         res[:M2] = M2
         res[:M4] = M4
@@ -47,16 +49,18 @@ function SW_update!(model::Ising, T::Real; measure::Bool=true)
     return res
 end
 
-function SW_update!(model::Potts, T::Real; measure::Bool=true)
-    p = -expm1(-1.0/T)
+function SW_update!(model::Potts, T::Real, Js::AbstractArray; measure::Bool=true)
+    ps = -expm1.((-1.0/T).*Js)
     nsites = numsites(model)
     nbonds = numbonds(model)
-    activated_bonds = 0
+    nbt = numbondtypes(model)
+    activated_bonds = zeros(Int,nbt)
     uf = UnionFind(nsites)
     @inbounds for bond in 1:nbonds
         s1,s2 = source(model, bond), target(model, bond)
-        if model.spins[s1] == model.spins[s2] && rand() < p
-            activated_bonds += 1
+        bt = bondtype(model,bond)
+        if model.spins[s1] == model.spins[s2] && rand() < ps[bt]
+            activated_bonds[bt] += 1
             unify!(uf, s1,s2)
         end
     end
@@ -73,7 +77,7 @@ function SW_update!(model::Potts, T::Real; measure::Bool=true)
 
     res = Measurement()
     if measure
-        M, M2, M4, E, E2 = improved_estimate(model, T, swinfo)
+        M, M2, M4, E, E2 = improved_estimate(model, T, Js, swinfo)
         res[:M] = M
         res[:M2] = M2
         res[:M4] = M4
@@ -83,10 +87,10 @@ function SW_update!(model::Potts, T::Real; measure::Bool=true)
     return res
 end
 
-function SW_update!(model::Clock, T::Real; measure::Bool=true)
+function SW_update!(model::Clock, T::Real, Js::AbstractArray; measure::Bool=true)
     nsites = numsites(model)
     nbonds = numbonds(model)
-    m2b = -2/T
+    m2bJ = (-2/T).*Js
     m = rand(1:model.Q)-1
     rspins = zeros(Int, nsites)
     @inbounds for s in 1:nsites
@@ -95,7 +99,8 @@ function SW_update!(model::Clock, T::Real; measure::Bool=true)
     uf = UnionFind(nsites)
     @inbounds for bond in 1:nbonds
         s1,s2 = source(model, bond), target(model, bond)
-        if rand() < -expm1(m2b*model.sines_sw[rspins[s1]]*model.sines_sw[rspins[s2]])
+        bt = bondtype(model,bond)
+        if rand() < -expm1(m2bJ[bt]*model.sines_sw[rspins[s1]]*model.sines_sw[rspins[s2]])
             unify!(uf, s1,s2)
         end
     end
@@ -111,7 +116,7 @@ function SW_update!(model::Clock, T::Real; measure::Bool=true)
 
     res = Measurement()
     if measure
-        M, E, U = simple_estimate(model, T)
+        M, E, U = simple_estimate(model, T, Js)
         M2 = sum(abs2,M)
         res[:M] = M
         res[:M2] = M2
@@ -124,10 +129,10 @@ function SW_update!(model::Clock, T::Real; measure::Bool=true)
     return res
 end
 
-function SW_update!(model::XY, T::Real; measure::Bool=true)
+function SW_update!(model::XY, T::Real, Js::AbstractArray; measure::Bool=true)
     nsites = numsites(model)
     nbonds = numbonds(model)
-    m2b = -2/T
+    m2bJ = (-2/T).*Js
     m = 0.5*rand()
     pspins = zeros(nsites)
     @inbounds for s in 1:nsites
@@ -136,7 +141,8 @@ function SW_update!(model::XY, T::Real; measure::Bool=true)
     uf = UnionFind(nsites)
     @inbounds for bond in 1:nbonds
         s1,s2 = source(model, bond), target(model, bond)
-        if rand() < -expm1(m2b*pspins[s1]*pspins[s2])
+        bt = bondtype(model,bond)
+        if rand() < -expm1(m2bJ[bt]*pspins[s1]*pspins[s2])
             unify!(uf, s1,s2)
         end
     end
@@ -154,7 +160,7 @@ function SW_update!(model::XY, T::Real; measure::Bool=true)
 
     res = Measurement()
     if measure
-        M, E, U = simple_estimate(model, T)
+        M, E, U = simple_estimate(model, T, Js)
         M2 = sum(abs2,M)
         res[:M] = M
         res[:M2] = M2

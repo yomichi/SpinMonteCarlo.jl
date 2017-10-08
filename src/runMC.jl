@@ -13,17 +13,18 @@ end
 
 function runMC(model::Union{Ising, Potts}, params::Dict)
     T = params["T"]
+    Js = params["J"]
     MCS = get(params, "MCS", 8192)
     Therm = get(params, "Thermalization", MCS>>3)
     update! = get(params, "UpdateMethod", SW_update!)
-    return runMC(model, T, MCS, Therm, update!)
+    return runMC(model, T, Js, MCS, Therm, update!)
 end
-function runMC(model::Union{Ising, Potts}, T::Real, MCS::Integer, Therm::Integer, update! = SW_update!)
+function runMC(model::Union{Ising, Potts}, T::Real, Js::AbstractArray, MCS::Integer, Therm::Integer, update! = SW_update!)
     for mcs in 1:Therm
-        update!(model,T,measure=false)
+        update!(model,T,Js,measure=false)
     end
 
-    nsites = numsites(model.lat)
+    nsites = numsites(model)
     invV = 1.0/nsites
     obs = BinningObservableSet()
     makeMCObservable!(obs, "Time per MCS")
@@ -36,7 +37,7 @@ function runMC(model::Union{Ising, Potts}, T::Real, MCS::Integer, Therm::Integer
 
     for mcs in 1:MCS
         t = @elapsed begin
-            localobs = update!(model,T)
+            localobs = update!(model,T,Js)
         end
         M = localobs[:M]
         M2 = localobs[:M2]
@@ -65,14 +66,15 @@ end
 
 function runMC(model::Union{Clock, XY}, params::Dict)
     T = params["T"]
+    Js = params["J"]
     MCS = get(params, "MCS", 8192)
     Therm = get(params, "Thermalization", MCS>>3)
     update! = get(params, "UpdateMethod", SW_update!)
-    return runMC(model, T, MCS, Therm, update!)
+    return runMC(model, T, Js, MCS, Therm, update!)
 end
-function runMC(model::Union{Clock, XY}, T::Real, MCS::Integer, Therm::Integer, update! =SW_update!)
+function runMC(model::Union{Clock, XY}, T::Real, Js::AbstractArray, MCS::Integer, Therm::Integer, update! =SW_update!)
     for i in 1:Therm
-        update!(model, T, measure=false)
+        update!(model, T, Js, measure=false)
     end
 
     obs = BinningObservableSet()
@@ -93,13 +95,13 @@ function runMC(model::Union{Clock, XY}, T::Real, MCS::Integer, Therm::Integer, u
     makeMCObservable!(obs, "Energy")
     makeMCObservable!(obs, "Energy^2")
 
-    nsites = numsites(model.lat)
+    nsites = numsites(model)
     invV = 1.0/nsites
     beta = 1.0/T
 
     for i in 1:MCS
         t = @elapsed begin
-            localobs = update!(model, T)
+            localobs = update!(model, T, Js)
         end
 
         M = localobs[:M]

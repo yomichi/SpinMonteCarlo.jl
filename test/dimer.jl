@@ -45,17 +45,20 @@ end
 
 @testset "dimer energy" begin
     param = Dict{String,Any}("Model" => Ising, "Lattice" => dimer_lattice,
+                              "J" => [1.0],
                               "MCS" => 32768, "Thermalization" => 0,
                              )
     const Ts = [0.3, 1.0, 3.0]
     @testset "$upname" for (upname, method) in [("local update", local_update!),
                                                 ("Swendsen-Wang", SW_update!),
-                                                ("Wolff", Wolff_update!),]
+                                                ("Wolff", Wolff_update!),
+                                               ]
         param["UpdateMethod"] = method
         @testset "$modelname" for (modelname, model) in [("Ising", Ising),
                                                          ("Potts", Potts),
                                                          ("XY", XY),
-                                                         ("Clock", Clock)]
+                                                         ("Clock", Clock),
+                                                        ]
             srand(SEED)
             param["Model"] = model
             if model == Potts

@@ -19,7 +19,7 @@ const obsnames_clock = obsnames_xy
 
     @testset "Ising" begin
         srand(SEED)
-        param = Dict{String,Any}("Model" => Ising, "Lattice" => square_lattice,
+        param = Dict{String,Any}("Model" => Ising, "Lattice" => square_lattice, "J" => [1.0,1.0],
                                   "L" => 6, "T" => 3.0,
                                   "UpdateMethod" => local_update!,
                                   "MCS" => 8192, "Thermalization" => 8192,
@@ -38,7 +38,7 @@ const obsnames_clock = obsnames_xy
 
     @testset "Potts" begin
         srand(SEED)
-        param = Dict{String,Any}("Model" => Potts, "Lattice" => square_lattice,
+        param = Dict{String,Any}("Model" => Potts, "Lattice" => square_lattice, "J" => [1.0,1.0],
                                   "Q" => 3, "L" => 6, "T" => 2.0,
                                   "UpdateMethod" => local_update!,
                                   "MCS" => 8192, "Thermalization" => 8192,
@@ -57,7 +57,7 @@ const obsnames_clock = obsnames_xy
 
     @testset "XY" begin
         srand(SEED)
-        param = Dict{String,Any}("Model" => XY, "Lattice" => square_lattice,
+        param = Dict{String,Any}("Model" => XY, "Lattice" => square_lattice, "J" => [1.0,1.0],
                                   "L" => 6, "T" => 10.0,
                                   "UpdateMethod" => local_update!,
                                   "MCS" => 8192, "Thermalization" => 8192,
@@ -76,7 +76,7 @@ const obsnames_clock = obsnames_xy
 
     @testset "Clock" begin
         srand(SEED)
-        param = Dict{String,Any}("Model" => Clock, "Lattice" => square_lattice,
+        param = Dict{String,Any}("Model" => Clock, "Lattice" => square_lattice, "J" => [1.0,1.0],
                                   "Q" => 5, "L" => 6, "T" => 5.0,
                                   "UpdateMethod" => local_update!,
                                   "MCS" => 8192, "Thermalization" => 8192,
