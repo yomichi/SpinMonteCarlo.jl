@@ -13,12 +13,12 @@ update spin configuration by Swendsen-Wang algorithm under the temperature `T`.
 """
 function SW_update!(model::Ising, T::Real; measure::Bool=true)
     p = -expm1(-2.0/T)
-    nsites = numsites(model.lat)
-    nbonds = numbonds(model.lat)
+    nsites = numsites(model)
+    nbonds = numbonds(model)
     activated_bonds = 0
     uf = UnionFind(nsites)
     @inbounds for bond in 1:nbonds
-        s1,s2 = source(model.lat, bond), target(model.lat, bond)
+        s1,s2 = source(model, bond), target(model, bond)
         if model.spins[s1] == model.spins[s2] && rand() < p
             activated_bonds += 1
             unify!(uf, s1,s2)
@@ -49,12 +49,12 @@ end
 
 function SW_update!(model::Potts, T::Real; measure::Bool=true)
     p = -expm1(-1.0/T)
-    nsites = numsites(model.lat)
-    nbonds = numbonds(model.lat)
+    nsites = numsites(model)
+    nbonds = numbonds(model)
     activated_bonds = 0
     uf = UnionFind(nsites)
     @inbounds for bond in 1:nbonds
-        s1,s2 = source(model.lat, bond), target(model.lat, bond)
+        s1,s2 = source(model, bond), target(model, bond)
         if model.spins[s1] == model.spins[s2] && rand() < p
             activated_bonds += 1
             unify!(uf, s1,s2)
@@ -84,8 +84,8 @@ function SW_update!(model::Potts, T::Real; measure::Bool=true)
 end
 
 function SW_update!(model::Clock, T::Real; measure::Bool=true)
-    nsites = numsites(model.lat)
-    nbonds = numbonds(model.lat)
+    nsites = numsites(model)
+    nbonds = numbonds(model)
     m2b = -2/T
     m = rand(1:model.Q)-1
     rspins = zeros(Int, nsites)
@@ -94,7 +94,7 @@ function SW_update!(model::Clock, T::Real; measure::Bool=true)
     end
     uf = UnionFind(nsites)
     @inbounds for bond in 1:nbonds
-        s1,s2 = source(model.lat, bond), target(model.lat, bond)
+        s1,s2 = source(model, bond), target(model, bond)
         if rand() < -expm1(m2b*model.sines_sw[rspins[s1]]*model.sines_sw[rspins[s2]])
             unify!(uf, s1,s2)
         end
@@ -125,8 +125,8 @@ function SW_update!(model::Clock, T::Real; measure::Bool=true)
 end
 
 function SW_update!(model::XY, T::Real; measure::Bool=true)
-    nsites = numsites(model.lat)
-    nbonds = numbonds(model.lat)
+    nsites = numsites(model)
+    nbonds = numbonds(model)
     m2b = -2/T
     m = 0.5*rand()
     pspins = zeros(nsites)
@@ -135,7 +135,7 @@ function SW_update!(model::XY, T::Real; measure::Bool=true)
     end
     uf = UnionFind(nsites)
     @inbounds for bond in 1:nbonds
-        s1,s2 = source(model.lat, bond), target(model.lat, bond)
+        s1,s2 = source(model, bond), target(model, bond)
         if rand() < -expm1(m2b*pspins[s1]*pspins[s2])
             unify!(uf, s1,s2)
         end

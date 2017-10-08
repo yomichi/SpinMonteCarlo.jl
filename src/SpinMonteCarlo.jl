@@ -18,6 +18,8 @@ export runMC, print_result
 
 const Measurement = Dict{Symbol, Any}
 
+@compat abstract type Model end
+
 include("union_find.jl")
 include("lattice.jl")
 include("model.jl")

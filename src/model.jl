@@ -1,5 +1,3 @@
-@compat abstract type Model end
-
 type Ising <: Model
     lat :: Lattice
     spins :: Vector{Int}

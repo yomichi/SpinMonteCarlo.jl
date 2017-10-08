@@ -5,14 +5,13 @@
 return magnetization density `M` and total energy `E`.
 """
 function simple_estimate(model::Ising, T::Real)
-    lat = model.lat
-    nsites = numsites(lat)
-    nbonds = numbonds(lat)
+    nsites = numsites(model)
+    nbonds = numbonds(model)
 
     M = mean(model.spins)
     E = 0.0
     @inbounds for b in 1:nbonds
-        s1, s2 = source(lat, b), target(lat, b)
+        s1, s2 = source(model, b), target(model, b)
         E += ifelse(model.spins[s1] == model.spins[s2], -1.0, 1.0)
     end
     E /= nsites
@@ -20,9 +19,8 @@ function simple_estimate(model::Ising, T::Real)
 end
 
 function simple_estimate(model::Potts, T::Real)
-    lat = model.lat
-    nsites = numsites(lat)
-    nbonds = numbonds(lat)
+    nsites = numsites(model)
+    nbonds = numbonds(model)
     invQ = 1.0/model.Q
 
     M = 0.0
@@ -32,7 +30,7 @@ function simple_estimate(model::Potts, T::Real)
     M /= nsites
     E = 0.0
     @inbounds for b in 1:nbonds
-        s1, s2 = source(lat, b), target(lat, b)
+        s1, s2 = source(model, b), target(model, b)
         E -= ifelse(model.spins[s1] == model.spins[s2], 1.0, 0.0)
     end
     E /= nsites
@@ -47,10 +45,9 @@ end
 return magnetization density `M`, total energy `E`, and helicity modulus `U`.
 """
 function simple_estimate(model::Clock, T::Real)
-    lat = model.lat
-    nsites = numsites(lat)
-    nbonds = numbonds(lat)
-    D = dim(lat)
+    nsites = numsites(model)
+    nbonds = numbonds(model)
+    D = dim(model)
     invN = 1.0/nsites
     beta = 1.0/T
 
@@ -65,8 +62,8 @@ function simple_estimate(model::Clock, T::Real)
     end
 
     @inbounds for b in 1:nbonds
-        i, j = source(lat, b), target(lat,b)
-        dir = bonddirection(lat, b)
+        i, j = source(model, b), target(model,b)
+        dir = bonddirection(model, b)
         dt = mod1(model.spins[j] - model.spins[i], model.Q)
         E -= model.cosines[dt]
 
@@ -85,10 +82,9 @@ function simple_estimate(model::Clock, T::Real)
 end
 
 function simple_estimate(model::XY, T::Real)
-    lat = model.lat
-    nsites = numsites(lat)
-    nbonds = numbonds(lat)
-    D = dim(lat)
+    nsites = numsites(model)
+    nbonds = numbonds(model)
+    D = dim(model)
     invN = 1.0/nsites
     beta = 1.0/T
 
@@ -103,8 +99,8 @@ function simple_estimate(model::XY, T::Real)
     end
 
     @inbounds for b in 1:nbonds
-        i, j = source(lat, b), target(lat,b)
-        dir = bonddirection(lat, b)
+        i, j = source(model, b), target(model,b)
+        dir = bonddirection(model, b)
         dt = mod(model.spins[j] - model.spins[i] + 2.0, 1.0)
         dt = ifelse(0.5 <= dt, dt - 1.0, dt)
         E -= cospi(2dt)

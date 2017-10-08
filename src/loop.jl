@@ -1,6 +1,6 @@
 function loop_update!(model::TransverseFieldIsing, T::Real, J::Real, gamma::Real; measure::Bool=true)
-    nsites = numsites(model.lat)
-    nbonds = numbonds(model.lat)
+    nsites = numsites(model)
+    nbonds = numbonds(model)
     ising_weight = 0.5*abs(J)*nbonds
     field_weight = 0.5*abs(gamma)*nsites
     op_dt = T/(ising_weight + field_weight)
@@ -18,8 +18,8 @@ function loop_update!(model::TransverseFieldIsing, T::Real, J::Real, gamma::Real
 
             if rand() < r_ising
                 b = rand(1:nbonds)
-                s1 = source(model.lat, b)
-                s2 = target(model.lat, b)
+                s1 = source(model, b)
+                s2 = target(model, b)
                 if J * model.spins[s1] * model.spins[s2] < 0.0
                     push!(ops, LocalOperator(LO_Link, t, b))
                     t += randexp()*op_dt
@@ -45,8 +45,8 @@ function loop_update!(model::TransverseFieldIsing, T::Real, J::Real, gamma::Real
         op = ops[end]
         if op.op_type == LO_Link
             b = op.space
-            s1 = source(model.lat, b)
-            s2 = target(model.lat, b)
+            s1 = source(model, b)
+            s2 = target(model, b)
             c = unify!(uf, currents[s1], currents[s2])
             currents[s1] = currents[s2] = c
             op.bottom_id = op.top_id = c

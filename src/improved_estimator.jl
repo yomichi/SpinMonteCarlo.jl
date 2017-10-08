@@ -10,8 +10,8 @@
     `E2` : square of energy density
 """
 function improved_estimate(model::Ising, T::Real, sw::SWInfo)
-    nsites = numsites(model.lat)
-    nbonds = numbonds(model.lat)
+    nsites = numsites(model)
+    nbonds = numbonds(model)
     nc = numclusters(sw)
     invV = 1.0/nsites
 
@@ -51,7 +51,7 @@ end
     local magnetization `M_i` is defined by local spin variable `s_i` as `M_i = \\delta_{s_i, 1}-1/q`.
 """
 function improved_estimate(model::Potts, T::Real, sw::SWInfo)
-    nsites = numsites(model.lat)
+    nsites = numsites(model)
     Q = model.Q
     nc = numclusters(sw)
     invV = 1.0/nsites
@@ -84,8 +84,8 @@ function improved_estimate(model::Potts, T::Real, sw::SWInfo)
 end
 
 function improved_estimate(model::QuantumLocalZ2Model, uf::UnionFind)
-    nsites = numsites(model.lat)
-    nbonds = numbonds(model.lat)
+    nsites = numsites(model)
+    nbonds = numbonds(model)
     nc = numclusters(uf)
 
     spins = model.spins[:]
@@ -100,8 +100,8 @@ function improved_estimate(model::QuantumLocalZ2Model, uf::UnionFind)
             spins[s] *= ifelse(op.isdiagonal, 1, -1)
         elseif op.op_type == LO_Vertex
             b = op.space
-            s1 = source(model.lat, b)
-            s2 = target(model.lat, b)
+            s1 = source(model, b)
+            s2 = target(model, b)
             bid = clusterid(uf, op.bottom_id)
             tid = clusterid(uf, op.top_id)
             ms[bid] += (spins[s1]+spins[s2])*op.time
@@ -110,8 +110,8 @@ function improved_estimate(model::QuantumLocalZ2Model, uf::UnionFind)
             spins[s2] *= ifelse(op.isdiagonal, 1, -1)
         elseif op.op_type == LO_Cross
             b = op.space
-            s1 = source(model.lat, b)
-            s2 = target(model.lat, b)
+            s1 = source(model, b)
+            s2 = target(model, b)
             bid = clusterid(uf, op.bottom_id)
             tid = clusterid(uf, op.top_id)
             ms[bid] += (spins[s1]-spins[s2])*op.time

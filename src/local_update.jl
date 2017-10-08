@@ -3,14 +3,14 @@
 update spin configuration by local spin flip and Metropolice algorithm under the temperature `T`
 """
 function local_update!(model::Ising, T::Real; measure::Bool=true)
-    nsites = numsites(model.lat)
-    nbonds = numbonds(model.lat)
+    nsites = numsites(model)
+    nbonds = numbonds(model)
     mbeta = -1.0/T
 
     @inbounds for site in 1:nsites
         center = model.spins[site]
         de = 0.0
-        for (n,_) in neighbors(model.lat, site)
+        for (n,b) in neighbors(model, site)
             de += 2center * model.spins[n]
         end
         if rand() < exp(mbeta*de)
@@ -32,15 +32,15 @@ function local_update!(model::Ising, T::Real; measure::Bool=true)
 end
 
 function local_update!(model::Potts, T::Real; measure::Bool=true)
-    nsites = numsites(model.lat)
-    nbonds = numbonds(model.lat)
+    nsites = numsites(model)
+    nbonds = numbonds(model)
     mbeta = -1.0/T
 
     @inbounds for site in 1:nsites
         center = model.spins[site]
         new_center = mod1(center+rand(1:(model.Q-1)), model.Q)
         de = 0.0
-        for (n,_) in neighbors(model.lat, site)
+        for (n,_) in neighbors(model, site)
             de += ifelse(center == model.spins[n], 1.0, 0.0)
             de -= ifelse(new_center == model.spins[n], 1.0, 0.0)
         end
@@ -63,8 +63,8 @@ function local_update!(model::Potts, T::Real; measure::Bool=true)
 end
 
 function local_update!(model::Clock, T::Real; measure::Bool=true)
-    nsites = numsites(model.lat)
-    nbonds = numbonds(model.lat)
+    nsites = numsites(model)
+    nbonds = numbonds(model)
     mbeta = -1.0/T
     iQ2 = 2.0/model.Q
 
@@ -72,7 +72,7 @@ function local_update!(model::Clock, T::Real; measure::Bool=true)
         center = model.spins[site]
         new_center = mod1(center+rand(1:(model.Q-1)), model.Q)
         de = 0.0
-        for (n,_) in neighbors(model.lat, site)
+        for (n,_) in neighbors(model, site)
             de += model.cosines[mod1(model.spins[n]-center, model.Q)]
             de -= model.cosines[mod1(model.spins[n]-new_center, model.Q)]
         end
@@ -97,15 +97,15 @@ function local_update!(model::Clock, T::Real; measure::Bool=true)
 end
 
 function local_update!(model::XY, T::Real; measure::Bool=true)
-    nsites = numsites(model.lat)
-    nbonds = numbonds(model.lat)
+    nsites = numsites(model)
+    nbonds = numbonds(model)
     mbeta = -1.0/T
 
     @inbounds for site in 1:nsites
         center = model.spins[site]
         new_center = rand()
         de = 0.0
-        for (n,_) in neighbors(model.lat, site)
+        for (n,_) in neighbors(model, site)
             de += cospi(2(center - model.spins[n]))
             de -= cospi(2(new_center - model.spins[n]))
         end
