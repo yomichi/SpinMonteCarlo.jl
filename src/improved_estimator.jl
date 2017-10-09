@@ -108,14 +108,16 @@ function improved_estimate(model::Potts, T::Real, Js::AbstractArray, sw::SWInfo)
     return M, M2, M4, E, E2
 end
 
-function improved_estimate(model::QuantumLocalZ2Model, uf::UnionFind)
+function improved_estimate(model::QuantumLocalZ2Model, T::Real, Js::AbstractArray, Gs::AbstractArray, uf::UnionFind)
     nsites = numsites(model)
     nbonds = numbonds(model)
     nc = numclusters(uf)
 
     spins = model.spins[:]
     ms = zeros(nc)
+    nops = 0
     @inbounds for op in model.ops
+        nops+=1
         if op.op_type == LO_Cut
             s = op.space
             bid = clusterid(uf, op.bottom_id)
@@ -155,6 +157,17 @@ function improved_estimate(model::QuantumLocalZ2Model, uf::UnionFind)
         ms[i] *= coeff
     end
 
+    E0 = 0.0
+    for st in 1:numsitetypes(model)
+        E0 += 0.5 * numsites(model, st) * Gs[st]
+    end
+    for bt in 1:numbondtypes(model)
+        E0 += 0.25 * numbonds(model, bt) * Js[bt]
+    end
+
+    E = E0-nops*T
+    E2 = nops*(nops-1)*T^2 - 2*E0*T*nops + 2*E0^2
+
     M = 0.0
     M2 = 0.0
     M4 = 0.0
@@ -164,5 +177,5 @@ function improved_estimate(model::QuantumLocalZ2Model, uf::UnionFind)
         M4 += m2*m2 + 6M2*m2
         M2 += m2
     end
-    return M, M2, M4
+    return M, M2, M4, E, E2
 end

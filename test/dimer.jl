@@ -37,6 +37,16 @@ function energy_TFI_dimer(T,J,G)
     return dot(enes,z)/sum(z)
 end
 
+function mag_TFI_dimer(T,J,G)
+    sz = [0.5 0.0; 0.0 -0.5]
+    sx = [0.0 0.5; 0.5 0.0]
+    H = J.*kron(sz,sz) .+ G.*(kron(sx,eye(2)) .+ kron(eye(2),sx))
+    enes, _ = eig(H)
+    mags = [0.5, 0.0, 0.0, -0.5]
+    z = exp.( (-1.0/T).*enes)
+    return dot(mags,z)/sum(z)
+end
+
 function energy_dimer(param::Dict)
     model = param["Model"]
     if model == Ising
@@ -48,7 +58,7 @@ function energy_dimer(param::Dict)
     elseif model == Clock
         return energy_clock_dimer(param["Q"], param["T"])
     elseif model == TransverseFieldIsing
-        return energy_TFI_dimer(param["T"], param["J"], param["G"])
+        return energy_TFI_dimer(param["T"], param["J"], param["Gamma"])
     else
         error("unknown model")
     end
@@ -57,15 +67,18 @@ end
 @testset "dimer energy" begin
     param = Dict{String,Any}("Model" => Ising, "Lattice" => dimer_lattice,
                               "J" => 1.0,
-                              "MCS" => MCS, "Thermalization" => 0,
+                              "MCS" => MCS, "Thermalization" => 10,
                              )
-    const Ts = [0.3, 1.0, 3.0]
-    @testset "$upname" for (upname, method) in [("local update", local_update!),
+    # const Ts = [0.3, 1.0, 3.0]
+    const Ts = [0.01]
+    @testset "$upname" for (upname, method) in [
+                                                ("local update", local_update!),
                                                 ("Swendsen-Wang", SW_update!),
                                                 ("Wolff", Wolff_update!),
                                                ]
         param["UpdateMethod"] = method
-        @testset "$modelname" for (modelname, model) in [("Ising", Ising),
+        @testset "$modelname" for (modelname, model) in [
+                                                         ("Ising", Ising),
                                                          ("Potts", Potts),
                                                          ("XY", XY),
                                                          ("Clock", Clock),
@@ -83,6 +96,25 @@ end
                 exact = energy_dimer(param)
                 @test abs(mean(obs["Energy"]) - exact) < confidence_interval(obs["Energy"],conf_ratio)
             end
+        end
+    end
+    @testset "TransverseFieldIsing" begin
+        srand(SEED)
+        J = -1.0
+        G = 0.0
+        param["Model"] = TransverseFieldIsing
+        param["J"] = J
+        param["Gamma"] = G
+        @testset "T = $T" for T in Ts
+            param["T"] = T
+            obs = runMC(param)
+            #exact = energy_dimer(param)
+            exact = mag_TFI_dimer(T,J,G)
+            #@show obs["Energy"]
+            @show obs["Magnetization"]
+            @show exact
+            #@test abs(mean(obs["Energy"]) - exact) < confidence_interval(obs["Energy"],conf_ratio)
+            @test abs(mean(obs["Magnetization"]) - exact) < confidence_interval(obs["Magnetization"],conf_ratio)
         end
     end
 end

@@ -39,11 +39,11 @@ function runMC(model::Union{Ising, Potts}, T::Real, Js::Union{Real,AbstractArray
         t = @elapsed begin
             localobs = update!(model,T,Js)
         end
-        M = localobs[:M]
-        M2 = localobs[:M2]
-        M4 = localobs[:M4]
-        E = localobs[:E]
-        E2 = localobs[:E2]
+        M = localobs["M"]
+        M2 = localobs["M2"]
+        M4 = localobs["M4"]
+        E = localobs["E"]
+        E2 = localobs["E2"]
 
         obs["Time per MCS"] << t
         obs["Magnetization"] << M
@@ -104,9 +104,9 @@ function runMC(model::Union{Clock, XY}, T::Real, Js::Union{Real,AbstractArray}, 
             localobs = update!(model, T, Js)
         end
 
-        M = localobs[:M]
-        E = localobs[:E]
-        U = localobs[:U]
+        M = localobs["M"]
+        E = localobs["E"]
+        U = localobs["U"]
 
         x2 = M[1]*M[1]
         y2 = M[2]*M[2]
@@ -155,7 +155,7 @@ function runMC(model::TransverseFieldIsing, params::Dict)
     Therm = get(params, "Thermalization", MCS>>3)
     return runMC(model, T, J, gamma, MCS, Therm)
 end
-function runMC(model::TransverseFieldIsing, T::Real, J::Real, gamma::Real,  MCS::Integer, Therm::Integer)
+function runMC(model::TransverseFieldIsing, T::Real, J::Union{Real, AbstractArray}, gamma::Union{Real, AbstractArray}, MCS::Integer, Therm::Integer)
     for mcs in 1:Therm
         loop_update!(model,T, J, gamma, measure=false)
     end
@@ -168,30 +168,32 @@ function runMC(model::TransverseFieldIsing, T::Real, J::Real, gamma::Real,  MCS:
     makeMCObservable!(obs, "|Magnetization|")
     makeMCObservable!(obs, "Magnetization^2")
     makeMCObservable!(obs, "Magnetization^4")
-    # makeMCObservable!(obs, "Energy")
-    # makeMCObservable!(obs, "Energy^2")
+    makeMCObservable!(obs, "Energy")
+    makeMCObservable!(obs, "Energy^2")
 
     for mcs in 1:MCS
         t = @elapsed begin 
             localobs = loop_update!(model,T,J,gamma)
         end
-        M = localobs[:M]
-        M2 = localobs[:M2]
-        M4 = localobs[:M4]
+        M = localobs["M"]
+        M2 = localobs["M2"]
+        M4 = localobs["M4"]
+        E = localobs["E"]
+        E2 = localobs["E2"]
         obs["Time per MCS"] << t
         obs["Magnetization"] << M
         obs["|Magnetization|"] << abs(M)
         obs["Magnetization^2"] << M2
         obs["Magnetization^4"] << M4
-        # obs["Energy"] << E
-        # obs["Energy^2"] << E*E
+        obs["Energy"] << E
+        obs["Energy^2"] << E*E
     end
 
     jk = jackknife(obs)
     jk["Binder Ratio"] = jk["Magnetization^4"] / (jk["Magnetization^2"]^2)
     jk["Susceptibility"] = (nsites/T)*jk["Magnetization^2"]
     jk["Connected Susceptibility"] = (nsites/T)*(jk["Magnetization^2"] - jk["|Magnetization|"]^2)
-    # jk["Specific Heat"] = (nsites/T/T)*(jk["Energy^2"] - jk["Energy"]^2)
+    jk["Specific Heat"] = (nsites/T/T)*(jk["Energy^2"] - jk["Energy"]^2)
     jk["MCS per Second"] = 1.0/jk["Time per MCS"]
 
     return jk
