@@ -26,11 +26,11 @@ function local_update!(model::Ising, T::Real, Js::AbstractArray; measure::Bool=t
     res = Measurement()
     if measure
         M, E = simple_estimate(model, T, Js)
-        res[:M] = M
-        res[:M2] = M^2
-        res[:M4] = M^4
-        res[:E] = E
-        res[:E2] = E^2
+        res["M"] = M
+        res["M2"] = M^2
+        res["M4"] = M^4
+        res["E"] = E
+        res["E2"] = E^2
     end
 
     return res
@@ -57,11 +57,11 @@ function local_update!(model::Potts, T::Real, Js::AbstractArray; measure::Bool=t
     res = Measurement()
     if measure
         M, E = simple_estimate(model, T, Js)
-        res[:M] = M
-        res[:M2] = M^2
-        res[:M4] = M^4
-        res[:E] = E
-        res[:E2] = E^2
+        res["M"] = M
+        res["M2"] = M^2
+        res["M4"] = M^4
+        res["E"] = E
+        res["E2"] = E^2
     end
 
     return res
@@ -90,12 +90,12 @@ function local_update!(model::Clock, T::Real, Js::AbstractArray; measure::Bool=t
     if measure
         M, E, U = simple_estimate(model, T, Js)
         M2 = sum(abs2,M)
-        res[:M] = M
-        res[:M2] = M2
-        res[:M4] = M2^2
-        res[:E] = E
-        res[:E2] = E^2
-        res[:U] = U
+        res["M"] = M
+        res["M2"] = M2
+        res["M4"] = M2^2
+        res["E"] = E
+        res["E2"] = E^2
+        res["U"] = U
     end
 
     return res
@@ -123,12 +123,12 @@ function local_update!(model::XY, T::Real, Js::AbstractArray; measure::Bool=true
     if measure
         M, E, U = simple_estimate(model, T, Js)
         M2 = sum(abs2,M)
-        res[:M] = M
-        res[:M2] = M2
-        res[:M4] = M2^2
-        res[:E] = E
-        res[:E2] = E^2
-        res[:U] = U
+        res["M"] = M
+        res["M2"] = M2
+        res["M4"] = M2^2
+        res["E"] = E
+        res["E2"] = E^2
+        res["U"] = U
     end
 
     return res

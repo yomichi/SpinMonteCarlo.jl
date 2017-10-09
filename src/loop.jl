@@ -80,10 +80,12 @@ function loop_update!(model::TransverseFieldIsing, T::Real, J::Real, gamma::Real
 
     res = Measurement()
     if measure
-        M, M2, M4 = improved_estimate(model, uf)
-        res[:M] = M
-        res[:M2] = M2
-        res[:M4] = M4
+        M, M2, M4, E, E2 = improved_estimate(model, T, Js, Gs, uf)
+        res["M"] = M
+        res["M2"] = M2
+        res["M4"] = M4
+        res["E"] = E
+        res["E2"] = E2
     end
     return res
 end

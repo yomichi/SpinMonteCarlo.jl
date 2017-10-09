@@ -45,11 +45,11 @@ function SW_update!(model::Ising, T::Real, Js::AbstractArray; measure::Bool=true
     res = Measurement()
     if measure
         M, M2, M4, E, E2 = improved_estimate(model, T, Js, swinfo)
-        res[:M] = M
-        res[:M2] = M2
-        res[:M4] = M4
-        res[:E] = E
-        res[:E2] = E2
+        res["M"] = M
+        res["M2"] = M2
+        res["M4"] = M4
+        res["E"] = E
+        res["E2"] = E2
     end
     return res
 end
@@ -83,11 +83,11 @@ function SW_update!(model::Potts, T::Real, Js::AbstractArray; measure::Bool=true
     res = Measurement()
     if measure
         M, M2, M4, E, E2 = improved_estimate(model, T, Js, swinfo)
-        res[:M] = M
-        res[:M2] = M2
-        res[:M4] = M4
-        res[:E] = E
-        res[:E2] = E2
+        res["M"] = M
+        res["M2"] = M2
+        res["M4"] = M4
+        res["E"] = E
+        res["E2"] = E2
     end
     return res
 end
@@ -123,12 +123,12 @@ function SW_update!(model::Clock, T::Real, Js::AbstractArray; measure::Bool=true
     if measure
         M, E, U = simple_estimate(model, T, Js)
         M2 = sum(abs2,M)
-        res[:M] = M
-        res[:M2] = M2
-        res[:M4] = M2^2
-        res[:E] = E
-        res[:E2] = E^2
-        res[:U] = U
+        res["M"] = M
+        res["M2"] = M2
+        res["M4"] = M2^2
+        res["E"] = E
+        res["E2"] = E^2
+        res["U"] = U
     end
 
     return res
@@ -167,12 +167,12 @@ function SW_update!(model::XY, T::Real, Js::AbstractArray; measure::Bool=true)
     if measure
         M, E, U = simple_estimate(model, T, Js)
         M2 = sum(abs2,M)
-        res[:M] = M
-        res[:M2] = M2
-        res[:M4] = M2^2
-        res[:E] = E
-        res[:E2] = E^2
-        res[:U] = U
+        res["M"] = M
+        res["M2"] = M2
+        res["M4"] = M2^2
+        res["E"] = E
+        res["E2"] = E^2
+        res["U"] = U
     end
 
     return res
