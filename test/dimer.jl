@@ -94,7 +94,7 @@ end
                 param["T"] = T
                 obs = runMC(param)
                 exact = energy_dimer(param)
-                @test abs(mean(obs["Energy"]) - exact) < confidence_interval(obs["Energy"],conf_ratio)
+                @test abs(mean(obs["Energy"]) - exact) <= confidence_interval(obs["Energy"],conf_ratio)
             end
         end
     end
@@ -114,7 +114,7 @@ end
             @show obs["Magnetization"]
             @show exact
             #@test abs(mean(obs["Energy"]) - exact) < confidence_interval(obs["Energy"],conf_ratio)
-            @test abs(mean(obs["Magnetization"]) - exact) < confidence_interval(obs["Magnetization"],conf_ratio)
+            @test abs(mean(obs["Magnetization"]) - exact) <= confidence_interval(obs["Magnetization"],conf_ratio)
         end
     end
 end
