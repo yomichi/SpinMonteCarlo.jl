@@ -108,63 +108,26 @@ function improved_estimate(model::Potts, T::Real, Js::AbstractArray, sw::SWInfo)
     return M, M2, M4, E, E2
 end
 
-function improved_estimate(model::QuantumLocalZ2Model, T::Real, Js::AbstractArray, Gs::AbstractArray, uf::UnionFind)
+function improved_estimate(model::QuantumLocalZ2Model, T::Real, Jzs::AbstractArray, Gs::AbstractArray, uf::UnionFind)
     nsites = numsites(model)
     nbonds = numbonds(model)
     nc = numclusters(uf)
 
-    spins = model.spins[:]
     ms = zeros(nc)
-    nops = 0
-    @inbounds for op in model.ops
-        nops+=1
-        if op.op_type == LO_Cut
-            s = op.space
-            bid = clusterid(uf, op.bottom_id)
-            tid = clusterid(uf, op.top_id)
-            ms[bid] += spins[s]*op.time
-            ms[tid] -= spins[s]*op.time
-            spins[s] *= ifelse(op.isdiagonal, 1, -1)
-        elseif op.op_type == LO_Vertex
-            b = op.space
-            s1 = source(model, b)
-            s2 = target(model, b)
-            bid = clusterid(uf, op.bottom_id)
-            tid = clusterid(uf, op.top_id)
-            ms[bid] += (spins[s1]+spins[s2])*op.time
-            ms[tid] -= (spins[s1]+spins[s2])*op.time
-            spins[s1] *= ifelse(op.isdiagonal, 1, -1)
-            spins[s2] *= ifelse(op.isdiagonal, 1, -1)
-        elseif op.op_type == LO_Cross
-            b = op.space
-            s1 = source(model, b)
-            s2 = target(model, b)
-            bid = clusterid(uf, op.bottom_id)
-            tid = clusterid(uf, op.top_id)
-            ms[bid] += (spins[s1]-spins[s2])*op.time
-            ms[tid] -= (spins[s1]-spins[s2])*op.time
-            spins[s1] *= ifelse(op.isdiagonal, 1, -1)
-            spins[s2] *= ifelse(op.isdiagonal, 1, -1)
-        end
-    end
     for s in 1:nsites
         i = clusterid(uf, s)
         ms[i] += model.spins[s]
     end
-
-    coeff = 0.5/nsites
-    @inbounds for i in 1:nc
-        ms[i] *= coeff
-    end
+    ms .*= 0.5/nsites
 
     E0 = 0.0
     for st in 1:numsitetypes(model)
         E0 += 0.5 * numsites(model, st) * Gs[st]
     end
     for bt in 1:numbondtypes(model)
-        E0 += 0.25 * numbonds(model, bt) * Js[bt]
+        E0 += 0.25 * numbonds(model, bt) * abs(Jzs[bt])
     end
-
+    nops = length(model.ops)
     E = E0-nops*T
     E2 = nops*(nops-1)*T^2 - 2*E0*T*nops + 2*E0^2
 

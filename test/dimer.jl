@@ -1,5 +1,15 @@
 using SpecialFunctions
 
+macro dimer_test(o, name, exactval, conf_ratio)
+    quote
+        c = confidence_interval($(esc(o))[$(esc(name))], $(esc(conf_ratio)))
+        if c == 0.0
+            c = sqrt(nextfloat($(esc(exactval))) - $(esc(exactval)))
+        end
+        @test abs(mean($(esc(o))[$(esc(name))]) - $(esc(exactval))) <= c
+    end
+end
+
 function energy_ising_dimer(T)
     beta = 1.0/T
     Z = exp(beta) + exp(-beta)
@@ -31,20 +41,18 @@ end
 function energy_TFI_dimer(T,J,G)
     sz = [0.5 0.0; 0.0 -0.5]
     sx = [0.0 0.5; 0.5 0.0]
-    H = J.*kron(sz,sz) .+ G.*(kron(sx,eye(2)) .+ kron(eye(2),sx))
-    enes, _ = eig(H)
-    z = exp.( (-1.0/T).*enes)
-    return dot(enes,z)/sum(z)
+    H = J.*kron(sz,sz) .- G.*(kron(sx,eye(2)) .+ kron(eye(2),sx))
+    rho = expm((-1.0/T).*H)
+    return trace(H*rho)/trace(rho)
 end
 
-function mag_TFI_dimer(T,J,G)
+function mag2_TFI_dimer(T,J,G)
     sz = [0.5 0.0; 0.0 -0.5]
     sx = [0.0 0.5; 0.5 0.0]
-    H = J.*kron(sz,sz) .+ G.*(kron(sx,eye(2)) .+ kron(eye(2),sx))
-    enes, _ = eig(H)
-    mags = [0.5, 0.0, 0.0, -0.5]
-    z = exp.( (-1.0/T).*enes)
-    return dot(mags,z)/sum(z)
+    H = J.*kron(sz,sz) .- G.*(kron(sx,eye(2)) .+ kron(eye(2),sx))
+    rho = expm((-1.0/T).*H)
+    sz_tot = 0.5.*(kron(sz, eye(2)) + kron(eye(2), sz))
+    return trace(sz_tot*sz_tot*rho)/trace(rho)
 end
 
 function energy_dimer(param::Dict)
@@ -67,10 +75,11 @@ end
 @testset "dimer energy" begin
     param = Dict{String,Any}("Model" => Ising, "Lattice" => dimer_lattice,
                               "J" => 1.0,
-                              "MCS" => MCS, "Thermalization" => 10,
+                              "MCS" => MCS, "Thermalization" => 100,
                              )
-    # const Ts = [0.3, 1.0, 3.0]
-    const Ts = [0.01]
+    const Ts = [0.3]
+    # const Ts = collect(0.1:0.1:1.01)
+    #=
     @testset "$upname" for (upname, method) in [
                                                 ("local update", local_update!),
                                                 ("Swendsen-Wang", SW_update!),
@@ -98,23 +107,27 @@ end
             end
         end
     end
+    =#
     @testset "TransverseFieldIsing" begin
         srand(SEED)
-        J = -1.0
-        G = 0.0
+        Js = [1.0]
+        # Gs = [0.5]
+        Gs = collect(0.0:0.1:2.01)
         param["Model"] = TransverseFieldIsing
-        param["J"] = J
-        param["Gamma"] = G
-        @testset "T = $T" for T in Ts
+        @testset "J = $J, G = $G, T = $T" for (J,G,T) in Iterators.product(Js,Gs,Ts)
+            param["J"] = J
+            param["Gamma"] = G
             param["T"] = T
             obs = runMC(param)
-            #exact = energy_dimer(param)
-            exact = mag_TFI_dimer(T,J,G)
-            #@show obs["Energy"]
-            @show obs["Magnetization"]
-            @show exact
-            #@test abs(mean(obs["Energy"]) - exact) < confidence_interval(obs["Energy"],conf_ratio)
-            @test abs(mean(obs["Magnetization"]) - exact) <= confidence_interval(obs["Magnetization"],conf_ratio)
+            exact_energy = energy_dimer(param)
+            exact_mag2 = mag2_TFI_dimer(T,J,G)
+            @show( G, (mean(obs["Energy"]) - exact_energy) / confidence_interval(obs["Energy"], conf_ratio) )
+            # @dimer_test(obs, "Energy", exact_energy, conf_ratio)
+            #=
+            @dimer_test(obs, "Magnetization", 0.0, conf_ratio)
+            @show obs["Magnetization^2"], exact_mag2
+            @dimer_test(obs, "Magnetization^2", exact_mag2, conf_ratio)
+            =#
         end
     end
 end

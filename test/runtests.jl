@@ -4,7 +4,7 @@ include("../src/SpinMonteCarlo.jl")
 using SpinMonteCarlo
 
 const SEED = 19937
-const MCS = 8192
+const MCS = 65536
 const Therm = MCS>>3
 const conf_ratio = 0.999
 const obsnames_ising = ["Magnetization", "|Magnetization|", "Magnetization^2", "Magnetization^4", "Binder Ratio",
@@ -25,8 +25,8 @@ const obsnames_xy = ["|Magnetization|", "|Magnetization|^2", "|Magnetization|^4"
 const obsnames_clock = obsnames_xy
 
 @testset begin
-    include("lattice.jl")
+    # include("lattice.jl")
     include("dimer.jl")
-    include("square.jl")
-    include("anisotropic.jl")
+    # include("square.jl")
+    # include("anisotropic.jl")
 end

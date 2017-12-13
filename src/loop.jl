@@ -40,7 +40,7 @@ function loop_update!(model::TransverseFieldIsing, T::Real, Js::AbstractArray, G
     t = randexp()*op_dt
     while t <= 1.0 || iops <= length(model.ops)
         if iops > length(model.ops) || t < model.ops[iops].time
-            # INSERT
+            ## INSERT
 
             if rand() < r_ising
                 r = rand()*ising_weights[end]
@@ -49,7 +49,7 @@ function loop_update!(model::TransverseFieldIsing, T::Real, Js::AbstractArray, G
                 s1 = source(model, b)
                 s2 = target(model, b)
                 if Js[bt] * model.spins[s1] * model.spins[s2] < 0.0
-                    push!(ops, LocalOperator(LO_Link, t, b))
+                    push!(ops, LocalOperator(ifelse(Js[bt] > 0.0, LO_AFLink, LO_FMLink), t, b))
                     t += randexp()*op_dt
                 else
                     t += randexp()*op_dt
@@ -63,6 +63,8 @@ function loop_update!(model::TransverseFieldIsing, T::Real, Js::AbstractArray, G
                 t += randexp()*op_dt
             end
         else 
+            ## REMOVE
+
             if ! model.ops[iops].isdiagonal
                 push!(ops, model.ops[iops])
                 iops += 1
@@ -73,7 +75,7 @@ function loop_update!(model::TransverseFieldIsing, T::Real, Js::AbstractArray, G
         end
         
         op = ops[end]
-        if op.op_type == LO_Link
+        if op.op_type == LO_FMLink || op.op_type == LO_AFLink
             b = op.space
             s1 = source(model, b)
             s2 = target(model, b)
@@ -88,7 +90,9 @@ function loop_update!(model::TransverseFieldIsing, T::Real, Js::AbstractArray, G
             currents[s] = c
             model.spins[s] *= ifelse(op.isdiagonal, 1, -1)
         end
-    end
+    end # of while loop
+
+    ## PBC for imaginary time axis
     for s in 1:nsites
         unify!(uf, s, currents[s])
     end
@@ -98,7 +102,7 @@ function loop_update!(model::TransverseFieldIsing, T::Real, Js::AbstractArray, G
     nc = clusterize!(uf)
     flips = rand([1,-1], nc)
     for s in 1:nsites
-        model.spins[s] = flips[clusterid(uf, s)]
+        model.spins[s] *= flips[clusterid(uf, s)]
     end
     for op in model.ops
         if op.op_type == LO_Cut
