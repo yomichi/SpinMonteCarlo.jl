@@ -25,8 +25,8 @@ const obsnames_xy = ["|Magnetization|", "|Magnetization|^2", "|Magnetization|^4"
 const obsnames_clock = obsnames_xy
 
 @testset begin
-    # include("lattice.jl")
+    include("lattice.jl")
     include("dimer.jl")
-    # include("square.jl")
-    # include("anisotropic.jl")
+    include("square.jl")
+    include("anisotropic.jl")
 end

@@ -75,11 +75,9 @@ end
 @testset "dimer energy" begin
     param = Dict{String,Any}("Model" => Ising, "Lattice" => dimer_lattice,
                               "J" => 1.0,
-                              "MCS" => MCS, "Thermalization" => 100,
+                              "MCS" => 10000, "Thermalization" => 1000,
                              )
-    const Ts = [0.3]
-    # const Ts = collect(0.1:0.1:1.01)
-    #=
+    const Ts = [0.1, 0.5, 1.0]
     @testset "$upname" for (upname, method) in [
                                                 ("local update", local_update!),
                                                 ("Swendsen-Wang", SW_update!),
@@ -107,12 +105,10 @@ end
             end
         end
     end
-    =#
     @testset "TransverseFieldIsing" begin
         srand(SEED)
         Js = [1.0]
-        # Gs = [0.5]
-        Gs = collect(0.0:0.1:2.01)
+        Gs = [0.0, 0.1, 0.5, 1.0, 5.0]
         param["Model"] = TransverseFieldIsing
         @testset "J = $J, G = $G, T = $T" for (J,G,T) in Iterators.product(Js,Gs,Ts)
             param["J"] = J
@@ -121,13 +117,9 @@ end
             obs = runMC(param)
             exact_energy = energy_dimer(param)
             exact_mag2 = mag2_TFI_dimer(T,J,G)
-            @show( G, (mean(obs["Energy"]) - exact_energy) / confidence_interval(obs["Energy"], conf_ratio) )
-            # @dimer_test(obs, "Energy", exact_energy, conf_ratio)
-            #=
+            @dimer_test(obs, "Energy", exact_energy, conf_ratio)
             @dimer_test(obs, "Magnetization", 0.0, conf_ratio)
-            @show obs["Magnetization^2"], exact_mag2
             @dimer_test(obs, "Magnetization^2", exact_mag2, conf_ratio)
-            =#
         end
     end
 end
