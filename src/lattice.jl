@@ -3,8 +3,10 @@ type Lattice
     size :: Vector{Int}
     nsitetypes :: Int
     nbondtypes :: Int
-    nsites :: Vector{Int}
-    nbonds :: Vector{Int}
+    sites :: Vector{Vector{Int}}
+    bonds :: Vector{Vector{Int}}
+    nsites :: Int
+    nbonds :: Int
     sitetypes :: Vector{Int}
     bondtypes :: Vector{Int}
     transvector :: Matrix{Float64}
@@ -42,12 +44,21 @@ size(model::Model) = size(model.lat)
 size(model::Model, dim::Integer) = size(model.lat,dim)
 
 """
+    sites(lat::Lattice, sitetype::Integer)
+    sites(model::Model, sitetype::Integer)
+
+return sites with `sitetype`
+"""
+sites(lat::Lattice, sitetype::Integer) = lat.sites[sitetype]
+sites(model::Model, sitetype::Integer) = sites(model.lat, sitetype)
+
+"""
     numsites(lat::Lattice)
     numsites(model::Model)
 
 return the number of all sites.
 """
-numsites(lat::Lattice) = sum(lat.nsites)
+numsites(lat::Lattice) = lat.nsites
 numsites(model::Model) = numsites(model.lat)
 
 """
@@ -56,8 +67,17 @@ numsites(model::Model) = numsites(model.lat)
 
 return the number of `sitetype` sites.
 """
-numsites(lat::Lattice, sitetype::Integer) = lat.nsites[sitetype]
+numsites(lat::Lattice, sitetype::Integer) = length(lat.sites[sitetype])
 numsites(model::Model, sitetype::Integer) = numsites(model.lat, sitetype)
+
+"""
+    bonds(lat::Lattice, bondtype::Integer)
+    bonds(model::Model, bondtype::Integer)
+
+return bonds with `bondtype`
+"""
+bonds(lat::Lattice, bondtype::Integer) = lat.bonds[bondtype]
+bonds(model::Model, bondtype::Integer) = bonds(model.lat, bondtype)
 
 """
     numbonds(lat::Lattice)
@@ -65,7 +85,7 @@ numsites(model::Model, sitetype::Integer) = numsites(model.lat, sitetype)
 
 return the number of all bonds.
 """
-numbonds(lat::Lattice) = sum(lat.nbonds)
+numbonds(lat::Lattice) = lat.nbonds
 numbonds(model::Model) = numbonds(model.lat)
 
 """
@@ -74,7 +94,7 @@ numbonds(model::Model) = numbonds(model.lat)
 
 return the number of `bondtype` bonds.
 """
-numbonds(lat::Lattice, bondtype::Integer) = lat.nbonds[bondtype]
+numbonds(lat::Lattice, bondtype::Integer) = length(lat.bonds[bondtype])
 numbonds(model::Model, bondtype::Integer) = numbonds(model.lat, bondtype)
 
 """
@@ -223,8 +243,10 @@ function dimer_lattice()
     sz = [2]
     nsitetypes = 2
     nbondtypes = 1
-    nsites = [1,1]
-    nbonds = [1]
+    sites = Vector{Int}[zeros(Int,0) for i in 1:nsitetypes]
+    bonds = Vector{Int}[zeros(Int,0) for i in 1:nbondtypes]
+    nsites = 2
+    nbonds = 1
     sitetypes = [1,2]
     bondtypes = [1]
     transvector = eye(dim)
@@ -237,6 +259,9 @@ function dimer_lattice()
     site_L2 = zeros(Int,2)
     site_L4 = zeros(Int,2)
 
+    sites[1] = [1]
+    sites[2] = [2]
+    bonds[1] = [1]
     coords[1,1] = 0.0
     coords[1,2] = 1.0
     bond_dirs[1,1] = 1.0
@@ -248,7 +273,7 @@ function dimer_lattice()
     site_L4[2] = 1
 
     Lattice(dim, sz, nsitetypes, nbondtypes,
-            nsites, nbonds, sitetypes, bondtypes,
+            sites, bonds, nsites, nbonds, sitetypes, bondtypes,
             transvector, coords, bond_dirs,
             neighborsites, neighborbonds,
             source,target, site_L2, site_L4)
@@ -266,8 +291,8 @@ function chain_lattice(L::Integer)
     sz = [L]
     nsitetypes = 2
     nbondtypes = 2
-    nsites = [L-div(L,2), div(L,2)]
-    nbonds = [L-div(L,2), div(L,2)]
+    nsites = L
+    nbonds = L
     sitetypes = zeros(Int,L)
     bondtypes = zeros(Int,L)
     transvector = eye(dim)
@@ -298,8 +323,16 @@ function chain_lattice(L::Integer)
         site_L2[s] = mod1(s+div(L,2),L)
         site_L4[s] = mod1(s+div(L,4),L)
     end
+    sites = Vector{Int}[zeros(Int,0) for i in 1:nsitetypes]
+    bonds = Vector{Int}[zeros(Int,0) for i in 1:nbondtypes]
+    for s in 1:nsites
+        push!(sites[sitetypes[s]], s)
+    end
+    for b in 1:nbonds
+        push!(bonds[bondtypes[b]], b)
+    end
     Lattice(dim, sz, nsitetypes, nbondtypes,
-            nsites, nbonds, sitetypes, bondtypes,
+            sites, bonds, nsites, nbonds, sitetypes, bondtypes,
             transvector, coords, bond_dirs, neighborsites, neighborbonds,
             source,target, site_L2, site_L4)
 end
@@ -316,33 +349,32 @@ function square_lattice(L::Integer, W::Integer)
     s2xy(s::Integer) = mod(s-1,L),div(s-1,L)
     xy2s(x::Integer, y::Integer) = mod(y,W)*L + mod(x,L) + 1
 
-    N = L*W
     dim = 2
     sz = [L,W]
     nsitetypes = 2
     nbondtypes = 2
-    nsites = zeros(Int, nsitetypes)
-    nbonds = zeros(Int, nbondtypes)
-    sitetypes = zeros(Int, N)
-    bondtypes = zeros(Int, 2N)
+    nsites = L*W
+    nbonds = 2*L*W
+    sitetypes = zeros(Int, nsites)
+    bondtypes = zeros(Int, nbonds)
     transvector = eye(dim)
-    coords = zeros(dim, N)
-    bond_dirs = zeros(dim, 2N)
+    coords = zeros(dim, nsites)
+    bond_dirs = zeros(dim, nbonds)
     neighborsites = Vector{Int}[]
     neighborbonds = Vector{Int}[]
-    source = zeros(Int,2N)
-    target = zeros(Int,2N)
-    sitetypes = zeros(Int,N)
-    bondtypes = zeros(Int,2N)
-    site_L2 = zeros(Int,N)
-    site_L4 = zeros(Int,N)
+    source = zeros(Int,nbonds)
+    target = zeros(Int,nbonds)
+    sitetypes = zeros(Int,nsites)
+    bondtypes = zeros(Int,nbonds)
+    site_L2 = zeros(Int,nsites)
+    site_L4 = zeros(Int,nsites)
     L2 = div(L,2)
     L4 = div(L,4)
     W2 = div(W,2)
     W4 = div(W,4)
     ns = zeros(Int,4)
     nb = zeros(Int,4)
-    @inbounds for s in 1:N
+    @inbounds for s in 1:nsites
         x,y = s2xy(s)
         ns[1] = xy2s(x+1,y)
         ns[2] = xy2s(x,y+1)
@@ -359,18 +391,23 @@ function square_lattice(L::Integer, W::Integer)
         coords[1,s] = x
         coords[2,s] = y
         sitetypes[s] = ifelse(iseven(x+y),1,2)
-        nsites[sitetypes[s]] += 1
         bond_dirs[:, 2s-1] = [1.0, 0.0]
         bond_dirs[:, 2s] = [0.0, 1.0]
         bondtypes[2s-1] = 1 
         bondtypes[2s] = 2 
-        nbonds[1] += 1
-        nbonds[2] += 1
         site_L2[s] = xy2s(x+L2, y+W2)
         site_L4[s] = xy2s(x+L4, y+W4)
     end
+    sites = Vector{Int}[zeros(Int,0) for i in 1:nsitetypes]
+    bonds = Vector{Int}[zeros(Int,0) for i in 1:nbondtypes]
+    for s in 1:nsites
+        push!(sites[sitetypes[s]], s)
+    end
+    for b in 1:nbonds
+        push!(bonds[bondtypes[b]], b)
+    end
     Lattice(dim, sz, nsitetypes, nbondtypes,
-            nsites, nbonds, sitetypes, bondtypes,
+            sites, bonds, nsites, nbonds, sitetypes, bondtypes,
             transvector, coords, bond_dirs, neighborsites, neighborbonds,
             source,target, site_L2, site_L4)
 end
@@ -395,30 +432,28 @@ function triangular_lattice(L::Integer, W::Integer)
 
     dim = 2
     sz = [L,W]
-    N = L*W
-    NB = 3N
     nsitetypes = 3
     nbondtypes = 3
-    nsites = zeros(Int,nsitetypes)
-    nbonds = zeros(Int,nbondtypes)
-    sitetypes = zeros(Int,N)
-    bondtypes = zeros(Int,NB)
+    nsites = L*W
+    nbonds = 3nsites
+    sitetypes = zeros(Int,nsites)
+    bondtypes = zeros(Int,nbonds)
     transvector = [1.0 0.5; 0.0 0.5sqrt(3)]
-    coords = zeros(dim, N)
-    bond_dirs = zeros(dim, NB)
+    coords = zeros(dim, nsites)
+    bond_dirs = zeros(dim, nbonds)
     neighborsites = Vector{Int}[]
     neighborbonds = Vector{Int}[]
-    source = zeros(Int,NB)
-    target = zeros(Int,NB)
-    site_L2 = zeros(Int, N)
-    site_L4 = zeros(Int, N)
+    source = zeros(Int,nbonds)
+    target = zeros(Int,nbonds)
+    site_L2 = zeros(Int, nsites)
+    site_L4 = zeros(Int, nsites)
     L2 = div(L,2)
     L4 = div(L,4)
     W2 = div(W,2)
     W4 = div(W,4)
     ns = zeros(Int,6)
     nb = zeros(Int,6)
-    @inbounds for s in 1:N
+    @inbounds for s in 1:nsites
         x,y = s2xy(s)
         ns[1] = xy2s(x+1,y)
         ns[2] = xy2s(x,y+1)
@@ -448,19 +483,25 @@ function triangular_lattice(L::Integer, W::Integer)
                 sitetypes[neighbors[2,s]]=mod1(sitetypes[s]+2,3)
             end
         end
-        nsites[sitetypes[s]] += 1
         bond_dirs[:, 3s-2] .= [1.0,0.0]
         bond_dirs[:, 3s-1] .= [0.0,1.0]
         bond_dirs[:, 3s] .= [-1.0,1.0]
         bondtypes[3s-2] = 1
         bondtypes[3s-1] = 2
         bondtypes[3s] = 3
-        nbonds .+= [1,1,1]
         site_L2[s] = xy2s(x+L2, y+W2)
         site_L4[s] = xy2s(x+L4, y+W4)
     end
+    sites = Vector{Int}[zeros(Int,0) for i in 1:nsitetypes]
+    bonds = Vector{Int}[zeros(Int,0) for i in 1:nbondtypes]
+    for s in 1:nsites
+        push!(sites[sitetypes[s]], s)
+    end
+    for b in 1:nbonds
+        push!(bonds[bondtypes[b]], b)
+    end
     Lattice(dim, sz, nsitetypes, nbondtypes,
-            nsites, nbonds, sitetypes, bondtypes,
+            sites, bonds, nsites, nbonds, sitetypes, bondtypes,
             transvector, coords, bond_dirs, neighborsites, neighborbonds,
             source,target, site_L2, site_L4)
 end
@@ -489,23 +530,21 @@ function cubic_lattice(L::Integer, W::Integer, H::Integer)
 
     dim = 3
     sz = [L,W,H]
-    N = L*W*H
-    NB = 3N
     nsitetypes = 2
     nbondtypes = 3
-    nsites = zeros(Int,nsitetypes)
-    nbonds = zeros(Int,nbondtypes)
-    sitetypes = zeros(Int,N)
-    bondtypes = zeros(Int,NB)
+    nsites = L*W*H
+    nbonds = 3nsites
+    sitetypes = zeros(Int,nsites)
+    bondtypes = zeros(Int,nbonds)
     transvector = eye(dim)
-    coords = zeros(dim, N)
-    bond_dirs = zeros(dim, NB)
+    coords = zeros(dim, nsites)
+    bond_dirs = zeros(dim, nbonds)
     neighborsites = Vector{Int}[]
     neighborbonds = Vector{Int}[]
-    source = zeros(Int,NB)
-    target = zeros(Int,NB)
-    site_L2 = zeros(Int,N)
-    site_L4 = zeros(Int,N)
+    source = zeros(Int,nbonds)
+    target = zeros(Int,nbonds)
+    site_L2 = zeros(Int,nsites)
+    site_L4 = zeros(Int,nsites)
     L2 = div(L,2)
     L4 = div(L,4)
     W2 = div(W,2)
@@ -514,7 +553,7 @@ function cubic_lattice(L::Integer, W::Integer, H::Integer)
     H4 = div(H,4)
     ns = zeros(Int,6)
     nb = zeros(Int,6)
-    @inbounds for s in 1:N
+    @inbounds for s in 1:nsites
         x,y,z = s2xyz(s)
         ns[1] = xyz2s(x+1,y,z)
         ns[2] = xyz2s(x,y+1,z)
@@ -536,19 +575,25 @@ function cubic_lattice(L::Integer, W::Integer, H::Integer)
         coords[2,s] = y
         coords[3,s] = z
         sitetypes[s] = ifelse(iseven(x+y+z),1,2)
-        nsites[sitetypes[s]] += 1
         bondtypes[3s-2] = 1
         bondtypes[3s-1] = 2
         bondtypes[3s] = 3
         bond_dirs[:, 3s-2] = [1.0, 0.0, 0.0]
         bond_dirs[:, 3s-1] = [0.0, 1.0, 0.0]
         bond_dirs[:, 3s-0] = [0.0, 0.0, 1.0]
-        nbonds .+= [1,1,1]
         site_L2[s] = xyz2s(x+L2,y+W2,z+H2)
         site_L4[s] = xyz2s(x+L4,y+W4,z+H4)
     end
+    sites = Vector{Int}[zeros(Int,0) for i in 1:nsitetypes]
+    bonds = Vector{Int}[zeros(Int,0) for i in 1:nbondtypes]
+    for s in 1:nsites
+        push!(sites[sitetypes[s]], s)
+    end
+    for b in 1:nbonds
+        push!(bonds[bondtypes[b]], b)
+    end
     Lattice(dim, sz, nsitetypes, nbondtypes,
-            nsites, nbonds, sitetypes, bondtypes,
+            sites, bonds, nsites, nbonds, sitetypes, bondtypes,
             transvector, coords, bond_dirs,
             neighborsites, neighborbonds,
             source,target, site_L2, site_L4)

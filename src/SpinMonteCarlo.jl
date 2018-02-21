@@ -16,7 +16,7 @@ export measure
 export gen_snapshot!, gensave_snapshot!, load_snapshot
 export runMC, print_result
 
-const Measurement = Dict{Symbol, Any}
+const Measurement = Dict{String, Any}
 
 @compat abstract type Model end
 

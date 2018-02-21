@@ -1,8 +1,9 @@
 @enum(LocalOperatorType,
-      LO_Cut,
-      LO_Link,
-      LO_Vertex,
-      LO_Cross,
+      LO_Cut,    # [1 1; 1 1]
+      LO_FMLink, # [1 0 0 0; 0 0 0 0; 0 0 0 0; 0 0 0 1]
+      LO_AFLink, # [0 0 0 0; 0 1 0 0; 0 0 1 0; 0 0 0 1]
+      LO_Vertex, # [0 0 0 0; 0 1 1 0; 0 1 1 0; 0 0 0 0]
+      LO_Cross,  # [1 0 0 0; 0 0 1 0; 0 1 0 0; 0 0 0 1]
      )
 
 type LocalOperator
