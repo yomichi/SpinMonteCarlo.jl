@@ -199,3 +199,59 @@ function runMC(model::TransverseFieldIsing, T::Real, J::Union{Real, AbstractArra
     return jk
 end
 
+function runMC(model::QuantumXXZ, params::Dict)
+    T = params["T"]
+    if "J" in keys(params)
+        Jz = Jxy = params["J"]
+    else
+        Jz = params["Jz"]
+        Jxy = params["Jxy"]
+    end
+    MCS = get(params, "MCS", 8192)
+    Therm = get(params, "Thermalization", MCS>>3)
+    return runMC(model, T, Jz, Jz, MCS, Therm)
+end
+function runMC(model::QuantumXXZ, T::Real, Jz::Union{Real, AbstractArray}, Jxy::Union{Real, AbstractArray}, MCS::Integer, Therm::Integer)
+    for mcs in 1:Therm
+        loop_update!(model,T, Jz, Jxy, measure=false)
+    end
+
+    nsites = numsites(model.lat)
+    invV = 1.0/nsites
+    obs = BinningObservableSet()
+    makeMCObservable!(obs, "Time per MCS")
+    makeMCObservable!(obs, "Magnetization")
+    makeMCObservable!(obs, "|Magnetization|")
+    makeMCObservable!(obs, "Magnetization^2")
+    makeMCObservable!(obs, "Magnetization^4")
+    makeMCObservable!(obs, "Energy")
+    makeMCObservable!(obs, "Energy^2")
+
+    for mcs in 1:MCS
+        t = @elapsed begin 
+            localobs = loop_update!(model,T,Jz,Jxy)
+        end
+        M = localobs["M"]
+        M2 = localobs["M2"]
+        M4 = localobs["M4"]
+        E = localobs["E"]
+        E2 = localobs["E2"]
+        obs["Time per MCS"] << t
+        obs["Magnetization"] << M
+        obs["|Magnetization|"] << abs(M)
+        obs["Magnetization^2"] << M2
+        obs["Magnetization^4"] << M4
+        obs["Energy"] << E
+        obs["Energy^2"] << E*E
+    end
+
+    jk = jackknife(obs)
+    jk["Binder Ratio"] = jk["Magnetization^4"] / (jk["Magnetization^2"]^2)
+    jk["Susceptibility"] = (nsites/T)*jk["Magnetization^2"]
+    jk["Connected Susceptibility"] = (nsites/T)*(jk["Magnetization^2"] - jk["|Magnetization|"]^2)
+    jk["Specific Heat"] = (nsites/T/T)*(jk["Energy^2"] - jk["Energy"]^2)
+    jk["MCS per Second"] = 1.0/jk["Time per MCS"]
+
+    return jk
+end
+

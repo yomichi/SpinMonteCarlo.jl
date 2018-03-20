@@ -36,3 +36,34 @@ function TransverseFieldIsing(params::Dict)
     return TransverseFieldIsing(lat)
 end
 
+type QuantumXXZ <: QuantumLocalZ2Model
+    lat :: Lattice
+    S2 :: Int
+    spins :: Vector{Int}
+    ops :: Vector{LocalOperator}
+
+    function QuantumXXZ(lat::Lattice, S2::Int)
+        model = new()
+        model.lat = lat
+        model.S2 = S2
+        model.spins = rand([1,-1], numsites(lat)*S2)
+        model.ops = LocalOperator[]
+        return model
+    end
+end
+function QuantumXXZ(params::Dict)
+    lat = params["Lattice"](params)
+    S2 = params["S2"]
+    return QuantumXXZ(lat,S2)
+end
+
+site2subspin(site::Integer, ss::Integer, S2::Integer) = (site-1)*S2+ss
+bond2subbond(bond::Integer, ss1::Integer, ss2::Integer, S2::Integer) = ((bond-1)*S2*(ss1-1))*S2+ss2
+function subspin2site(subspin::Integer, S2::Integer)
+    return ceil(Int, subspin/S2), mod1(subspin,S2)
+end
+function subbond2bond(subbond::Integer, S2::Integer)
+    b = ceil(Int, subbond/S2)
+    ss = mod1(subbond,S2)
+    return b, ceil(Int, ss/S2), mod1(ss,S2)
+end

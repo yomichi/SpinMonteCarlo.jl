@@ -108,7 +108,7 @@ function improved_estimate(model::Potts, T::Real, Js::AbstractArray, sw::SWInfo)
     return M, M2, M4, E, E2
 end
 
-function improved_estimate(model::QuantumLocalZ2Model, T::Real, Jzs::AbstractArray, Gs::AbstractArray, uf::UnionFind)
+function improved_estimate(model::TransverseFieldIsing, T::Real, Jzs::AbstractArray, Gs::AbstractArray, uf::UnionFind)
     nsites = numsites(model)
     nbonds = numbonds(model)
     nc = numclusters(uf)
@@ -126,6 +126,52 @@ function improved_estimate(model::QuantumLocalZ2Model, T::Real, Jzs::AbstractArr
     end
     for bt in 1:numbondtypes(model)
         E0 += 0.25 * numbonds(model, bt) * abs(Jzs[bt])
+    end
+    nops = length(model.ops)
+    E = E0-nops*T
+    E2 = nops*(nops-1)*T^2 - 2*E0*T*nops + 2*E0^2
+
+    M = 0.0
+    M2 = 0.0
+    M4 = 0.0
+    for m in ms
+        M += m
+        m2 = m*m
+        M4 += m2*m2 + 6M2*m2
+        M2 += m2
+    end
+    return M, M2, M4, E, E2
+end
+
+function improved_estimate(model::QuantumXXZ, T::Real, Jzs::AbstractArray, Jxys::AbstractArray, uf::UnionFind)
+    S2 = model.S2
+    nsites = numsites(model)
+    nspins = nsites*S2
+    nbonds = numbonds(model)
+    nc = numclusters(uf)
+
+    ms = zeros(nc)
+    for s in 1:nspins
+        i = clusterid(uf, s)
+        ms[i] += model.spins[s]
+    end
+    ms .*= 0.5/nsites
+
+    E0 = 0.0
+    for bt in 1:numbondtypes(model)
+        nb = numbonds(model,bt)*S2*S2
+        z = 0.5*nb*Jzs[bt]
+        x = 0.5*nb*abs(Jxys[bt])
+        if z > x
+            ## AntiFerroIsing like
+            E0 += 0.5z
+        elseif z < -x
+            ## FerroIsing like
+            E0 -= 0.5z
+        else
+            ## XY like
+            E0 += 0.5x
+        end
     end
     nops = length(model.ops)
     E = E0-nops*T
