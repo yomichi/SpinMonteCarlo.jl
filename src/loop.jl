@@ -154,25 +154,26 @@ function loop_update!(model::QuantumXXZ, T::Real, Jzs::AbstractArray, Jxys::Abst
     weights = zeros(4*nbt) # LO_FMLink, LO_AFLink, LO_Vertex, LO_Cross
     for i in 1:nbt
         nb = numbonds(model,i)*S2*S2
-        z = 0.5*nb*Jzs[i]
-        x = 0.5*nb*abs(Jxys[i])
+        z = nb*Jzs[i]
+        x = nb*abs(Jxys[i])
         if z > x
             ## AntiFerroIsing like
-            weights[(4i-3):(4i)] .= [z-x, 0.0, x, 0.0]
-            shift += 0.5z
+            weights[(4i-3):(4i)] .= 0.5*[z-x, 0.0, x, 0.0]
+            shift += 0.25z
         elseif z < -x
             ## FerroIsing like
-            weights[(4i-3):(4i)] .= [0.0, -z-x, 0.0, x]
-            shift -= 0.5z
+            weights[(4i-3):(4i)] .= 0.5*[0.0, -z-x, 0.0, x]
+            shift -= 0.25z
         else
             ## XY like
-            weights[(4i-3):(4i)] .= [0.0, 0.0, 0.5(x+z), 0.5(x-z)]
-            shift += 0.5x
+            weights[(4i-3):(4i)] .= 0.25*[0.0, 0.0, x+z, x-z]
+            shift += 0.25x
         end
     end
     cumsum!(weights, weights)
     op_dt = T/weights[end]
 
+    spins = model.spins[:]
     currents = collect(1:nspins)
     uf = UnionFind(nspins)
 
@@ -191,7 +192,7 @@ function loop_update!(model::QuantumXXZ, T::Real, Jzs::AbstractArray, Jxys::Abst
             s2 = target(model, b)
             ss1 = rand(1:S2)
             ss2 = rand(1:S2)
-            if ifelse(model.spins[site2subspin(s1,ss1,S2)] == model.spins[site2subspin(s2,ss2,S2)],
+            if ifelse(spins[site2subspin(s1,ss1,S2)] == spins[site2subspin(s2,ss2,S2)],
                       lo_type == LO_FMLink || lo_type == LO_Cross,
                       lo_type == LO_AFLink || lo_type == LO_Vertex)
                 push!(ops, LocalOperator(lo_type, t, bond2subbond(b,ss1,ss2,S2)))
@@ -225,7 +226,7 @@ function loop_update!(model::QuantumXXZ, T::Real, Jzs::AbstractArray, Jxys::Abst
         elseif op.op_type == LO_Cross
             op.bottom_id = currents[subspin1]
             op.top_id = currents[subspin2]
-            model.spins[subspin1], model.spins[subspin2] = model.spins[subspin2], model.spins[subspin1]
+            spins[subspin1], spins[subspin2] = spins[subspin2], spins[subspin1]
             currents[subspin1], currents[subspin2] = currents[subspin2], currents[subspin1]
         elseif op.op_type == LO_Vertex
             unify!(uf, currents[subspin1], currents[subspin2])
@@ -233,26 +234,27 @@ function loop_update!(model::QuantumXXZ, T::Real, Jzs::AbstractArray, Jxys::Abst
             c = addnode!(uf)
             op.top_id = c
             currents[subspin1] = currents[subspin2] = c
-            model.spins[subspin1] *= ifelse(op.isdiagonal, 1, -1)
-            model.spins[subspin2] *= ifelse(op.isdiagonal, 1, -1)
+            spins[subspin1] *= ifelse(op.isdiagonal, 1, -1)
+            spins[subspin2] *= ifelse(op.isdiagonal, 1, -1)
         end
     end # of while loop
 
     ## PBC for imaginary time axis
     subspin = 0
     for s in 1:nsites
-        ups = zeros(Int,0)
-        downs = zeros(Int,0)
+        ups0 = zeros(Int,0)
+        ups1 = zeros(Int,0)
+        downs0 = zeros(Int,0)
+        downs1 = zeros(Int,0)
         for ss in 1:S2
             subspin += 1
-            push!(ifelse(model.spins[subspin]==1, ups, downs), subspin)
+            push!(ifelse(spins[subspin]==1, ups0, downs0), subspin)
+            push!(ifelse(model.spins[subspin]==1, ups1, downs1), subspin)
         end
-        c2 = shuffle(ups)
-        for (u, u2) in zip(ups, c2)
+        for (u, u2) in zip(ups0, shuffle(ups1))
             unify!(uf, u, currents[u2])
         end
-        c2 = shuffle(downs)
-        for (d, d2) in zip(downs, c2)
+        for (d, d2) in zip(downs0, shuffle(downs1))
             unify!(uf, d, currents[d2])
         end
     end
@@ -268,7 +270,7 @@ function loop_update!(model::QuantumXXZ, T::Real, Jzs::AbstractArray, Jxys::Abst
         if op.op_type == LO_Cross || op.op_type == LO_Vertex
             bid = clusterid(uf, op.bottom_id)
             tid = clusterid(uf, op.top_id)
-            op.isdiagonal = (flips[bid] == flips[tid])
+            op.isdiagonal ⊻= (flips[bid] != flips[tid])
         end
     end
 

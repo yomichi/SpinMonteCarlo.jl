@@ -63,7 +63,7 @@ function subspin2site(subspin::Integer, S2::Integer)
     return ceil(Int, subspin/S2), mod1(subspin,S2)
 end
 function subbond2bond(subbond::Integer, S2::Integer)
-    b = ceil(Int, subbond/S2)
-    ss = mod1(subbond,S2)
-    return b, ceil(Int, ss/S2), mod1(ss,S2)
+    ss2 = mod1(subbond,S2)
+    ss = ceil(Int, subbond/S2)
+    return ceil(Int, ss/S2), mod1(ss,S2), ss2
 end

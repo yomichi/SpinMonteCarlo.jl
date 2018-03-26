@@ -209,7 +209,7 @@ function runMC(model::QuantumXXZ, params::Dict)
     end
     MCS = get(params, "MCS", 8192)
     Therm = get(params, "Thermalization", MCS>>3)
-    return runMC(model, T, Jz, Jz, MCS, Therm)
+    return runMC(model, T, Jz, Jxy, MCS, Therm)
 end
 function runMC(model::QuantumXXZ, T::Real, Jz::Union{Real, AbstractArray}, Jxy::Union{Real, AbstractArray}, MCS::Integer, Therm::Integer)
     for mcs in 1:Therm

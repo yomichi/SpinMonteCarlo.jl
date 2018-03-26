@@ -160,17 +160,17 @@ function improved_estimate(model::QuantumXXZ, T::Real, Jzs::AbstractArray, Jxys:
     E0 = 0.0
     for bt in 1:numbondtypes(model)
         nb = numbonds(model,bt)*S2*S2
-        z = 0.5*nb*Jzs[bt]
-        x = 0.5*nb*abs(Jxys[bt])
+        z = nb*Jzs[bt]
+        x = nb*abs(Jxys[bt])
         if z > x
             ## AntiFerroIsing like
-            E0 += 0.5z
+            E0 += 0.25z
         elseif z < -x
             ## FerroIsing like
-            E0 -= 0.5z
+            E0 -= 0.25z
         else
             ## XY like
-            E0 += 0.5x
+            E0 += 0.25x
         end
     end
     nops = length(model.ops)
