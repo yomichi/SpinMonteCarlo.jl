@@ -170,8 +170,8 @@ function loop_update!(model::QuantumXXZ, T::Real, Jzs::AbstractArray, Jxys::Abst
             shift += 0.25x
         end
     end
-    cumsum!(weights, weights)
-    op_dt = T/weights[end]
+    accumulated_weights = cumsum(weights)
+    op_dt = T/accumulated_weights[end]
 
     spins = model.spins[:]
     currents = collect(1:nspins)
@@ -183,7 +183,7 @@ function loop_update!(model::QuantumXXZ, T::Real, Jzs::AbstractArray, Jxys::Abst
     while t <= 1.0 || iops <= length(model.ops)
         if iops > length(model.ops) || t < model.ops[iops].time
             ## INSERT
-            ot = searchsortedfirst(weights, rand()*weights[end])
+            ot = searchsortedfirst(accumulated_weights, rand()*accumulated_weights[end])
             bt = ceil(Int, ot/4)
             ot = mod1(ot,4)
             lo_type = lo_types[ot]
@@ -209,6 +209,12 @@ function loop_update!(model::QuantumXXZ, T::Real, Jzs::AbstractArray, Jxys::Abst
             else
                 push!(ops, model.ops[iops])
                 iops += 1
+                op = ops[end]
+                subbond = op.space
+                b,ss1,ss2 = subbond2bond(subbond,S2)
+                bt = bondtype(model,b)
+                ot = ifelse(rand()*(weights[4bt-1]+weights[4bt])<weights[4bt-1], LO_Vertex, LO_Cross)
+                op.op_type = ot
             end
         end
         
@@ -251,6 +257,13 @@ function loop_update!(model::QuantumXXZ, T::Real, Jzs::AbstractArray, Jxys::Abst
             push!(ifelse(spins[subspin]==1, ups0, downs0), subspin)
             push!(ifelse(model.spins[subspin]==1, ups1, downs1), subspin)
         end
+        if length(ups0) != length(ups1) || length(downs0) != length(downs1)
+            @show model.spins
+            @show ops
+            @show spins
+        end
+        @assert length(ups0) == length(ups1)
+        @assert length(downs0) == length(downs1)
         for (u, u2) in zip(ups0, shuffle(ups1))
             unify!(uf, u, currents[u2])
         end
