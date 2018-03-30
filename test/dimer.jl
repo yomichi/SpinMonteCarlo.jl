@@ -38,21 +38,21 @@ function energy_clock_dimer(Q,T)
     return 0.5E/Z
 end
 
+function energy_XXZ_dimer(T,Jz,Jxy)
+    sz = [0.5 0.0; 0.0 -0.5]
+    sp = [0.0 1.0; 0.0 0.0]
+    sm = [0.0 0.0; 1.0 0.0]
+    H = Jz.*kron(sz,sz) .+ (0.5*Jxy).*(kron(sp,sm).+kron(sm,sp))
+    rho = expm((-1.0/T).*H)
+    return trace(H*rho)/trace(rho)
+end
+
 function energy_TFI_dimer(T,J,G)
     sz = [0.5 0.0; 0.0 -0.5]
     sx = [0.0 0.5; 0.5 0.0]
     H = J.*kron(sz,sz) .- G.*(kron(sx,eye(2)) .+ kron(eye(2),sx))
     rho = expm((-1.0/T).*H)
     return trace(H*rho)/trace(rho)
-end
-
-function mag2_TFI_dimer(T,J,G)
-    sz = [0.5 0.0; 0.0 -0.5]
-    sx = [0.0 0.5; 0.5 0.0]
-    H = J.*kron(sz,sz) .- G.*(kron(sx,eye(2)) .+ kron(eye(2),sx))
-    rho = expm((-1.0/T).*H)
-    sz_tot = 0.5.*(kron(sz, eye(2)) + kron(eye(2), sz))
-    return trace(sz_tot*sz_tot*rho)/trace(rho)
 end
 
 function energy_dimer(param::Dict)
@@ -65,6 +65,8 @@ function energy_dimer(param::Dict)
         return energy_xy_dimer(param["T"])
     elseif model == Clock
         return energy_clock_dimer(param["Q"], param["T"])
+    elseif model == QuantumXXZ
+        return energy_XXZ_dimer(param["T"], param["Jz"], param["Jxy"])
     elseif model == TransverseFieldIsing
         return energy_TFI_dimer(param["T"], param["J"], param["Gamma"])
     else
@@ -77,7 +79,7 @@ end
                               "J" => 1.0,
                               "MCS" => 10000, "Thermalization" => 1000,
                              )
-    const Ts = [0.1, 0.5, 1.0]
+    const Ts = [0.01, 0.1, 0.5, 1.0]
     @testset "$upname" for (upname, method) in [
                                                 ("local update", local_update!),
                                                 ("Swendsen-Wang", SW_update!),
@@ -105,6 +107,23 @@ end
             end
         end
     end
+    @testset "QuantumXXZ" begin
+        srand(SEED)
+        Js = [(0.0, 1.0), (1.0, 0.0), (-1.0, 0.0), (1.0,1.0)]
+        param["Model"] = QuantumXXZ
+        delete!(param,"J")
+        @testset "Jz = $(J[1]), Jxy = $(J[2]), T = $T" for (J,T) in Iterators.product(Js,Ts)
+            param["Jz"] = J[1]
+            param["Jxy"] = J[2]
+            param["T"] = T
+            param["S2"] = 1
+            obs = runMC(param)
+            exact_energy = energy_dimer(param)
+            @dimer_test(obs, "Energy", exact_energy, conf_ratio)
+        end
+        delete!(param,"Jz")
+        delete!(param,"Jxy")
+    end
     @testset "TransverseFieldIsing" begin
         srand(SEED)
         Js = [1.0]
@@ -116,10 +135,7 @@ end
             param["T"] = T
             obs = runMC(param)
             exact_energy = energy_dimer(param)
-            exact_mag2 = mag2_TFI_dimer(T,J,G)
             @dimer_test(obs, "Energy", exact_energy, conf_ratio)
-            @dimer_test(obs, "Magnetization", 0.0, conf_ratio)
-            @dimer_test(obs, "Magnetization^2", exact_mag2, conf_ratio)
         end
     end
 end

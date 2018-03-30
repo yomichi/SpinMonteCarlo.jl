@@ -158,11 +158,11 @@ function loop_update!(model::QuantumXXZ, T::Real, Jzs::AbstractArray, Jxys::Abst
         x = nb*abs(Jxys[i])
         if z > x
             ## AntiFerroIsing like
-            weights[(4i-3):(4i)] .= 0.5*[z-x, 0.0, x, 0.0]
+            weights[(4i-3):(4i)] .= 0.5*[0.0, z-x, x, 0.0]
             shift += 0.25z
         elseif z < -x
             ## FerroIsing like
-            weights[(4i-3):(4i)] .= 0.5*[0.0, -z-x, 0.0, x]
+            weights[(4i-3):(4i)] .= 0.5*[-z-x, 0.0, 0.0, x]
             shift -= 0.25z
         else
             ## XY like
@@ -256,11 +256,6 @@ function loop_update!(model::QuantumXXZ, T::Real, Jzs::AbstractArray, Jxys::Abst
             subspin += 1
             push!(ifelse(spins[subspin]==1, ups0, downs0), subspin)
             push!(ifelse(model.spins[subspin]==1, ups1, downs1), subspin)
-        end
-        if length(ups0) != length(ups1) || length(downs0) != length(downs1)
-            @show model.spins
-            @show ops
-            @show spins
         end
         @assert length(ups0) == length(ups1)
         @assert length(downs0) == length(downs1)
