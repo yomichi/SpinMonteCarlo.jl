@@ -101,12 +101,11 @@ function var(b::BinningObservable, level::Int = 1)
         v2 = s2 - s*s/n
         v2 = maxzero(v2)
         return v2/(n-1)
-    elseif n == 1
-        return Inf
-    else
+    elseif n < 2
         return NaN
     end
 end
+stddev(b::BinningObservable, level::Int=1) = sqrt(var(b,level))
 
 function stderror(b::BinningObservable, level::Int = maxlevel(b))
     return sqrt(var(b,level)/count(b,level))

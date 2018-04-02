@@ -23,19 +23,13 @@ end
 
 count(jk::Jackknife) = length(jk.xs)
 
-function mean(jk::Jackknife)
-    if isempty(jk) 
-        return NaN
-    else
-        return mean(jk.xs)
-    end
-end
+mean(jk::Jackknife) = mean(jk.xs)
+var(jk::Jackknife) = var(jk.xs)
+stddev(jk::Jackknife) = sqrt(var(jk))
 function stderror(jk::Jackknife)
     n = count(jk)
-    if n == 0
+    if n < 2
         return NaN
-    elseif n == 1
-        return Inf
     else
         m2 = sum(abs2, jk.xs)
         m2 /= n

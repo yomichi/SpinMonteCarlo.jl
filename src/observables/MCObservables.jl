@@ -1,6 +1,7 @@
 import Base: show, <<, push!, mean, var, count, isempty, merge, merge!, zero, zeros, sum
 export MCObservable, ScalarObservable, VectorObservable
 export mean, var, stderror, confidence_interval
+export p_value
 export show, dump_plot
 export merge, merge!
 
@@ -11,6 +12,22 @@ using Distributions
 @compat abstract type MCObservable end
 @compat abstract type ScalarObservable <: MCObservable end
 @compat abstract type VectorObservable <: MCObservable end
+
+function p_value(X::MCObservable, y::Real)
+    t = (mean(X)-y)/stderror(X)
+    d = TDist(count(X)-1)
+    return 2cdf(d,-abs(t))
+end
+
+function p_value(X::MCObservable, Y::MCObservable)
+    NX = count(X)
+    NY = count(Y)
+    N = 1.0/(1.0/NX + 1.0/NY)
+    s = sqrt(((NX-1)*var(X) + (NY-1)*var(Y))/(NX+NY-2))
+    t = (mean(X)-mean(Y))*N/s
+    d = TDist(NX+NY-2)
+    return 2cdf(d,-abs(t))
+end
 
 isempty(obs::MCObservable) = count(obs) == 0
 
