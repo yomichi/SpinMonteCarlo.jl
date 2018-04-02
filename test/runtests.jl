@@ -29,4 +29,5 @@ const obsnames_clock = obsnames_xy
     include("dimer.jl")
     include("square.jl")
     include("anisotropic.jl")
+    include("QuantumXXZ.jl")
 end
