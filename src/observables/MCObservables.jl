@@ -23,8 +23,9 @@ function p_value(X::MCObservable, Y::MCObservable)
     NX = count(X)
     NY = count(Y)
     N = 1.0/(1.0/NX + 1.0/NY)
-    s = sqrt(((NX-1)*var(X) + (NY-1)*var(Y))/(NX+NY-2))
-    t = (mean(X)-mean(Y))*N/s
+    V = ( (NX-1)*var(X) + (NY-1)*var(Y) )/(NX+NY-2)
+    se = sqrt(V/N)
+    t = (mean(X)-mean(Y))/se
     d = TDist(NX+NY-2)
     return 2cdf(d,-abs(t))
 end
