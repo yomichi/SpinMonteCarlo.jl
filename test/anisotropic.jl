@@ -12,12 +12,10 @@
         param["Lattice"] = chain_lattice
         param["J"] = [1.0, 0.0]
         obs = runMC(param)
-        diff = obs["Energy"] - ref["Energy"]
-        @test mean(diff) < confidence_interval(diff, conf_ratio)
+        @test p_value(obs["Energy"], ref["Energy"]) > alpha
         param["J"] = [0.0, 1.0]
         obs = runMC(param)
-        diff = obs["Energy"] - ref["Energy"]
-        @test mean(diff) < confidence_interval(diff, conf_ratio)
+        @test p_value(obs["Energy"], ref["Energy"]) > alpha
     end
     @testset "chain-square" begin
         srand(SEED)
@@ -27,13 +25,11 @@
         param["Lattice"] = square_lattice
         param["J"] = [1.0, 0.0]
         obs = runMC(param)
-        diff = obs["Energy"] - ref["Energy"]
-        @test mean(diff) < confidence_interval(diff, conf_ratio)
+        @test p_value(obs["Energy"], ref["Energy"]) > alpha
 
         param["J"] = [0.0, 1.0]
         obs = runMC(param)
-        diff = obs["Energy"] - ref["Energy"]
-        @test mean(diff) < confidence_interval(diff, conf_ratio)
+        @test p_value(obs["Energy"], ref["Energy"]) > alpha
     end
 
     @testset "chain-triangular" begin
@@ -44,16 +40,13 @@
         param["Lattice"] = triangular_lattice
         param["J"] = [1.0, 0.0, 0.0]
         obs = runMC(param)
-        diff = obs["Energy"] - ref["Energy"]
-        @test mean(diff) < confidence_interval(diff, conf_ratio)
+        @test p_value(obs["Energy"], ref["Energy"]) > alpha
         param["J"] = [0.0, 1.0, 0.0]
         obs = runMC(param)
-        diff = obs["Energy"] - ref["Energy"]
-        @test mean(diff) < confidence_interval(diff, conf_ratio)
+        @test p_value(obs["Energy"], ref["Energy"]) > alpha
         param["J"] = [0.0, 0.0, 1.0]
         obs = runMC(param)
-        diff = obs["Energy"] - ref["Energy"]
-        @test mean(diff) < confidence_interval(diff, conf_ratio)
+        @test p_value(obs["Energy"], ref["Energy"]) > alpha
     end
 
     @testset "chain-cubic" begin
@@ -65,18 +58,15 @@
 
         param["J"] = [1.0, 0.0, 0.0]
         obs = runMC(param)
-        diff = obs["Energy"] - ref["Energy"]
-        @test mean(diff) < confidence_interval(diff, conf_ratio)
+        @test p_value(obs["Energy"], ref["Energy"]) > alpha
 
         param["J"] = [0.0, 1.0, 0.0]
         obs = runMC(param)
-        diff = obs["Energy"] - ref["Energy"]
-        @test mean(diff) < confidence_interval(diff, conf_ratio)
+        @test p_value(obs["Energy"], ref["Energy"]) > alpha
 
         param["J"] = [0.0, 0.0, 1.0]
         obs = runMC(param)
-        diff = obs["Energy"] - ref["Energy"]
-        @test mean(diff) < confidence_interval(diff, conf_ratio)
+        @test p_value(obs["Energy"], ref["Energy"]) > alpha
     end
 
     @testset "square-cubic" begin
@@ -88,15 +78,12 @@
 
         param["J"] = [1.0, 1.0, 0.0]
         obs = runMC(param)
-        diff = obs["Energy"] - ref["Energy"]
-        @test mean(diff) < confidence_interval(diff, conf_ratio)
+        @test p_value(obs["Energy"], ref["Energy"]) > alpha
         param["J"] = [1.0, 0.0, 1.0]
         obs = runMC(param)
-        diff = obs["Energy"] - ref["Energy"]
-        @test mean(diff) < confidence_interval(diff, conf_ratio)
+        @test p_value(obs["Energy"], ref["Energy"]) > alpha
         param["J"] = [0.0, 1.0, 1.0]
         obs = runMC(param)
-        diff = obs["Energy"] - ref["Energy"]
-        @test mean(diff) < confidence_interval(diff, conf_ratio)
+        @test p_value(obs["Energy"], ref["Energy"]) > alpha
     end
 end
