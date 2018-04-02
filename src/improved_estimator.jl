@@ -143,7 +143,7 @@ function improved_estimate(model::TransverseFieldIsing, T::Real, Jzs::AbstractAr
     return M, M2, M4, E, E2
 end
 
-function improved_estimate(model::QuantumXXZ, T::Real, Jzs::AbstractArray, Jxys::AbstractArray, uf::UnionFind)
+function improved_estimate(model::QuantumXXZ, T::Real, Jzs::AbstractArray, Jxys::AbstractArray, Gs::AbstractArray, uf::UnionFind)
     S2 = model.S2
     nsites = numsites(model)
     nspins = nsites*S2
@@ -158,6 +158,9 @@ function improved_estimate(model::QuantumXXZ, T::Real, Jzs::AbstractArray, Jxys:
     ms .*= 0.5/nsites
 
     E0 = 0.0
+    for st in 1:numsitetypes(model)
+        E0 += 0.5 * numsites(model, st) * Gs[st] * S2
+    end
     for bt in 1:numbondtypes(model)
         nb = numbonds(model,bt)*S2*S2
         z = nb*Jzs[bt]

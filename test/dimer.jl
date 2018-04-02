@@ -38,13 +38,24 @@ function energy_clock_dimer(Q,T)
     return 0.5E/Z
 end
 
-function energy_XXZ_dimer(T,Jz,Jxy)
+function energy_XXZ_dimer(T,Jz,Jxy,G)
     sz = [0.5 0.0; 0.0 -0.5]
+    sx = [0.0 0.5; 0.5 0.0]
     sp = [0.0 1.0; 0.0 0.0]
     sm = [0.0 0.0; 1.0 0.0]
-    H = Jz.*kron(sz,sz) .+ (0.5*Jxy).*(kron(sp,sm).+kron(sm,sp))
-    rho = expm((-1.0/T).*H)
-    return trace(H*rho)/trace(rho)
+    H = Jz.*kron(sz,sz) .+ (0.5*Jxy).*(kron(sp,sm).+kron(sm,sp)) - G.*(kron(sx,eye(2)) .+ kron(eye(2),sx))
+    Es = eig(H)[1]
+    E0 = Es[1]
+    Es .-= E0
+    Z = 0.0
+    EZ = 0.0
+    mb = -1.0/T
+    for E in reverse(Es)
+        z = exp(mb*E)
+        Z += z
+        EZ += E*z
+    end
+    return EZ/Z+E0
 end
 
 function energy_TFI_dimer(T,J,G)
@@ -66,7 +77,7 @@ function energy_dimer(param::Dict)
     elseif model == Clock
         return energy_clock_dimer(param["Q"], param["T"])
     elseif model == QuantumXXZ
-        return energy_XXZ_dimer(param["T"], param["Jz"], param["Jxy"])
+        return energy_XXZ_dimer(param["T"], param["Jz"], param["Jxy"], param["Gamma"])
     elseif model == TransverseFieldIsing
         return energy_TFI_dimer(param["T"], param["J"], param["Gamma"])
     else
@@ -117,6 +128,7 @@ end
             param["Jxy"] = J[2]
             param["T"] = T
             param["S2"] = 1
+            param["Gamma"] = 0.0
             obs = runMC(param)
             exact_energy = energy_dimer(param)
             @dimer_test(obs, "Energy", exact_energy, conf_ratio)
@@ -128,9 +140,11 @@ end
         srand(SEED)
         Js = [1.0]
         Gs = [0.0, 0.1, 0.5, 1.0, 5.0]
-        param["Model"] = TransverseFieldIsing
+        param["Model"] = QuantumXXZ
+        # param["Model"] = TransverseFieldIsing
         @testset "J = $J, G = $G, T = $T" for (J,G,T) in Iterators.product(Js,Gs,Ts)
-            param["J"] = J
+            param["Jz"] = J
+            param["Jxy"] = 0.0
             param["Gamma"] = G
             param["T"] = T
             obs = runMC(param)

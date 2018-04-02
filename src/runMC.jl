@@ -207,13 +207,20 @@ function runMC(model::QuantumXXZ, params::Dict)
         Jz = params["Jz"]
         Jxy = params["Jxy"]
     end
+    if "Gamma" in keys(params)
+        G = params["Gamma"]
+    else
+        G = 0.0
+    end
     MCS = get(params, "MCS", 8192)
     Therm = get(params, "Thermalization", MCS>>3)
-    return runMC(model, T, Jz, Jxy, MCS, Therm)
+    return runMC(model, T, Jz, Jxy, G, MCS, Therm)
 end
-function runMC(model::QuantumXXZ, T::Real, Jz::Union{Real, AbstractArray}, Jxy::Union{Real, AbstractArray}, MCS::Integer, Therm::Integer)
+function runMC(model::QuantumXXZ, T::Real,
+               Jz::Union{Real, AbstractArray}, Jxy::Union{Real, AbstractArray},
+               Gs::Union{Real, AbstractArray}, MCS::Integer, Therm::Integer)
     for mcs in 1:Therm
-        loop_update!(model,T, Jz, Jxy, measure=false)
+        loop_update!(model,T, Jz, Jxy, Gs, measure=false)
     end
 
     nsites = numsites(model.lat)
@@ -229,7 +236,7 @@ function runMC(model::QuantumXXZ, T::Real, Jz::Union{Real, AbstractArray}, Jxy::
 
     for mcs in 1:MCS
         t = @elapsed begin 
-            localobs = loop_update!(model,T,Jz,Jxy)
+            localobs = loop_update!(model,T,Jz,Jxy,Gs)
         end
         M = localobs["M"]
         M2 = localobs["M2"]
