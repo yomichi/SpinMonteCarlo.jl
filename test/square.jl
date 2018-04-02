@@ -23,10 +23,27 @@
         wolff = runMC(param)
 
         @testset "$name" for name in obsnames
+            if p_value(localupdate[name], sw[name]) <= alpha
+                @show localupdate[name], sw[name]
+            end
+            @test p_value(localupdate[name], sw[name]) > alpha
+
+            if p_value(localupdate[name], wolff[name]) <= alpha
+                @show localupdate[name], wolff[name]
+            end
+            @test p_value(localupdate[name], wolff[name]) > alpha
+
+            if p_value(sw[name], wolff[name]) <= alpha
+                @show sw[name], wolff[name]
+            end
+            @test p_value(sw[name], wolff[name]) > alpha
+            # @test p_value(localupdate[name], wolff[name]) > alpha
+            #=
             diff = localupdate[name] - sw[name]
             @test abs(mean(diff)) < confidence_interval(diff, conf_ratio)
             diff = localupdate[name] - wolff[name]
             @test abs(mean(diff)) < confidence_interval(diff, conf_ratio)
+            =#
         end
     end
 end

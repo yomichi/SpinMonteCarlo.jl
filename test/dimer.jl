@@ -1,15 +1,5 @@
 using SpecialFunctions
 
-macro dimer_test(o, name, exactval, conf_ratio)
-    quote
-        c = confidence_interval($(esc(o))[$(esc(name))], $(esc(conf_ratio)))
-        if c == 0.0
-            c = sqrt(nextfloat($(esc(exactval))) - $(esc(exactval)))
-        end
-        @test abs(mean($(esc(o))[$(esc(name))]) - $(esc(exactval))) <= c
-    end
-end
-
 function energy_ising_dimer(T)
     beta = 1.0/T
     Z = exp(beta) + exp(-beta)
@@ -114,7 +104,8 @@ end
                 param["T"] = T
                 obs = runMC(param)
                 exact = energy_dimer(param)
-                @test abs(mean(obs["Energy"]) - exact) <= confidence_interval(obs["Energy"],conf_ratio)
+                # @test abs(mean(obs["Energy"]) - exact) <= confidence_interval(obs["Energy"],conf_ratio)
+                @test p_value(obs["Energy"], exact) > alpha
             end
         end
     end
@@ -131,7 +122,8 @@ end
             param["Gamma"] = 0.0
             obs = runMC(param)
             exact_energy = energy_dimer(param)
-            @dimer_test(obs, "Energy", exact_energy, conf_ratio)
+            @test p_value(obs["Energy"], exact_energy) > alpha
+            @test p_value(obs["Magnetization"], 0.0) > alpha
         end
         delete!(param,"Jz")
         delete!(param,"Jxy")
@@ -149,7 +141,8 @@ end
             param["T"] = T
             obs = runMC(param)
             exact_energy = energy_dimer(param)
-            @dimer_test(obs, "Energy", exact_energy, conf_ratio)
+            @test p_value(obs["Energy"], exact_energy) > alpha
+            @test p_value(obs["Magnetization"], 0.0) > alpha
         end
     end
 end

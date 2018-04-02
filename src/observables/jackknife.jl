@@ -23,19 +23,11 @@ end
 
 count(jk::Jackknife) = length(jk.xs)
 
-function mean(jk::Jackknife)
-    if isempty(jk) 
-        return NaN
-    else
-        return mean(jk.xs)
-    end
-end
+mean(jk::Jackknife) = mean(jk.xs)
 function stderror(jk::Jackknife)
     n = count(jk)
-    if n == 0
+    if n < 2
         return NaN
-    elseif n == 1
-        return Inf
     else
         m2 = sum(abs2, jk.xs)
         m2 /= n
@@ -46,6 +38,16 @@ function stderror(jk::Jackknife)
         return sqrt(sigma2)
     end
 end
+function var(jk::Jackknife)
+    n = count(jk)
+    if n < 2
+        return NaN
+    else
+        m = mean(jk)
+        return sum(abs2, jk.xs.-m)*(n-1)
+    end
+end
+stddev(jk::Jackknife) = sqrt(var(jk))
 
 function confidence_interval(jk::Jackknife, confidence_rate::Real)
     q = 0.5+0.5*confidence_rate

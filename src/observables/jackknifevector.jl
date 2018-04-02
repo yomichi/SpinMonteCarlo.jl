@@ -28,9 +28,19 @@ function mean(jk::JackknifeVector)
     if isempty(jk) 
         return NaN
     else
-        return mean(jk.xs)
+        return mean.(jk.xs)
     end
 end
+function var(jk::JackknifeVector)
+    n = count(jk)
+    if n < 2
+        return NaN
+    else
+        m = mean(jk)
+        return sum(abs2, jk.xs.-m)*(n-1)
+    end
+end
+stddev(jk::JackknifeVector) = sqrt.(var(jk))
 function stderror(jk::JackknifeVector)
     n = count(jk)
     if n == 0

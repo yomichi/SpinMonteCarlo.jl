@@ -46,16 +46,14 @@ end
 
 function var(obs::SimpleVectorObservable)
     if obs.num  > 1
-        v = (obs.sum2 - squared(obs.sum)/obs.num)/(obs.num-1)
-        return map(maxzero, v)
-    elseif obs.num == 1
-        return fill(Inf, length(obs.sum))
+        v = (obs.sum2 .- (obs.sum.^2)./obs.num)./(obs.num-1)
+        return map!(maxzero, v)
     else
-        return [NaN]
+        return fill(NaN, length(obs.sum))
     end
 end
-stddev(obs::SimpleVectorObservable) = sqrt(var(obs))
-stderror(obs::SimpleVectorObservable) = sqrt(var(obs)/count(obs))
+stddev(obs::SimpleVectorObservable) = sqrt.(var(obs))
+stderror(obs::SimpleVectorObservable) = sqrt.(var(obs)./count(obs))
 function confidence_interval(obs::SimpleVectorObservable, confidence_rate :: Real)
     if count(obs) == 0
         return [Inf]
