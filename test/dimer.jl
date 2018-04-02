@@ -101,7 +101,8 @@ end
                 param["T"] = T
                 obs = runMC(param)
                 exact = energy_dimer(param)
-                @test abs(mean(obs["Energy"]) - exact) <= confidence_interval(obs["Energy"],conf_ratio)
+                # @test abs(mean(obs["Energy"]) - exact) <= confidence_interval(obs["Energy"],conf_ratio)
+                @test p_value(obs["Energy"], exact) > alpha
             end
         end
     end
@@ -117,9 +118,12 @@ end
             obs = runMC(param)
             exact_energy = energy_dimer(param)
             exact_mag2 = mag2_TFI_dimer(T,J,G)
-            @dimer_test(obs, "Energy", exact_energy, conf_ratio)
-            @dimer_test(obs, "Magnetization", 0.0, conf_ratio)
-            @dimer_test(obs, "Magnetization^2", exact_mag2, conf_ratio)
+            @test p_value(obs["Energy"], exact_energy) > alpha
+            @test p_value(obs["Magnetization"], 0.0) > alpha
+            @test p_value(obs["Magnetization^2"], exact_mag2) > alpha
+            # @dimer_test(obs, "Energy", exact_energy, conf_ratio)
+            # @dimer_test(obs, "Magnetization", 0.0, conf_ratio)
+            # @dimer_test(obs, "Magnetization^2", exact_mag2, conf_ratio)
         end
     end
 end

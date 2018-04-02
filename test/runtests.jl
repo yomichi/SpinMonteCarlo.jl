@@ -4,9 +4,9 @@ include("../src/SpinMonteCarlo.jl")
 using SpinMonteCarlo
 
 const SEED = 19937
-const MCS = 65536
-const Therm = MCS>>3
-const conf_ratio = 0.999
+const MCS = 100000
+const Therm = 10000
+const alpha = 0.01
 const obsnames_ising = ["Magnetization", "|Magnetization|", "Magnetization^2", "Magnetization^4", "Binder Ratio",
                         "Susceptibility", "Connected Susceptibility",
                         "Energy", "Energy^2", "Specific Heat",

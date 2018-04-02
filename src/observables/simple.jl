@@ -39,9 +39,7 @@ function var(obs::SimpleObservable)
     if obs.num  > 1
         v = (obs.sum2 - obs.sum*obs.sum/obs.num)/(obs.num-1)
         return maxzero(v)
-    elseif obs.num == 1
-        return Inf
-    else
+    elseif obs.num < 2
         return NaN
     end
 end

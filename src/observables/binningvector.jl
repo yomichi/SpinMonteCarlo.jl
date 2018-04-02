@@ -104,7 +104,7 @@ function push!(b::BinningVectorObservable, x::Vector)
 end
 
 function mean(b::BinningVectorObservable, level::Int = 1)
-    return sum(b, level)/count(b, level)
+    return sum(b, level)./count(b, level)
 end
 
 function var(b::BinningVectorObservable, level::Int = 1)
@@ -112,17 +112,15 @@ function var(b::BinningVectorObservable, level::Int = 1)
     s = sum(b, level)
     s2 = sum2(b, level)
     if n > 1
-        v2 = s2 - s.*s/n
+        v2 = s2 .- (s.^2)./n
         return map(maxzero, v2/(n-1))
-    elseif n == 1
-        return fill(Inf, length(b.sum[1]))
     else
-        return NaN
+        return fill(NaN, length(b.sum[1]))
     end
 end
 
 function stderror(b::BinningVectorObservable, level::Int = maxlevel(b))
-    return sqrt(var(b,level)/count(b,level))
+    return sqrt.(var(b,level)./count(b,level))
 end
 
 function confidence_interval(b::BinningVectorObservable, confidence_rate::Real, level::Int = maxlevel(b))
@@ -138,7 +136,7 @@ end
 
 function tau(b::BinningVectorObservable, level::Int = maxlevel(b))
     binsize = 1<<(level-1)
-    return 0.5*( (binsize*var(b,level))./var(b) - 1.0)
+    return 0.5.*( (binsize.*var(b,level))./var(b) .- 1.0)
 end
 
 #=
