@@ -23,10 +23,12 @@ end
 
 @testset "QuantumXXZ chain" begin
     const S2s = [1]
-    const Js = [(1.0, 1.0), (1.0, 0.5), (1.0, 2.0),
+    const Js = [
+                (1.0, 1.0), (1.0, 0.5), (1.0, 2.0), (1.0, 0.0),
                 (0.0, 1.0),
-                (-1.0, 1.0), (-1.0, 0.5), (-1.0, 2.0)]
-    const Gs = [0.0, ]
+                (-1.0, 1.0), (-1.0, 0.5), (-1.0, 2.0), (-1.0, 0.0),
+               ]
+    const Gs = [0.0, 0.5, 1.0, 2.0]
     @testset "S=$(0.5S2)" for S2 in S2s
         @testset "Jz=$(J[1]), Jxy=$(J[2]) G=$G" for (G,J) in Iterators.product(Gs,Js)
             Ts, exacts = loaddata(S2=S2, Jz=J[1], Jxy=J[2], G=G)
