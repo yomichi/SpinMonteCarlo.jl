@@ -3,8 +3,8 @@ function print_result(io::IO, params::Array, obs::Array)
         names = ["L", "T"]
     elseif isa(params[1]["Model"], Union{Type{Potts}, Type{Clock}})
         names = ["Q", "L", "T"]
-    elseif isa(params[1]["Model"], Union{Type{TransverseFieldIsing}})
-        names = ["L", "T", "J", "Gamma"]
+    elseif isa(params[1]["Model"], Union{Type{QuantumXXZ}})
+        names = ["S2", "L", "T", "Jz", "Jxy", "Gamma"]
     end
     print_result(io, params, obs, names)
 end

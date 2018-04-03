@@ -68,8 +68,6 @@ function energy_dimer(param::Dict)
         return energy_clock_dimer(param["Q"], param["T"])
     elseif model == QuantumXXZ
         return energy_XXZ_dimer(param["T"], param["Jz"], param["Jxy"], param["Gamma"])
-    elseif model == TransverseFieldIsing
-        return energy_TFI_dimer(param["T"], param["J"], param["Gamma"])
     else
         error("unknown model")
     end
@@ -127,22 +125,5 @@ end
         end
         delete!(param,"Jz")
         delete!(param,"Jxy")
-    end
-    @testset "TransverseFieldIsing" begin
-        srand(SEED)
-        Js = [1.0]
-        Gs = [0.0, 0.1, 0.5, 1.0, 5.0]
-        param["Model"] = QuantumXXZ
-        # param["Model"] = TransverseFieldIsing
-        @testset "J = $J, G = $G, T = $T" for (J,G,T) in Iterators.product(Js,Gs,Ts)
-            param["Jz"] = J
-            param["Jxy"] = 0.0
-            param["Gamma"] = G
-            param["T"] = T
-            obs = runMC(param)
-            exact_energy = energy_dimer(param)
-            @test p_value(obs["Energy"], exact_energy) > alpha
-            @test p_value(obs["Magnetization"], 0.0) > alpha
-        end
     end
 end
