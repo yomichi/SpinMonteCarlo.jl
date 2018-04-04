@@ -49,15 +49,13 @@ end
                 res = QMC(T; p...)
                 ene = res["Energy"]
                 if !(p_value(ene, exact) > alpha/N)
-                    res = QMC(T; p...)
-                    ene = res["Energy"]
-                    sgn = mean(res["Sign"])
-                    if  sgn < 1.0 && !(isfinite(mean(ene)))
+                    if  mean(res["Sign"]) < 1.0 && !(isfinite(mean(ene)))
+                        ## Sign problem makes test very difficult...
                         continue
                     else
-                        @show T
-                        @show exact
-                        @show ene
+                        ## Perform one more test since single MC test may fail.
+                        res = QMC(T; p...)
+                        ene = res["Energy"]
                     end
                 end
                 @test p_value(ene, exact) > alpha/N
