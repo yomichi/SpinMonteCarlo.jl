@@ -20,6 +20,15 @@ end
 function Jackknife(o::ScalarObservable)
     return count(o) > 0 ? Jackknife(jk_helper(o.bins)) : Jackknife(zeros(0))
 end
+function Jackknife(b::BinningObservable)
+    if count(b) > 0
+        return Jackknife(jk_helper(ifelse(b.lastbin<b.binsize,
+                                          b.bins[1:end-1],
+                                          b.bins)))
+    else
+        return Jackknife(zeros(0))
+    end
+end
 
 count(jk::Jackknife) = length(jk.xs)
 

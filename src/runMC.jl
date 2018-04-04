@@ -147,58 +147,6 @@ function runMC(model::Union{Clock, XY}, T::Real, Js::Union{Real,AbstractArray}, 
     return jk
 end
 
-function runMC(model::TransverseFieldIsing, params::Dict)
-    T = params["T"]
-    J = params["J"]
-    gamma = params["Gamma"]
-    MCS = get(params, "MCS", 8192)
-    Therm = get(params, "Thermalization", MCS>>3)
-    return runMC(model, T, J, gamma, MCS, Therm)
-end
-function runMC(model::TransverseFieldIsing, T::Real, J::Union{Real, AbstractArray}, gamma::Union{Real, AbstractArray}, MCS::Integer, Therm::Integer)
-    for mcs in 1:Therm
-        loop_update!(model,T, J, gamma, measure=false)
-    end
-
-    nsites = numsites(model.lat)
-    invV = 1.0/nsites
-    obs = BinningObservableSet()
-    makeMCObservable!(obs, "Time per MCS")
-    makeMCObservable!(obs, "Magnetization")
-    makeMCObservable!(obs, "|Magnetization|")
-    makeMCObservable!(obs, "Magnetization^2")
-    makeMCObservable!(obs, "Magnetization^4")
-    makeMCObservable!(obs, "Energy")
-    makeMCObservable!(obs, "Energy^2")
-
-    for mcs in 1:MCS
-        t = @elapsed begin 
-            localobs = loop_update!(model,T,J,gamma)
-        end
-        M = localobs["M"]
-        M2 = localobs["M2"]
-        M4 = localobs["M4"]
-        E = localobs["E"]
-        E2 = localobs["E2"]
-        obs["Time per MCS"] << t
-        obs["Magnetization"] << M
-        obs["|Magnetization|"] << abs(M)
-        obs["Magnetization^2"] << M2
-        obs["Magnetization^4"] << M4
-        obs["Energy"] << E
-        obs["Energy^2"] << E*E
-    end
-
-    jk = jackknife(obs)
-    jk["Binder Ratio"] = jk["Magnetization^4"] / (jk["Magnetization^2"]^2)
-    jk["Susceptibility"] = (nsites/T)*jk["Magnetization^2"]
-    jk["Connected Susceptibility"] = (nsites/T)*(jk["Magnetization^2"] - jk["|Magnetization|"]^2)
-    jk["Specific Heat"] = (nsites/T/T)*(jk["Energy^2"] - jk["Energy"]^2)
-    jk["MCS per Second"] = 1.0/jk["Time per MCS"]
-
-    return jk
-end
-
 function runMC(model::QuantumXXZ, params::Dict)
     T = params["T"]
     if "J" in keys(params)
@@ -207,11 +155,7 @@ function runMC(model::QuantumXXZ, params::Dict)
         Jz = params["Jz"]
         Jxy = params["Jxy"]
     end
-    if "Gamma" in keys(params)
-        G = params["Gamma"]
-    else
-        G = 0.0
-    end
+    G = get(params, "Gamma", 0.0)
     MCS = get(params, "MCS", 8192)
     Therm = get(params, "Thermalization", MCS>>3)
     return runMC(model, T, Jz, Jxy, G, MCS, Therm)
@@ -227,12 +171,13 @@ function runMC(model::QuantumXXZ, T::Real,
     invV = 1.0/nsites
     obs = BinningObservableSet()
     makeMCObservable!(obs, "Time per MCS")
-    makeMCObservable!(obs, "Magnetization")
-    makeMCObservable!(obs, "|Magnetization|")
-    makeMCObservable!(obs, "Magnetization^2")
-    makeMCObservable!(obs, "Magnetization^4")
-    makeMCObservable!(obs, "Energy")
-    makeMCObservable!(obs, "Energy^2")
+    makeMCObservable!(obs, "Sign * Magnetization")
+    makeMCObservable!(obs, "Sign * |Magnetization|")
+    makeMCObservable!(obs, "Sign * Magnetization^2")
+    makeMCObservable!(obs, "Sign * Magnetization^4")
+    makeMCObservable!(obs, "Sign * Energy")
+    makeMCObservable!(obs, "Sign * Energy^2")
+    makeMCObservable!(obs, "Sign")
 
     for mcs in 1:MCS
         t = @elapsed begin 
@@ -243,16 +188,26 @@ function runMC(model::QuantumXXZ, T::Real,
         M4 = localobs["M4"]
         E = localobs["E"]
         E2 = localobs["E2"]
+        sgn = localobs["Sign"]
         obs["Time per MCS"] << t
-        obs["Magnetization"] << M
-        obs["|Magnetization|"] << abs(M)
-        obs["Magnetization^2"] << M2
-        obs["Magnetization^4"] << M4
-        obs["Energy"] << E
-        obs["Energy^2"] << E*E
+        obs["Sign * Magnetization"] << M*sgn
+        obs["Sign * |Magnetization|"] << abs(M)*sgn
+        obs["Sign * Magnetization^2"] << M2*sgn
+        obs["Sign * Magnetization^4"] << M4*sgn
+        obs["Sign * Energy"] << E*sgn
+        obs["Sign * Energy^2"] << E*E*sgn
+        obs["Sign"] << sgn
     end
 
     jk = jackknife(obs)
+
+    for oname in ("Magnetization", "|Magnetization|",
+                  "Magnetization^2", "Magnetization^4",
+                  "Energy", "Energy^2",
+                 )
+        jk[oname] = jk["Sign * $oname"] / jk["Sign"]
+    end
+
     jk["Binder Ratio"] = jk["Magnetization^4"] / (jk["Magnetization^2"]^2)
     jk["Susceptibility"] = (nsites/T)*jk["Magnetization^2"]
     jk["Connected Susceptibility"] = (nsites/T)*(jk["Magnetization^2"] - jk["|Magnetization|"]^2)

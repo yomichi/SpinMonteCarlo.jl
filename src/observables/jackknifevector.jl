@@ -21,6 +21,18 @@ function JackknifeVector(o::VectorObservable)
         return JackknifeVector(jk_helper(o.bins))
     end
 end
+function JackknifeVector(b::BinningVectorObservable)
+    if isempty(b)
+        return JackknifeVector()
+    else
+        if b.lastbin == b.binsize
+            return JackknifeVector(jk_helper(b.bins))
+        else
+            bins = [bs[1:end-1] for bs in b.bins]
+            return JackknifeVector(jk_helper(bins))
+        end
+    end
+end
 
 count(jk::JackknifeVector) = length(jk.xs)
 

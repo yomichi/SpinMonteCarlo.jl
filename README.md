@@ -49,7 +49,7 @@ end
     - `XY` model
     - `Q` state `Clock` model
 - Quantum spin model
-    - S=1/2 `TransverseFieldIsing` model
+    - general S `QuantumXXZ` model
 
 ## Lattice
 - `chain_lattice`
@@ -103,7 +103,7 @@ end
     - `Energy`
     - `Energy^2`
     - `Specific Heat`
-- `TransverseFieldIsing`
+- `QuantumXXZ`
     - `Magnetization`
     - `|Magnetization|`
     - `Magnetization^2`
@@ -111,6 +111,9 @@ end
     - `Binder Ratio`
     - `Susceptibility`
     - `Connected Susceptibility`
+    - `Energy`
+    - `Energy^2`
+    - `Specific Heat`
 
 # Future work
 - `Model`
@@ -119,8 +122,6 @@ end
         - antiferro interaction
         - magnetic field
     - Quantum model
-        - Heisenberg model
-        - XXZ model
         - SU(N) model
 - `Lattice`
     - ladder

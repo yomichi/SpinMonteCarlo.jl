@@ -108,41 +108,6 @@ function improved_estimate(model::Potts, T::Real, Js::AbstractArray, sw::SWInfo)
     return M, M2, M4, E, E2
 end
 
-function improved_estimate(model::TransverseFieldIsing, T::Real, Jzs::AbstractArray, Gs::AbstractArray, uf::UnionFind)
-    nsites = numsites(model)
-    nbonds = numbonds(model)
-    nc = numclusters(uf)
-
-    ms = zeros(nc)
-    for s in 1:nsites
-        i = clusterid(uf, s)
-        ms[i] += model.spins[s]
-    end
-    ms .*= 0.5/nsites
-
-    E0 = 0.0
-    for st in 1:numsitetypes(model)
-        E0 += 0.5 * numsites(model, st) * Gs[st]
-    end
-    for bt in 1:numbondtypes(model)
-        E0 += 0.25 * numbonds(model, bt) * abs(Jzs[bt])
-    end
-    nops = length(model.ops)
-    E = E0-nops*T
-    E2 = nops*(nops-1)*T^2 - 2*E0*T*nops + 2*E0^2
-
-    M = 0.0
-    M2 = 0.0
-    M4 = 0.0
-    for m in ms
-        M += m
-        m2 = m*m
-        M4 += m2*m2 + 6M2*m2
-        M2 += m2
-    end
-    return M, M2, M4, E, E2
-end
-
 function improved_estimate(model::QuantumXXZ, T::Real, Jzs::AbstractArray, Jxys::AbstractArray, Gs::AbstractArray, uf::UnionFind)
     S2 = model.S2
     nsites = numsites(model)
@@ -189,5 +154,18 @@ function improved_estimate(model::QuantumXXZ, T::Real, Jzs::AbstractArray, Jxys:
         M4 += m2*m2 + 6M2*m2
         M2 += m2
     end
-    return M, M2, M4, E, E2
+
+    sgn = 1.0
+    for op in model.ops
+        if !op.isdiagonal
+            if op.op_type == LO_Vertex || op.op_type == LO_Cross
+                subbond = op.space
+                b,_,_ = subbond2bond(subbond,S2)
+                bt = bondtype(model, b)
+                sgn *= ifelse(Jxys[bt] > 0.0, -1.0, 1.0)
+            end
+        end
+    end
+
+    return M, M2, M4, E, E2, sgn
 end

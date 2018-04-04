@@ -7,7 +7,7 @@
                                                       ]
         srand(SEED)
         param = Dict{String,Any}("Model" => model, "Lattice" => square_lattice, "J" => 1.0,
-                                  "L" => 6, "T" => 3.0,
+                                  "L" => 6, "T" => 3.5,
                                   "UpdateMethod" => local_update!,
                                   "MCS" => MCS, "Thermalization" => Therm,
                                  )
@@ -37,13 +37,6 @@
                 @show sw[name], wolff[name]
             end
             @test p_value(sw[name], wolff[name]) > alpha
-            # @test p_value(localupdate[name], wolff[name]) > alpha
-            #=
-            diff = localupdate[name] - sw[name]
-            @test abs(mean(diff)) < confidence_interval(diff, conf_ratio)
-            diff = localupdate[name] - wolff[name]
-            @test abs(mean(diff)) < confidence_interval(diff, conf_ratio)
-            =#
         end
     end
 end

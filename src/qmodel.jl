@@ -18,24 +18,6 @@ LocalOperator(op_type::LocalOperatorType, time::Real, space::Int) = LocalOperato
 
 @compat abstract type QuantumLocalZ2Model <: Model end
 
-type TransverseFieldIsing <: QuantumLocalZ2Model
-    lat :: Lattice
-    spins :: Vector{Int}
-    ops :: Vector{LocalOperator}
-
-    function TransverseFieldIsing(lat::Lattice)
-        model = new()
-        model.lat = lat
-        model.spins = rand([1,-1], numsites(lat))
-        model.ops = LocalOperator[]
-        return model
-    end
-end
-function TransverseFieldIsing(params::Dict)
-    lat = params["Lattice"](params)
-    return TransverseFieldIsing(lat)
-end
-
 type QuantumXXZ <: QuantumLocalZ2Model
     lat :: Lattice
     S2 :: Int
@@ -53,7 +35,11 @@ type QuantumXXZ <: QuantumLocalZ2Model
 end
 function QuantumXXZ(params::Dict)
     lat = params["Lattice"](params)
-    S2 = params["S2"]
+    S = params["S"]
+    if round(2S) != 2S
+        error("`S` should be integer or half-integer")
+    end
+    S2 = round(Int,2S)
     return QuantumXXZ(lat,S2)
 end
 

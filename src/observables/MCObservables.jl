@@ -13,19 +13,28 @@ using Distributions
 @compat abstract type ScalarObservable <: MCObservable end
 @compat abstract type VectorObservable <: MCObservable end
 
-function p_value(X::MCObservable, y::Real)
-    t = (mean(X)-y)/stderror(X)
+function p_value(X::MCObservable, y::Real; verbose::Bool=false)
+    MX = mean(X)
+    mid = 0.5(MX+y)
+    er = max(stderror(X), abs(mid)*sqrt(eps()), sqrt(nextfloat(0.0)))
+    t = (MX-y)/er
     d = TDist(count(X)-1)
+    if verbose
+        @show MX, y, er, t
+    end
     return 2cdf(d,-abs(t))
 end
 
 function p_value(X::MCObservable, Y::MCObservable)
     NX = count(X)
     NY = count(Y)
+    MX = mean(X)
+    MY = mean(Y)
+    mid = 0.5(MX+MY)
     N = 1.0/(1.0/NX + 1.0/NY)
     V = ( (NX-1)*var(X) + (NY-1)*var(Y) )/(NX+NY-2)
-    se = sqrt(V/N)
-    t = (mean(X)-mean(Y))/se
+    se = max(sqrt(V/N), abs(mid)*sqrt(eps()), sqrt(nextfloat(0.0)))
+    t = (MX-MY)/se
     d = TDist(NX+NY-2)
     return 2cdf(d,-abs(t))
 end
