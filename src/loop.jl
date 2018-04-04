@@ -22,7 +22,6 @@ function loop_update!(model::QuantumXXZ, T::Real,
     nbonds = numbonds(model)
     nst = numsitetypes(model)
     nbt = numbondtypes(model)
-    shift = 0.0
     weights = zeros(4*nbt+nst)
     for i in 1:nbt
         nb = numbonds(model,i)*S2*S2
@@ -31,15 +30,12 @@ function loop_update!(model::QuantumXXZ, T::Real,
         if z > x
             ## AntiFerroIsing like
             weights[(4i-3):(4i)] .= 0.5*[0.0, z-x, x, 0.0]
-            shift += 0.25z
         elseif z < -x
             ## FerroIsing like
             weights[(4i-3):(4i)] .= 0.5*[-z-x, 0.0, 0.0, x]
-            shift -= 0.25z
         else
             ## XY like
             weights[(4i-3):(4i)] .= 0.25*[0.0, 0.0, x+z, x-z]
-            shift += 0.25x
         end
     end
     for i in 1:nst
@@ -181,12 +177,13 @@ function loop_update!(model::QuantumXXZ, T::Real,
 
     res = Measurement()
     if measure
-        M, M2, M4, E, E2 = improved_estimate(model, T, Jzs, Jxys, Gs, uf)
+        M, M2, M4, E, E2, sgn = improved_estimate(model, T, Jzs, Jxys, Gs, uf)
         res["M"] = M
         res["M2"] = M2
         res["M4"] = M4
         res["E"] = E
         res["E2"] = E2
+        res["Sign"] = sgn
     end
     return res
 end

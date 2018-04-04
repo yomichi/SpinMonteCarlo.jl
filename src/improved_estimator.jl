@@ -154,5 +154,18 @@ function improved_estimate(model::QuantumXXZ, T::Real, Jzs::AbstractArray, Jxys:
         M4 += m2*m2 + 6M2*m2
         M2 += m2
     end
-    return M, M2, M4, E, E2
+
+    sgn = 1.0
+    for op in model.ops
+        if !op.isdiagonal
+            if op.op_type == LO_Vertex || op.op_type == LO_Cross
+                subbond = op.space
+                b,_,_ = subbond2bond(subbond,S2)
+                bt = bondtype(model, b)
+                sgn *= ifelse(Jxys[bt] > 0.0, -1.0, 1.0)
+            end
+        end
+    end
+
+    return M, M2, M4, E, E2, sgn
 end
