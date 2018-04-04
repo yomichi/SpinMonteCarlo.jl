@@ -5,7 +5,7 @@ using Compat
 using DataStructures
 
 export Model, Ising, XY, Potts, Clock
-export QuantumLocalZ2Model, TransverseFieldIsing, QuantumXXZ
+export QuantumLocalZ2Model, QuantumXXZ
 export local_update!, SW_update!, Wolff_update!, loop_update!
 export magnetizations, energy
 export dimer_lattice, chain_lattice, square_lattice, triangular_lattice, cubic_lattice
