@@ -2,7 +2,9 @@ include("../src/SpinMonteCarlo.jl")
 
 using SpinMonteCarlo
 
+const S = 0.5
 const J = 1.0
+const Gamma = 0.0
 const Ls = [8]
 const Ts = 0.5:0.5:10.01
 const MCS = 8192
@@ -13,7 +15,7 @@ for L in Ls
     for T in Ts
         push!(params, Dict("Model"=>QuantumXXZ,
                            "Lattice"=>chain_lattice,
-                           "L"=>L, "T"=>T, "J"=>J, "S2"=>1,
+                           "L"=>L, "T"=>T, "J"=>J, "S"=>S, "Gamma"=>Gamma,
                            "MCS"=>MCS, "Therm"=>Therm, "Verbose"=>true,
                           ))
     end
@@ -21,7 +23,7 @@ end
 
 obs = map(runMC, params)
 
-const pnames = ["L", "T", "J"]
+const pnames = ["S", "J", "Gamma", "L", "T"]
 const onames = ["Magnetization",
                 "|Magnetization|",
                 "Magnetization^2",
@@ -34,7 +36,7 @@ const onames = ["Magnetization",
                 "Time per MCS",
                ]
 
-const io = open("res-q_heisenberg.dat", "w")
+const io = open("res-QuantumXXZ.dat", "w")
 i=1
 for pname in pnames
     println(io, "# \$$i : $pname")
