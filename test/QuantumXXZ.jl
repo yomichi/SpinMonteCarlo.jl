@@ -1,7 +1,7 @@
-function loaddata(;S2=1, Jz=1.0, Jxy=1.0, G=0.0)
+function loaddata(filename)
     Ts = zeros(0)
     Es = zeros(0)
-    for line in eachline(joinpath("ref", @sprintf("S_%.1f__Jz_%.1f__Jxy_%.1f__G_%.1f__L_8.dat", 0.5S2, Jz, Jxy, G)))
+    for line in eachline(joinpath("ref", filename))
         words = split(line)
         push!(Ts, parse(words[1]))
         push!(Es, parse(words[2]))
@@ -9,38 +9,57 @@ function loaddata(;S2=1, Jz=1.0, Jxy=1.0, G=0.0)
     return Ts, Es
 end
 
-function E_QMC(T; S2=1, Jz=1.0, Jxy=1.0, G=0.0)
+function parse_filename(filename)
+    m = match(r"^S_([\d.-]*)__Jz_([\d.-]*)__Jxy_([\d.-]*)__G_([\d.-]*)__L_([\d.-]*).dat$", filename)
+    if m == nothing
+        return nothing
+    end
+    p = Dict()
+    p[:S] = parse(m.captures[1])
+    p[:Jz] = parse(m.captures[2])
+    p[:Jxy] = parse(m.captures[3])
+    p[:Gamma] = parse(m.captures[4])
+    p[:L] = parse(Int, m.captures[5])
+    return p
+end
+
+function QMC(T; S=0.5, Jz=1.0, Jxy=1.0, Gamma=0.0, L=8)
     p = Dict("Model"=>QuantumXXZ, "Lattice"=>chain_lattice,
-             "S2"=>S2, "L"=>8,
+             "S"=>S, "L"=>L,
              "Jz"=>Jz, "Jxy"=>Jxy,
-             "G"=>G,
+             "Gamma"=>Gamma,
              "T"=>T,
-             "MCS"=>8192,
+             "MCS"=>MCS,
+             "Thermalization"=>Therm,
             )
-    res = runMC(p)
-    return res["Energy"]
+    return runMC(p)
 end
 
 @testset "QuantumXXZ chain" begin
-    const S2s = [1]
-    const Js = [
-                (1.0, 1.0), (1.0, 0.5), (1.0, 2.0), (1.0, 0.0),
-                (0.0, 1.0),
-                (-1.0, 1.0), (-1.0, 0.5), (-1.0, 2.0), (-1.0, 0.0),
-               ]
-    const Gs = [0.0, 0.5, 1.0, 2.0]
-    @testset "S=$(0.5S2)" for S2 in S2s
-        @testset "Jz=$(J[1]), Jxy=$(J[2]) G=$G" for (G,J) in Iterators.product(Gs,Js)
-            Ts, exacts = loaddata(S2=S2, Jz=J[1], Jxy=J[2], G=G)
+    srand(SEED)
+    for filename in readdir("ref")
+        p = parse_filename(filename)
+        if p == nothing
+            continue
+        end
+        @testset "S=$(p[:S]), Jz=$(p[:Jz]), Jxy=$(p[:Jxy]), Gamma=$(p[:Gamma]), L=$(p[:L])" begin
+            Ts, exacts = loaddata(filename)
             N = length(Ts)
             for (T,exact) in zip(Ts,exacts)
-                ene = E_QMC(T, S2=S2, Jz=J[1], Jxy=J[2], G=G)
-                if p_value(ene, exact) <= alpha/N
-                    @show T
-                    @show ene
-                    @show exact
+                res = QMC(T; p...)
+                ene = res["Energy"]
+                sgn = mean(res["Sign"])
+                alp = alpha/N/ifelse(sgn<1.0,2,1)
+                if !(p_value(ene, exact) > alp)
+                    if  sgn < 1.0 && !(isfinite(mean(ene)))
+                        continue
+                    else
+                        @show T
+                        @show exact
+                        @show ene
+                    end
                 end
-                @test p_value(ene, exact) > alpha/N
+                @test p_value(ene, exact) > alp
             end
         end
     end
