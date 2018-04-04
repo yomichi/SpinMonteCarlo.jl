@@ -35,7 +35,11 @@ type QuantumXXZ <: QuantumLocalZ2Model
 end
 function QuantumXXZ(params::Dict)
     lat = params["Lattice"](params)
-    S2 = params["S2"]
+    S = params["S"]
+    if round(2S) != 2S
+        error("`S` should be integer or half-integer")
+    end
+    S2 = round(Int,2S)
     return QuantumXXZ(lat,S2)
 end
 
