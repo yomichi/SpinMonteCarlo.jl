@@ -49,8 +49,7 @@ end
                 res = QMC(T; p...)
                 ene = res["Energy"]
                 sgn = mean(res["Sign"])
-                alp = alpha/N/ifelse(sgn<1.0,2,1)
-                if !(p_value(ene, exact) > alp)
+                if !(p_value(ene, exact) > alpha/N)
                     if  sgn < 1.0 && !(isfinite(mean(ene)))
                         continue
                     else
@@ -59,7 +58,7 @@ end
                         @show ene
                     end
                 end
-                @test p_value(ene, exact) > alp
+                @test p_value(ene, exact) > alpha/N
             end
         end
     end
