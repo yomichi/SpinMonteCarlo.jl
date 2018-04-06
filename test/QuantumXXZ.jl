@@ -1,7 +1,7 @@
 function loaddata(filename)
     Ts = zeros(0)
     Es = zeros(0)
-    for line in eachline(joinpath("ref", filename))
+    for line in eachline(filename)
         words = split(line)
         push!(Ts, parse(words[1]))
         push!(Es, parse(words[2]))
@@ -36,13 +36,13 @@ function QMC(T; S=0.5, Jz=1.0, Jxy=1.0, Gamma=0.0, L=8)
 end
 
 @testset "QuantumXXZ chain" begin
-    for filename in readdir("ref")
+    for filename in readdir(joinpath("ref", "QuantumXXZ"))
         p = parse_filename(filename)
         if p == nothing
             continue
         end
         @testset "S=$(p[:S]), Jz=$(p[:Jz]), Jxy=$(p[:Jxy]), Gamma=$(p[:Gamma]), L=$(p[:L])" begin
-            Ts, exacts = loaddata(filename)
+            Ts, exacts = loaddata(joinpath("ref", "QuantumXXZ", filename))
             N = length(Ts)
             for (T,exact) in zip(Ts,exacts)
                 srand(SEED)
