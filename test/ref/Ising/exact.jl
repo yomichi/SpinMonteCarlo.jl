@@ -1,6 +1,6 @@
 const Ns = [2,8]
 const J = 1.0
-const Ts = [0.5, 1.0, 2.0, 5.0, 10.0]
+const Ts = [0.2, 0.5, 1.0, 2.0, 5.0, 10.0]
 
 """
 Exact finite-T energy (per site) for Ising model on `N` site fully connected network

@@ -635,7 +635,7 @@ function fully_connected_lattice(N::Integer)
     end
 
     lat = Lattice(dim, [N], nsitetypes, nbondtypes, sites, bonds, N, nbonds, sitetypes, bondtypes,
-            zeros(1,1), zeros(1,N), zeros(1,N), neighborsites, neighborbonds, source, target, zeros(Int,N), zeros(Int,N))
+            zeros(1,1), zeros(1,N), zeros(1,nbonds), neighborsites, neighborbonds, source, target, zeros(Int,N), zeros(Int,N))
     return lat
 end
 fully_connected_lattice(params::Dict) = fully_connected_lattice(params["N"])

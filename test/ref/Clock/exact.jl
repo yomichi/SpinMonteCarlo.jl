@@ -1,10 +1,10 @@
 const Ns = [2,8]
-const Qs = [2,4]
+const Qs = [2,6]
 const J = 1.0
-const Ts = [0.2, 0.5, 1.0, 2.0, 5.0, 10.0]
+const Ts = [0.2, 0.5, 1.0, 2.0, 0.5, 10.0]
 
 """
-exact finite-T energy (per site) of `Q` state Potts model on `N` site fully connected network
+exact finite-T energy (per site) of `Q` state Clock model on `N` site fully connected network
 """
 function exact(Q, J, N, Ts)
     j = J/N
@@ -12,15 +12,20 @@ function exact(Q, J, N, Ts)
     spins = zeros(Int, N)
     nst = Q^N
     for ist in 0:(nst-1)
-        spins .= 0
+        spins .= 1
         for i in 1:N
-            spins[i] = mod(ist,Q)
+            spins[i] = mod(ist,Q) + 1
             ist = div(ist,Q)
         end
         E = 0.0
-        for q in 0:(Q-1)
-            nq = count(s->s==q, spins)
+        nqs = [count(s->s==q, spins) for q in 1:Q]
+        for q in 1:Q
+            nq = nqs[q]
             E -= 0.5j*(nq*(nq-1))
+            for q2 in (q+1):Q
+                nq2 = nqs[q2]
+                E -= j*nq*nq2*cospi(2*(q-q2)/Q)
+            end
         end
         push!(Es, E)
     end

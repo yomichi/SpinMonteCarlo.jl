@@ -20,7 +20,7 @@ function parse_filename(filename, ::Type{Ising})
     return p
 end
 
-function parse_filename(filename, ::Type{Potts})
+function parse_filename(filename, ::Union{Type{Potts}, Type{Clock}})
     m = match(r"^Q_(\d*)__J_([\d.-]*)__N_(\d*).dat$", filename)
     if m == nothing
         return nothing
@@ -34,6 +34,7 @@ end
 
 @testset "$modelstr" for (modelstr, pnames) in [("Ising", ("J", "N")),
                                                 ("Potts", ("Q", "J", "N")),
+                                                ("Clock", ("Q", "J", "N")),
                                                ]
     model = eval(Symbol(modelstr))
     for filename in readdir(joinpath("ref", modelstr))
