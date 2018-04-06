@@ -7,27 +7,14 @@ const SEED = 19937
 const MCS = 20000
 const Therm = MCS
 const alpha = 0.01
-const obsnames_ising = ["Magnetization", "|Magnetization|", "Magnetization^2", "Magnetization^4", "Binder Ratio",
-                        "Susceptibility", "Connected Susceptibility",
-                        "Energy", "Energy^2", "Specific Heat",
-                       ]
-const obsnames_potts = obsnames_ising
-
-const obsnames_xy = ["|Magnetization|", "|Magnetization|^2", "|Magnetization|^4",
-                        "Binder Ratio", "Susceptibility", "Connected Susceptibility",
-                        "Magnetization x", "|Magnetization x|", "Magnetization x^2", "Magnetization x^4",
-                        "Binder Ratio x", "Susceptibility x", "Connected Susceptibility x",
-                        "Magnetization y", "|Magnetization y|", "Magnetization y^2", "Magnetization y^4",
-                        "Binder Ratio y", "Susceptibility y", "Connected Susceptibility y",
-                        "Helicity Modulus x", "Helicity Modulus y",
-                        "Energy", "Energy^2", "Specific Heat",
-                       ]
-const obsnames_clock = obsnames_xy
 
 @testset begin
-    include("lattice.jl")
-    include("square.jl")
-    include("anisotropic.jl")
-    include("classical.jl")
-    include("quantum.jl")
+    for filename in ("lattice.jl",
+                     "anisotropic.jl",
+                     "classical.jl",
+                     "quantum.jl",
+                    )
+        t = @elapsed include(filename)
+        println("$(filename): $t sec")
+    end
 end
