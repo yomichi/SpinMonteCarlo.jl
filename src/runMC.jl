@@ -54,11 +54,13 @@ function runMC(model::Union{Ising, Potts}, T::Real, Js::Union{Real,AbstractArray
         obs["Energy^2"] << E2
     end
 
+    beta = 1.0/T
+
     jk = jackknife(obs)
     jk["Binder Ratio"] = jk["Magnetization^4"] / (jk["Magnetization^2"]^2)
-    jk["Susceptibility"] = (nsites/T)*jk["Magnetization^2"]
-    jk["Connected Susceptibility"] = (nsites/T)*(jk["Magnetization^2"] - jk["|Magnetization|"]^2)
-    jk["Specific Heat"] = (nsites/T/T)*(jk["Energy^2"] - jk["Energy"]^2)
+    jk["Susceptibility"] = (nsites*beta)*jk["Magnetization^2"]
+    jk["Connected Susceptibility"] = (nsites*beta)*(jk["Magnetization^2"] - jk["|Magnetization|"]^2)
+    jk["Specific Heat"] = (nsites*beta*beta)*(jk["Energy^2"] - jk["Energy"]^2)
     jk["MCS per Second"] = 1.0/jk["Time per MCS"]
 
     return jk
@@ -115,11 +117,11 @@ function runMC(model::Union{Clock, XY}, T::Real, Js::Union{Real,AbstractArray}, 
         y4 = y2*y2
         m4 = m2*m2
         obs["Time per MCS"] << t
-        obs["Magnetization x"] << abs(M[1])
+        obs["Magnetization x"] << M[1]
         obs["|Magnetization x|"] << abs(M[1])
         obs["Magnetization x^2"] << x2
         obs["Magnetization x^4"] << x4
-        obs["Magnetization y"] << abs(M[2])
+        obs["Magnetization y"] << M[2]
         obs["|Magnetization y|"] << abs(M[2])
         obs["Magnetization y^2"] << y2
         obs["Magnetization y^4"] << y4
@@ -208,10 +210,12 @@ function runMC(model::QuantumXXZ, T::Real,
         jk[oname] = jk["Sign * $oname"] / jk["Sign"]
     end
 
+    beta = 1.0/T
+
     jk["Binder Ratio"] = jk["Magnetization^4"] / (jk["Magnetization^2"]^2)
-    jk["Susceptibility"] = (nsites/T)*jk["Magnetization^2"]
-    jk["Connected Susceptibility"] = (nsites/T)*(jk["Magnetization^2"] - jk["|Magnetization|"]^2)
-    jk["Specific Heat"] = (nsites/T/T)*(jk["Energy^2"] - jk["Energy"]^2)
+    jk["Susceptibility"] = (nsites*beta)*jk["Magnetization^2"]
+    jk["Connected Susceptibility"] = (nsites*beta)*(jk["Magnetization^2"] - jk["|Magnetization|"]^2)
+    jk["Specific Heat"] = (nsites*beta*beta)*(jk["Energy^2"] - jk["Energy"]^2)
     jk["MCS per Second"] = 1.0/jk["Time per MCS"]
 
     return jk

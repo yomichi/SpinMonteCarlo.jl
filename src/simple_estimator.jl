@@ -2,7 +2,7 @@
     simple_estimate(model::Ising, T::Real, Js::AbstractArray)
     simple_estimate(model::Potts, T::Real, Js::AbstractArray)
 
-return magnetization density `M` and total energy `E`.
+return magnetization density `M` and energy per site `E`.
 """
 function simple_estimate(model::Ising, T::Real, Js::AbstractArray)
     nsites = numsites(model)
@@ -42,7 +42,7 @@ end
     simple_estimate(model::Clock, T::Real, Js::AbstractArray)
     simple_estimate(model::XY, T::Real, Js::AbstractArray)
 
-return magnetization density `M`, total energy `E`, and helicity modulus `U`.
+return magnetization density `M`, energy per site `E`, and helicity modulus `U`.
 """
 function simple_estimate(model::Clock, T::Real, Js::AbstractArray)
     nsites = numsites(model)
@@ -72,7 +72,7 @@ function simple_estimate(model::Clock, T::Real, Js::AbstractArray)
             U2[d] += model.sines[dt] * dir[d]
         end
     end
-    for d in 1:D
+    for d in 1:2
         M[d] *= invN
         U1[d] -= beta * U2[d]^2
         U1[d] *= invN
