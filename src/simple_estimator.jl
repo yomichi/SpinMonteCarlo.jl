@@ -110,7 +110,7 @@ function simple_estimate(model::XY, T::Real, Js::AbstractArray)
             U2[d] += sinpi(2dt) * dir[d]
         end
     end
-    for d in 1:D
+    for d in 1:2
         M[d] *= invN
         U1[d] -= beta * U2[d]^2
         U1[d] *= invN
