@@ -30,4 +30,5 @@ const obsnames_clock = obsnames_xy
     include("square.jl")
     include("anisotropic.jl")
     include("QuantumXXZ.jl")
+    include("fully_connected_classical.jl")
 end

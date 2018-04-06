@@ -1,8 +1,11 @@
 const Ns = [2,8]
-const Qs = [2,3,6]
+const Qs = [2,4]
 const J = 1.0
-const Ts = collect(0.5:0.5:10.0)
+const Ts = [0.1, 0.3, 1.0, 3.0, 10.0]
 
+"""
+exact finite-T energy (per site) of `Q` state Potts model on `N` site fully connected network
+"""
 function exact(Q, J, N, Ts)
     j = J/N
     Es = zeros(0)
@@ -15,7 +18,7 @@ function exact(Q, J, N, Ts)
             ist = div(ist,Q)
         end
         E = 0.0
-        for q in 1:Q
+        for q in 0:(Q-1)
             nq = count(s->s==q, spins)
             E -= 0.5j*(nq*(nq-1))
         end

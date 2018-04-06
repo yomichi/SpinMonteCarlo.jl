@@ -604,3 +604,38 @@ function cubic_lattice(params::Dict)
     H = get(params, "H", W)
     return cubic_lattice(L, W, H)
 end
+
+"""
+    fully_connected_lattice(N::Integer)
+    
+generate `N` site fully connected lattice
+"""
+function fully_connected_lattice(N::Integer)
+    dim = 1
+    nbonds = div(N*(N-1),2)
+    nsitetypes = 1
+    nbondtypes = 1
+    sites = [collect(1:N)]
+    bonds = [collect(1:nbonds)]
+    sitetypes = ones(N)
+    bondtypes = ones(nbonds)
+    neighborsites = [vcat(1:s-1, s+1:N) for s in 1:N]
+    neighborbonds = Vector{Int}[zeros(Int,0) for s in 1:N]
+    source = zeros(Int,nbonds)
+    target = zeros(Int,nbonds)
+    ib = 0
+    for i in 1:N
+        for j in (i+1):N
+            ib += 1
+            source[ib] = i
+            target[ib] = j
+            push!(neighborbonds[i], ib)
+            push!(neighborbonds[j], ib)
+        end
+    end
+
+    lat = Lattice(dim, [N], nsitetypes, nbondtypes, sites, bonds, N, nbonds, sitetypes, bondtypes,
+            zeros(1,1), zeros(1,N), zeros(1,N), neighborsites, neighborbonds, source, target, zeros(Int,N), zeros(Int,N))
+    return lat
+end
+fully_connected_lattice(params::Dict) = fully_connected_lattice(params["N"])

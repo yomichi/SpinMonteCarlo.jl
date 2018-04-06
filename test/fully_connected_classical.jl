@@ -53,7 +53,10 @@ end
             p["J"] = p["J"] / p["N"]
             p["MCS"] = MCS
             p["Thermalization"] = Therm
-            @testset "UpdateMethod=$(up)" for up in (local_update!, SW_update!, Wolff_update!)
+            @testset "UpdateMethod=$(up)" for up in (local_update!,
+                                                     SW_update!,
+                                                     Wolff_update!
+                                                    )
                 p["UpdateMethod"] = up
                 for (T,exact) in zip(Ts,exacts)
                     srand(SEED)
