@@ -55,9 +55,9 @@ end
 - `chain_lattice`
     - `L`
 - `square_lattice`
-    - `L * H`
+    - `L * W`
 - `triangular_lattice`
-    - `L * H`
+    - `L * W`
 - `cubic_lattice`
     - `L * W * H`
 - `fully_connected_lattice`
