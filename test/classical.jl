@@ -8,7 +8,7 @@ const obsnames_clock = ["Energy", "Energy^2", "Specific Heat",
                         "|Magnetization y|", "Magnetization y^2", "Magnetization y^4",
                         "Susceptibility y", "Connected Susceptibility y", "Binder Ratio y",
                         "|Magnetization|", "|Magnetization|^2", "|Magnetization|^4",
-                        "SUsceptibility", "Connected Susceptibility", "Binder Ratio",
+                        "Susceptibility", "Connected Susceptibility", "Binder Ratio",
                        ]
 function loaddata(filename, obsnames)
     Ts = zeros(0)
@@ -48,7 +48,7 @@ end
 
 @testset "$modelstr" for (modelstr, pnames, obsnames) in [("Ising", ("J", "N"), obsnames_ising),
                                                           ("Potts", ("Q", "J", "N"), obsnames_ising),
-                                                          # ("Clock", ("Q", "J", "N"), obsnames_clock),
+                                                          ("Clock", ("Q", "J", "N"), obsnames_clock),
                                                           # ("XY", ("J", "N"), obsnames_clock),
                                                          ]
     model = eval(Symbol(modelstr))
@@ -69,7 +69,7 @@ end
             p["J"] = p["J"] / p["N"]
             p["MCS"] = MCS
             p["Thermalization"] = Therm
-            @testset "UpdateMethod=$(upstr)" for upstr in ("local_update!",
+            @testset "$(upstr)" for upstr in ("local_update!",
                                                            "SW_update!",
                                                            "Wolff_update!",
                                                           )
