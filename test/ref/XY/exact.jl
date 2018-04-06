@@ -1,22 +1,33 @@
-const Ns = [2,8]
-const Qs = [2,6]
+const Ns = [2,3,4]
 const J = 1.0
-const Ts = [0.2, 0.5, 1.0, 2.0, 0.5, 10.0]
+const Ts = [0.2, 0.5, 1.0, 2.0, 5.0, 10.0]
+# const Ts = linspace(0.01, 1.00, 100)
 
 """
 exact finite-T energy (per site) of XY model on `N` site fully connected network
 """
-function exact(J, N, Ts; nsamples::Integer=1_000_000)
+function integrate(J, N, Ts; Q::Integer=50)
     j = J/N
     Es = zeros(0)
-    spins = zeros(N)
-
-    for i in 1:nsamples
-        spins .= rand(N)
-        E = 0.0
+    spins = zeros(Int, N)
+    nst = Q^N
+    for ist in 0:(nst-1)
+        if ist%10000==0
+            @show ist/nst
+        end
+        spins .= 1
         for i in 1:N
-            for j in (i+1):N
-                E -= j*cospi(2(spins[i]-spins[j]))
+            spins[i] = mod(ist,Q) + 1
+            ist = div(ist,Q)
+        end
+        E = 0.0
+        nqs = [count(s->s==q, spins) for q in 1:Q]
+        for q in 1:Q
+            nq = nqs[q]
+            E -= 0.5j*(nq*(nq-1))
+            for q2 in (q+1):Q
+                nq2 = nqs[q2]
+                E -= j*nq*nq2*cospi(2*(q-q2)/Q)
             end
         end
         push!(Es, E)
@@ -38,7 +49,7 @@ function exact(J, N, Ts; nsamples::Integer=1_000_000)
 end
 
 for N in Ns
-    Es = exact(J,N,Ts)
+    Es = integrate(J,N,Ts)
     open(@sprintf("J_%.1f__N_%d.dat", J, N), "w") do io
         for (T,E) in zip(Ts, Es)
             @printf(io, "%.15f %.15f\n", T, E)
