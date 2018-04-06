@@ -9,7 +9,7 @@ function loaddata(filename)
     return Ts, Es
 end
 
-function parse_filename(filename, ::Type{Ising})
+function parse_filename(filename, ::Union{Type{Ising}, Type{XY}})
     m = match(r"^J_([\d.-]*)__N_([\d.-]*).dat$", filename)
     if m == nothing
         return nothing
@@ -35,6 +35,7 @@ end
 @testset "$modelstr" for (modelstr, pnames) in [("Ising", ("J", "N")),
                                                 ("Potts", ("Q", "J", "N")),
                                                 ("Clock", ("Q", "J", "N")),
+                                                ("XY", ("J", "N")),
                                                ]
     model = eval(Symbol(modelstr))
     for filename in readdir(joinpath("ref", modelstr))
