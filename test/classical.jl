@@ -49,7 +49,7 @@ end
 @testset "$modelstr" for (modelstr, pnames, obsnames) in [("Ising", ("J", "N"), obsnames_ising),
                                                           ("Potts", ("Q", "J", "N"), obsnames_ising),
                                                           ("Clock", ("Q", "J", "N"), obsnames_clock),
-                                                          # ("XY", ("J", "N"), obsnames_clock),
+                                                          ("XY", ("J", "N"), obsnames_clock),
                                                          ]
     model = eval(Symbol(modelstr))
     for filename in readdir(joinpath("ref", modelstr))
