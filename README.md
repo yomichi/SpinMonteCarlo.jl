@@ -49,13 +49,19 @@ end
     - `XY` model
     - `Q` state `Clock` model
 - Quantum spin model
-    - general S `QuantumXXZ` model
+    - spin-`S` `QuantumXXZ` model
 
 ## Lattice
 - `chain_lattice`
+    - `L`
 - `square_lattice`
+    - `L * H`
 - `triangular_lattice`
+    - `L * H`
 - `cubic_lattice`
+    - `L * W * H`
+- `fully_connected_lattice`
+    - `N`
 
 ## Update algorithm
 - Classical spin
@@ -68,15 +74,25 @@ end
 ## Physical quantities
 - `Ising`, `Potts`
     - `Magnetization`
+        - `:= < M_total/N_site >`
     - `|Magnetization|`
+        - `:= < |M_total/N_site| >`
     - `Magnetization^2`
+        - `:= < (M_total/N_site)^2 >`
     - `Magnetization^4`
+        - `:= < (M_total/N_site)^4 >`
     - `Binder Ratio`
+        - `:= "Magnetization^4")/"Magnetization^2"^2`
     - `Susceptibility`
+        - `:= \partial_h "Magnetization" = (N/T) * ("Magnetization^2" - "Magnetization"^2)`
     - `Connected Susceptibility`
+        - `:= (N_site/T) * ("Magnetization^2"- "|Magnetization|"^2)`
     - `Energy`
+        - `:= < E_total/N_site >`
     - `Energy^2`
+        - `:= < (E_total/N_site)^2 >`
     - `Specific Heat`
+        - `:= \partial_beta "Energy" = (N/T^2)*("Energy^2" - "Energy"^2)`
 - `XY`, `Clock`
     - `|Magnetization|`
     - `|Magnetization|^2`
