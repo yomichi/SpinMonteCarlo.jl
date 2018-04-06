@@ -26,9 +26,8 @@ const obsnames_clock = obsnames_xy
 
 @testset begin
     include("lattice.jl")
-    include("dimer.jl")
     include("square.jl")
     include("anisotropic.jl")
-    include("QuantumXXZ.jl")
-    include("fully_connected_classical.jl")
+    include("classical.jl")
+    include("quantum.jl")
 end
