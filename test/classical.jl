@@ -70,25 +70,33 @@ end
             p["MCS"] = MCS
             p["Thermalization"] = Therm
             @testset "$(upstr)" for upstr in ("local_update!",
-                                                           "SW_update!",
-                                                           "Wolff_update!",
-                                                          )
+                                              "SW_update!",
+                                              "Wolff_update!",
+                                             )
                 p["UpdateMethod"] = eval(Symbol(upstr))
+                srand(SEED)
+                res1 = []
+                res2 = []
+                for i in 1:nT
+                    p["T"] = Ts[i]
+                    push!(res1, runMC(p))
+                    push!(res2, runMC(p))
+                end
                 @testset "$n" for n in obsnames
-                    for (T,exact) in zip(Ts,exacts[n])
-                        srand(SEED)
-                        p["T"] = T
-                        res1 = runMC(p)
-                        res2 = runMC(p)
+                    for i in 1:nT
+                        T = Ts[i]
+                        exact = exacts[n][i]
+                        r1 = res1[i]
+                        r2 = res2[i]
                         ## single MC test may fail.
-                        mc1 = res1[n]
-                        mc2 = res2[n]
+                        mc1 = r1[n]
+                        mc2 = r2[n]
                         ex = exact
                         if !(p_value(mc1, exact) > alpha/nT || p_value(mc2, exact) > alpha/nT)
                             @show T
                             @show exact
-                            @show mc1
-                            @show mc2
+                            @show mc1, p_value(mc1, exact)
+                            @show mc2, p_value(mc2, exact)
                         end
                         @test p_value(mc1, exact) > alpha/nT || p_value(mc2, exact) > alpha/nT
                     end
