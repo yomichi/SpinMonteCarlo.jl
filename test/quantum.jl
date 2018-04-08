@@ -1,10 +1,7 @@
 const obsnames_XXZ = ["Energy", "Energy^2", "Specific Heat",
-                  # "|Magnetization|",
-                  "Magnetization^2",
-                  # "Magnetization^4", "Binder Ratio",
-                  "Susceptibility",
-                  # "Connected Susceptibility",
-                 ]
+                      "Magnetization^2", "Magnetization^4",
+                      "Binder Ratio", "Susceptibility",
+                     ]
 
 function loaddata(filename, obsnames)
     Ts = zeros(0)
@@ -45,37 +42,6 @@ function QMC(T; S=0.5, Jz=1.0, Jxy=1.0, Gamma=0.0, L=8)
     return runMC(p)
 end
 
-#=
-@testset "QuantumXXZ chain" begin
-    for filename in readdir(joinpath("ref", "QuantumXXZ"))
-        p = parse_filename(filename)
-        if p == nothing
-            continue
-        end
-        @testset "S=$(p[:S]), Jz=$(p[:Jz]), Jxy=$(p[:Jxy]), Gamma=$(p[:Gamma]), L=$(p[:L])" begin
-            Ts, exacts = loaddata(joinpath("ref", "QuantumXXZ", filename))
-            N = length(Ts)
-            for (T,exact) in zip(Ts,exacts)
-                srand(SEED)
-                res = QMC(T; p...)
-                ene = res["Energy"]
-                if !(p_value(ene, exact) > alpha/N)
-                    if  mean(res["Sign"]) < 1.0 && !(isfinite(mean(ene)))
-                        ## Sign problem makes test very difficult...
-                        continue
-                    else
-                        ## Perform one more test since single MC test may fail.
-                        res = QMC(T; p...)
-                        ene = res["Energy"]
-                    end
-                end
-                @test p_value(ene, exact) > alpha/N
-            end
-        end
-    end
-end
-=#
-
 @testset "$modelstr" for (modelstr, pnames, obsnames) in [("QuantumXXZ", ("S", "Jz", "Jxy", "Gamma", "L"), obsnames_XXZ)]
     model = eval(Symbol(modelstr))
     @testset "$(latticestr)" for latticestr in ["chain_lattice"]
@@ -105,7 +71,6 @@ end
                     push!(res2, runMC(p))
                 end
                 @testset "$n" for n in obsnames
-                # @testset "$n" for n in ["Magnetization^2"]
                     for i in 1:nT
                         T = Ts[i]
                         exact = exacts[n][i]
@@ -115,6 +80,10 @@ end
                         mc1 = r1[n]
                         mc2 = r2[n]
                         ex = exact
+                        if  mean(r1["Sign"]) < 1.0 && (!(isfinite(mean(mc1))) || !(isfinite(mean(mc2))))
+                            ## Sign problem makes test very difficult...
+                            continue
+                        end
                         # @show exact, mc1, mc2
                         if !(p_value(mc1, exact) > alpha/nT || p_value(mc2, exact) > alpha/nT)
                             @show T
