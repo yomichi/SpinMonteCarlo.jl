@@ -50,6 +50,7 @@ end
     - `Q` state `Clock` model
 - Quantum spin model
     - spin-`S` `QuantumXXZ` model
+        - `\mathcal{H} = \sum_{ij} [ Jz_{ij} S_i^z S_j^z + Jxy_{ij} (S_i^+ S_j^- + S_i^-S_j^+) ] - \sum_i Gamma_i S_i^x`
 
 ## Lattice
 - `chain_lattice`
@@ -121,15 +122,21 @@ end
     - `Specific Heat`
 - `QuantumXXZ`
     - `Magnetization`
-    - `|Magnetization|`
+        - `:= < \sum_i S_i^z > / Nsite`
     - `Magnetization^2`
+        - `:= < (\sum_i S_i^z)^2 > / Nsite^2`
     - `Magnetization^4`
+        - `:= < (\sum_i S_i^z)^4 > / Nsite^4`
     - `Binder Ratio`
+        - `:= "Magnetization^4")/"Magnetization^2"^2`
     - `Susceptibility`
-    - `Connected Susceptibility`
+        - `:= \partial_h "Magnetization" = (N/T) * ("Magnetization^2" - "Magnetization"^2)`
     - `Energy`
+        - `:= < \mathcal{H} > / Nsite`
     - `Energy^2`
+        - `:= < \mathcal{H}^2 > / Nsite^2`
     - `Specific Heat`
+        - `:= \partial_beta "Energy" = (N/T^2)*("Energy^2" - "Energy"^2)`
 
 # Future work
 - `Model`
