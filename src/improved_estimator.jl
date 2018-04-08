@@ -143,7 +143,9 @@ function improved_estimate(model::QuantumXXZ, T::Real, Jzs::AbstractArray, Jxys:
     end
     nops = length(model.ops)
     E = E0-nops*T
-    E2 = nops*(nops-1)*T^2 - 2*E0*T*nops + 2*E0^2
+    E2 = nops*(nops-1)*T^2 - 2*E0*T*nops + E0^2
+    E /= nsites
+    E2 /= nsites^2
 
     M = 0.0
     M2 = 0.0

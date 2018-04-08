@@ -197,7 +197,7 @@ function runMC(model::QuantumXXZ, T::Real,
         obs["Sign * Magnetization^2"] << M2*sgn
         obs["Sign * Magnetization^4"] << M4*sgn
         obs["Sign * Energy"] << E*sgn
-        obs["Sign * Energy^2"] << E*E*sgn
+        obs["Sign * Energy^2"] << E2*sgn
         obs["Sign"] << sgn
     end
 
