@@ -4,7 +4,7 @@
 
 update spin configuration by Wolff algorithm under the temperature `T`.
 """
-function Wolff_update!(model::Model, T::Real, J::Real; measure::Bool=true)
+@inline function Wolff_update!(model::Model, T::Real, J::Real; measure::Bool=true)
     Js = J * ones(numbondtypes(model))
     return Wolff_update!(model, T, Js, measure=measure)
 end

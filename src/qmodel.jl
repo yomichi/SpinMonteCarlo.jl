@@ -45,10 +45,10 @@ end
 
 site2subspin(site::Integer, ss::Integer, S2::Integer) = (site-1)*S2+ss
 bond2subbond(bond::Integer, ss1::Integer, ss2::Integer, S2::Integer) = ((bond-1)*S2+(ss1-1))*S2+ss2
-function subspin2site(subspin::Integer, S2::Integer)
+@inline function subspin2site(subspin::Integer, S2::Integer)
     return ceil(Int, subspin/S2), mod1(subspin,S2)
 end
-function subbond2bond(subbond::Integer, S2::Integer)
+@inline function subbond2bond(subbond::Integer, S2::Integer)
     ss2 = mod1(subbond,S2)
     ss = ceil(Int, subbond/S2)
     return ceil(Int, ss/S2), mod1(ss,S2), ss2

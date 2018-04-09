@@ -3,7 +3,7 @@
     local_update!(model, T::Real, Js::AbstractArray; measure::Bool=true)
 update spin configuration by local spin flip and Metropolice algorithm under the temperature `T`
 """
-function local_update!(model::Model, T::Real, J::Real; measure::Bool=true)
+@inline function local_update!(model::Model, T::Real, J::Real; measure::Bool=true)
     Js = J*ones(numbondtypes(model))
     return local_update!(model,T,Js,measure=measure)
 end

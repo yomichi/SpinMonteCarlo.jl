@@ -28,13 +28,13 @@ function unify!(u::UnionFind, n1::Integer, n2::Integer)
     if r1 != r2
         u.nclusters -= 1
         if w1<w2
-            u.parents[r1] = r2
+            @inbounds u.parents[r1] = r2
             return r2
         elseif w1 == w2
-            u.parents[r2] = r1
-            u.weights[r1]+=1
+            @inbounds u.parents[r2] = r1
+            @inbounds u.weights[r1]+=1
         else
-            u.parents[r2] = r1
+            @inbounds u.parents[r2] = r1
         end
     end
     return r1

@@ -12,7 +12,7 @@ numclusters(sw::SWInfo) = length(sw.clustersize)
     
 update spin configuration by Swendsen-Wang algorithm under the temperature `T`.
 """
-function SW_update!(model::Model, T::Real, J::Real; measure::Bool=true)
+@inline function SW_update!(model::Model, T::Real, J::Real; measure::Bool=true)
     Js = J*ones(numbondtypes(model))
     return SW_update!(model, T, Js, measure=measure)
 end

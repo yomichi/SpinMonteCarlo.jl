@@ -1,13 +1,13 @@
-function loop_update!(model::QuantumXXZ, T::Real, Jz, Jxy, G; measure::Bool=true)
+@inline function loop_update!(model::QuantumXXZ, T::Real, Jz, Jxy, G; measure::Bool=true)
     Jzs  = isa(Jz, Real) ? Jz  .* ones(numbondtypes(model)) : Jz
     Jxys  = isa(Jxy, Real) ? Jxy  .* ones(numbondtypes(model)) : Jxy
     Gs  = isa(G, Real) ? G  .* ones(numsitetypes(model)) : G
     return loop_update!(model, T, Jzs, Jxys, Gs, measure=measure)
 end
-function loop_update!(model::QuantumXXZ, T::Real, Jz, Jxy; measure::Bool=true)
+@inline function loop_update!(model::QuantumXXZ, T::Real, Jz, Jxy; measure::Bool=true)
     return loop_update!(model, T, Jz, Jxy, 0.0, measure=measure)
 end
-function loop_update!(model::QuantumXXZ, T::Real, J; measure::Bool=true)
+@inline function loop_update!(model::QuantumXXZ, T::Real, J; measure::Bool=true)
     return loop_update!(model, T, J, J, 0.0, measure=measure)
 end
 
