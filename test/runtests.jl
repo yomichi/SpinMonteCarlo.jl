@@ -9,9 +9,10 @@ const Therm = MCS
 const alpha = 0.01
 
 @testset begin
-    for filename in ("lattice.jl",
-                     "classical.jl",
-                     "quantum.jl",
+    for filename in (#"lattice.jl",
+                     #"classical.jl",
+                     #"quantum.jl",
+                     "checkpoint.jl",
                     )
         t = @elapsed include(filename)
         println("$(filename): $t sec")

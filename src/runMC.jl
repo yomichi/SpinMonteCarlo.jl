@@ -1,31 +1,41 @@
-function runMC(params::Dict)
-    verbose = get(params, "Verbose", false)
-    if verbose
-        println("Start: ", params)
+using JLD2
+
+function runMC(params::AbstractArray; parallel::Bool=false)
+    map_fn = ifelse(parallel, pmap, map)
+    return map_fn(enumerate(params)) do id, p
+        p["ID"] = id
+        return runMC(p)
     end
-    model = params["Model"](params)
-    ret = runMC(model, params)
+end
+
+function runMC(param::Dict)
+    verbose = get(param, "Verbose", false)
+    cp_filename = @sprintf("%s_%d.jld2", get(param, "Checkpoint Filename Prefix", "cp"), get(param, "ID", 1))
     if verbose
-        println("Finish: ", params)
+        println("Start: ", param)
+    end
+    model = param["Model"](param)
+    ret = runMC(model, param, cp_filename=cp_filename, cp_interval=get(param, "Checkpoint Interval", 0.0))
+    if verbose
+        println("Finish: ", param)
     end
     return ret
 end
 
-function runMC(model::Union{Ising, Potts}, params::Dict)
-    T = params["T"]
-    Js = params["J"]
-    MCS = get(params, "MCS", 8192)
-    Therm = get(params, "Thermalization", MCS>>3)
-    update! = get(params, "UpdateMethod", SW_update!)
+function runMC(model::Union{Ising, Potts}, param::Dict; cp_filename::AbstractString="cp.jld2", cp_interval::Real=0.0)
+    T = param["T"]
+    Js = param["J"]
+    MCS = get(param, "MCS", 8192)
+    Therm = get(param, "Thermalization", MCS>>3)
+    update! = get(param, "UpdateMethod", SW_update!)
     return runMC(model, T, Js, MCS, Therm, update!)
 end
-function runMC(model::Union{Ising, Potts}, T::Real, Js::Union{Real,AbstractArray}, MCS::Integer, Therm::Integer, update! = SW_update!)
-    for mcs in 1:Therm
-        update!(model,T,Js,measure=false)
-    end
-
-    nsites = numsites(model)
-    invV = 1.0/nsites
+function runMC(model::Union{Ising, Potts}, T::Real, Js::Union{Real,AbstractArray}, MCS::Integer, Therm::Integer, update! = SW_update!
+               ;
+               cp_filename::AbstractString="cp.jld2", cp_interval::Real=0.0)
+    tm = time()
+    mcs = 0
+    MCS += Therm
     obs = BinningObservableSet()
     makeMCObservable!(obs, "Time per MCS")
     makeMCObservable!(obs, "Magnetization")
@@ -35,7 +45,23 @@ function runMC(model::Union{Ising, Potts}, T::Real, Js::Union{Real,AbstractArray
     makeMCObservable!(obs, "Energy")
     makeMCObservable!(obs, "Energy^2")
 
-    for mcs in 1:MCS
+
+    if cp_interval > 0.0 && ispath(cp_filename)
+        @load(cp_filename, model, obs, mcs)
+    end
+
+    while mcs < Therm
+        update!(model,T,Js,measure=false)
+        mcs += 1
+        if cp_interval > 0.0 && time() - tm > cp_interval
+            @save(cp_filename, model, obs, mcs)
+            tm += cp_interval
+        end
+    end
+
+    nsites = numsites(model)
+    invV = 1.0/nsites
+    while mcs < MCS
         t = @elapsed begin
             localobs = update!(model,T,Js)
         end
@@ -52,6 +78,15 @@ function runMC(model::Union{Ising, Potts}, T::Real, Js::Union{Real,AbstractArray
         obs["Magnetization^4"] << M4
         obs["Energy"] << E
         obs["Energy^2"] << E2
+        mcs += 1
+        if cp_interval > 0.0 && time() - tm > cp_interval
+            @save(cp_filename, model, obs, mcs)
+            tm += cp_interval
+        end
+    end
+
+    if cp_interval > 0.0
+        @save(cp_filename, model, obs, mcs)
     end
 
     beta = 1.0/T
@@ -66,19 +101,20 @@ function runMC(model::Union{Ising, Potts}, T::Real, Js::Union{Real,AbstractArray
     return jk
 end
 
-function runMC(model::Union{Clock, XY}, params::Dict)
-    T = params["T"]
-    Js = params["J"]
-    MCS = get(params, "MCS", 8192)
-    Therm = get(params, "Thermalization", MCS>>3)
-    update! = get(params, "UpdateMethod", SW_update!)
-    return runMC(model, T, Js, MCS, Therm, update!)
+function runMC(model::Union{Clock, XY}, param::Dict; cp_filename::AbstractString="cp.jld2", cp_interval::Real=0.0)
+    T = param["T"]
+    Js = param["J"]
+    MCS = get(param, "MCS", 8192)
+    Therm = get(param, "Thermalization", MCS>>3)
+    update! = get(param, "UpdateMethod", SW_update!)
+    return runMC(model, T, Js, MCS, Therm, update!, cp_filename=cp_filename, cp_interval=cp_interval)
 end
-function runMC(model::Union{Clock, XY}, T::Real, Js::Union{Real,AbstractArray}, MCS::Integer, Therm::Integer, update! =SW_update!)
-    for i in 1:Therm
-        update!(model, T, Js, measure=false)
-    end
-
+function runMC(model::Union{Clock, XY}, T::Real, Js::Union{Real,AbstractArray}, MCS::Integer, Therm::Integer, update! =SW_update!
+               ;
+               cp_filename::AbstractString="cp.jld2", cp_interval::Real=0.0)
+    tm = time()
+    mcs = 0
+    MCS += Therm
     obs = BinningObservableSet()
     makeMCObservable!(obs, "Time per MCS")
     makeMCObservable!(obs, "|Magnetization|")
@@ -97,11 +133,25 @@ function runMC(model::Union{Clock, XY}, T::Real, Js::Union{Real,AbstractArray}, 
     makeMCObservable!(obs, "Energy")
     makeMCObservable!(obs, "Energy^2")
 
+    if cp_interval > 0.0 && ispath(cp_filename)
+        @load(cp_filename, model, obs, mcs)
+    end
+
+    while mcs < Therm
+        update!(model,T,Js,measure=false)
+        mcs += 1
+        if cp_interval > 0.0 && time() - tm > cp_interval
+            @save(cp_filename, model, obs, mcs)
+            tm += cp_interval
+        end
+    end
+
+
     nsites = numsites(model)
     invV = 1.0/nsites
     beta = 1.0/T
 
-    for i in 1:MCS
+    while mcs < MCS
         t = @elapsed begin
             localobs = update!(model, T, Js)
         end
@@ -132,7 +182,16 @@ function runMC(model::Union{Clock, XY}, T::Real, Js::Union{Real,AbstractArray}, 
         obs["Helicity Modulus y"] << U[2]
         obs["Energy"] << E
         obs["Energy^2"] << E*E
+        mcs += 1
+        if cp_interval > 0.0 && time() - tm > cp_interval
+            @save(cp_filename, model, obs, mcs)
+            tm += cp_interval
+        end
     end
+    if cp_interval > 0.0
+        @save(cp_filename, model, obs, mcs)
+    end
+
     jk = jackknife(obs)
     jk["Binder Ratio x"] = jk["Magnetization x^4"] / (jk["Magnetization x^2"]^2)
     jk["Binder Ratio y"] = jk["Magnetization y^4"] / (jk["Magnetization y^2"]^2)
@@ -149,28 +208,29 @@ function runMC(model::Union{Clock, XY}, T::Real, Js::Union{Real,AbstractArray}, 
     return jk
 end
 
-function runMC(model::QuantumXXZ, params::Dict)
-    T = params["T"]
-    if "J" in keys(params)
-        Jz = Jxy = params["J"]
+function runMC(model::QuantumXXZ, param::Dict
+               ;
+               cp_filename::AbstractString="cp.jld2", cp_interval::Real=0.0)
+    T = param["T"]
+    if "J" in keys(param)
+        Jz = Jxy = param["J"]
     else
-        Jz = params["Jz"]
-        Jxy = params["Jxy"]
+        Jz = param["Jz"]
+        Jxy = param["Jxy"]
     end
-    G = get(params, "Gamma", 0.0)
-    MCS = get(params, "MCS", 8192)
-    Therm = get(params, "Thermalization", MCS>>3)
+    G = get(param, "Gamma", 0.0)
+    MCS = get(param, "MCS", 8192)
+    Therm = get(param, "Thermalization", MCS>>3)
     return runMC(model, T, Jz, Jxy, G, MCS, Therm)
 end
 function runMC(model::QuantumXXZ, T::Real,
                Jz::Union{Real, AbstractArray}, Jxy::Union{Real, AbstractArray},
-               Gs::Union{Real, AbstractArray}, MCS::Integer, Therm::Integer)
-    for mcs in 1:Therm
-        loop_update!(model,T, Jz, Jxy, Gs, measure=false)
-    end
-
-    nsites = numsites(model.lat)
-    invV = 1.0/nsites
+               Gs::Union{Real, AbstractArray}, MCS::Integer, Therm::Integer
+               ;
+               cp_filename::AbstractString="cp.jld2", cp_interval::Real=0.0)
+    tm = time()
+    mcs = 0
+    MCS += Therm
     obs = BinningObservableSet()
     makeMCObservable!(obs, "Time per MCS")
     makeMCObservable!(obs, "Sign * Magnetization")
@@ -181,7 +241,22 @@ function runMC(model::QuantumXXZ, T::Real,
     makeMCObservable!(obs, "Sign * Energy^2")
     makeMCObservable!(obs, "Sign")
 
-    for mcs in 1:MCS
+    if cp_interval > 0.0 && ispath(cp_filename)
+        @load(cp_filename, model, obs, mcs)
+    end
+
+    while mcs < Therm
+        loop_update!(model,T, Jz, Jxy, Gs, measure=false)
+        mcs += 1
+        if cp_interval > 0.0 && time() - tm > cp_interval
+            @save(cp_filename, model, obs, mcs)
+            tm += cp_interval
+        end
+    end
+
+    nsites = numsites(model.lat)
+    invV = 1.0/nsites
+    while mcs < MCS
         t = @elapsed begin 
             localobs = loop_update!(model,T,Jz,Jxy,Gs)
         end
@@ -199,6 +274,14 @@ function runMC(model::QuantumXXZ, T::Real,
         obs["Sign * Energy"] << E*sgn
         obs["Sign * Energy^2"] << E2*sgn
         obs["Sign"] << sgn
+        mcs += 1
+        if cp_interval > 0.0 && time() - tm > cp_interval
+            @save(cp_filename, model, obs, mcs)
+            tm += cp_interval
+        end
+    end
+    if cp_interval > 0.0
+        @save(cp_filename, model, obs, mcs)
     end
 
     jk = jackknife(obs)
