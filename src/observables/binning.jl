@@ -4,7 +4,7 @@ export BinningObservable, tau
 export extrapolate_tau, extrapolate_stderror
 export BinningObservableSet
 
-type BinningObservable <: ScalarObservable
+mutable struct BinningObservable <: ScalarObservable
     ## index of these vectors denotes the level of bins (each bin stores the mean of 2^(i-1) values)
     raw_ts :: Vector{Float64}        ## Time series of raw data
     bins :: Vector{Float64}          ## Time series of bins

@@ -1,4 +1,4 @@
-type SWInfo
+mutable struct SWInfo
     activated_bonds :: Vector{Int}
     clustersize :: Vector{Int}
     clusterspin :: Vector{Int}

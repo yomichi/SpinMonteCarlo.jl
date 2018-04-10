@@ -1,6 +1,6 @@
 export TinyObservable
 
-type TinyObservable <: ScalarObservable
+mutable struct TinyObservable <: ScalarObservable
     num :: Int64
     sum :: Float64
     sum2 :: Float64

@@ -1,4 +1,4 @@
-VERSION >= v"0.4.0-dev+6521" && __precompile__()
+__precompile__()
 
 module SpinMonteCarlo
 using Compat
@@ -18,7 +18,7 @@ export runMC, print_result
 
 const Measurement = Dict{String, Any}
 
-@compat abstract type Model end
+abstract type Model end
 
 include("union_find.jl")
 include("lattice.jl")

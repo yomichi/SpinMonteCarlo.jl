@@ -1,4 +1,4 @@
-type Ising <: Model
+mutable struct Ising <: Model
     lat :: Lattice
     spins :: Vector{Int}
 
@@ -14,7 +14,7 @@ function Ising(params::Dict)
     return Ising(lat)
 end
 
-type Potts <: Model
+mutable struct Potts <: Model
     lat :: Lattice
     Q :: Int
     spins :: Vector{Int}
@@ -30,7 +30,7 @@ function Potts(params::Dict)
     return Potts(lat, Q)
 end
 
-type Clock <: Model
+mutable struct Clock <: Model
     lat :: Lattice
     Q :: Int
     spins :: Vector{Int}
@@ -52,7 +52,7 @@ function Clock(params::Dict)
     return Clock(lat, Q)
 end
 
-type XY <: Model
+mutable struct XY <: Model
     lat :: Lattice
     spins :: Vector{Float64}
 

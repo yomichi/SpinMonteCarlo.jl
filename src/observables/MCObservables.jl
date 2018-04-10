@@ -9,9 +9,9 @@ export confidence_interval
 
 using Distributions
 
-@compat abstract type MCObservable end
-@compat abstract type ScalarObservable <: MCObservable end
-@compat abstract type VectorObservable <: MCObservable end
+abstract type MCObservable end
+abstract type ScalarObservable <: MCObservable end
+abstract type VectorObservable <: MCObservable end
 
 function p_value(X::MCObservable, y::Real; verbose::Bool=false)
     MX = mean(X)

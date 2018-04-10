@@ -6,7 +6,7 @@
       LO_Cross,  # [1 0 0 0; 0 0 1 0; 0 1 0 0; 0 0 0 1]
      )
 
-type LocalOperator
+mutable struct LocalOperator
     op_type :: LocalOperatorType
     isdiagonal :: Bool
     time :: Float64
@@ -16,9 +16,9 @@ type LocalOperator
 end
 LocalOperator(op_type::LocalOperatorType, time::Real, space::Int) = LocalOperator(op_type, true, time, space, 0,0)
 
-@compat abstract type QuantumLocalZ2Model <: Model end
+abstract type QuantumLocalZ2Model <: Model end
 
-type QuantumXXZ <: QuantumLocalZ2Model
+mutable struct QuantumXXZ <: QuantumLocalZ2Model
     lat :: Lattice
     S2 :: Int
     spins :: Vector{Int}

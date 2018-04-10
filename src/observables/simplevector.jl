@@ -1,6 +1,6 @@
 export SimpleVectorObservable, stddev
 
-type SimpleVectorObservable <: VectorObservable
+mutable struct SimpleVectorObservable <: VectorObservable
     bins :: Vector{Vector{Float64}}
     num :: Int64
     sum :: Vector{Float64}

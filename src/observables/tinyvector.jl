@@ -2,7 +2,7 @@ import Base: zero, zeros, deepcopy, mean, show
 
 export TinyVectorObservable, stddev
 
-type TinyVectorObservable <: VectorObservable
+mutable struct TinyVectorObservable <: VectorObservable
     num :: Int64
     sum :: Vector{Float64}
     sum2 :: Vector{Float64}
