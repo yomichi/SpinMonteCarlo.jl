@@ -15,6 +15,7 @@ function loop_update!(model::QuantumXXZ, T::Real,
                       Jzs::AbstractArray, Jxys::AbstractArray, Gs::AbstractArray
                       ;
                       measure::Bool=true)
+    rng = model.rng
     lo_types = [LO_FMLink, LO_AFLink, LO_Vertex, LO_Cross]
     nsites = numsites(model)
     S2 = model.S2
@@ -51,36 +52,36 @@ function loop_update!(model::QuantumXXZ, T::Real,
 
     ops = LocalOperator[]
     iops = 1 # index of the next operator in the original string
-    t = randexp()*op_dt
+    t = randexp(rng)*op_dt
     while t <= 1.0 || iops <= length(model.ops)
         if iops > length(model.ops) || t < model.ops[iops].time
             ## INSERT
-            ot = searchsortedfirst(accumulated_weights, rand()*accumulated_weights[end])
+            ot = searchsortedfirst(accumulated_weights, rand(rng)*accumulated_weights[end])
             if ot <= 4nbt
                 ## Bond
                 bt = ceil(Int, ot/4)
                 ot = mod1(ot,4)
                 lo_type = lo_types[ot]
-                b = bonds(model,bt)[rand(1:numbonds(model,bt))]
+                b = bonds(model,bt)[rand(rng, 1:numbonds(model,bt))]
                 s1 = source(model, b)
                 s2 = target(model, b)
-                ss1, ss2 = rand(1:S2, 2)
+                ss1, ss2 = rand(rng, 1:S2, 2)
                 if ifelse(spins[site2subspin(s1,ss1,S2)] == spins[site2subspin(s2,ss2,S2)],
                           lo_type == LO_FMLink || lo_type == LO_Cross,
                           lo_type == LO_AFLink || lo_type == LO_Vertex)
                     push!(ops, LocalOperator(lo_type, t, bond2subbond(b,ss1,ss2,S2)))
-                    t += randexp()*op_dt
+                    t += randexp(rng)*op_dt
                 else
-                    t += randexp()*op_dt
+                    t += randexp(rng)*op_dt
                     continue
                 end
             else
                 ## Site
                 st = ot-4nbt
-                s = sites(model,st)[rand(1:numsites(model,st))]
-                ss = rand(1:S2)
+                s = sites(model,st)[rand(rng, 1:numsites(model,st))]
+                ss = rand(rng, 1:S2)
                 push!(ops, LocalOperator(LO_Cut, t, site2subspin(s,ss,S2)))
-                t += randexp()*op_dt
+                t += randexp(rng)*op_dt
             end
         else 
             op = model.ops[iops]
@@ -96,7 +97,7 @@ function loop_update!(model::QuantumXXZ, T::Real,
                 subbond = op.space
                 b,ss1,ss2 = subbond2bond(subbond,S2)
                 bt = bondtype(model,b)
-                ot = ifelse(rand()*(weights[4bt-1]+weights[4bt])<weights[4bt-1], LO_Vertex, LO_Cross)
+                ot = ifelse(rand(rng)*(weights[4bt-1]+weights[4bt])<weights[4bt-1], LO_Vertex, LO_Cross)
                 op.op_type = ot
             end
         end
@@ -152,10 +153,10 @@ function loop_update!(model::QuantumXXZ, T::Real,
         end
         @assert length(ups0) == length(ups1)
         @assert length(downs0) == length(downs1)
-        for (u, u2) in zip(ups0, shuffle(ups1))
+        for (u, u2) in zip(ups0, shuffle(rng,ups1))
             unify!(uf, u, currents[u2])
         end
-        for (d, d2) in zip(downs0, shuffle(downs1))
+        for (d, d2) in zip(downs0, shuffle(rng,downs1))
             unify!(uf, d, currents[d2])
         end
     end
@@ -163,7 +164,7 @@ function loop_update!(model::QuantumXXZ, T::Real,
     model.ops = ops
 
     nc = clusterize!(uf)
-    flips = rand([1,-1], nc)
+    flips = rand(rng, [1,-1], nc)
     for s in 1:nspins
         model.spins[s] *= flips[clusterid(uf, s)]
     end

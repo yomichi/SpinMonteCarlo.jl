@@ -15,6 +15,9 @@ function runMC(param::Dict)
         println("Start: ", param)
     end
     model = param["Model"](param)
+    if "Seed" in keys(param)
+        srand(model, param["Seed"])
+    end
     ret = runMC(model, param, cp_filename=cp_filename, cp_interval=get(param, "Checkpoint Interval", 0.0))
     if verbose
         println("Finish: ", param)
@@ -28,7 +31,7 @@ function runMC(model::Union{Ising, Potts}, param::Dict; cp_filename::AbstractStr
     MCS = get(param, "MCS", 8192)
     Therm = get(param, "Thermalization", MCS>>3)
     update! = get(param, "UpdateMethod", SW_update!)
-    return runMC(model, T, Js, MCS, Therm, update!)
+    return runMC(model, T, Js, MCS, Therm, update!, cp_filename=cp_filename, cp_interval=cp_interval)
 end
 function runMC(model::Union{Ising, Potts}, T::Real, Js::Union{Real,AbstractArray}, MCS::Integer, Therm::Integer, update! = SW_update!
                ;
@@ -49,6 +52,7 @@ function runMC(model::Union{Ising, Potts}, T::Real, Js::Union{Real,AbstractArray
     if cp_interval > 0.0 && ispath(cp_filename)
         @load(cp_filename, model, obs, mcs)
     end
+
 
     while mcs < Therm
         update!(model,T,Js,measure=false)
@@ -221,7 +225,7 @@ function runMC(model::QuantumXXZ, param::Dict
     G = get(param, "Gamma", 0.0)
     MCS = get(param, "MCS", 8192)
     Therm = get(param, "Thermalization", MCS>>3)
-    return runMC(model, T, Jz, Jxy, G, MCS, Therm)
+    return runMC(model, T, Jz, Jxy, G, MCS, Therm, cp_filename=cp_filename, cp_interval=cp_interval)
 end
 function runMC(model::QuantumXXZ, T::Real,
                Jz::Union{Real, AbstractArray}, Jxy::Union{Real, AbstractArray},

@@ -8,6 +8,7 @@ update spin configuration by local spin flip and Metropolice algorithm under the
     return local_update!(model,T,Js,measure=measure)
 end
 function local_update!(model::Ising, T::Real, Js::AbstractArray; measure::Bool=true)
+    rng = model.rng
     nsites = numsites(model)
     nbonds = numbonds(model)
     mbeta = -1.0/T
@@ -18,7 +19,7 @@ function local_update!(model::Ising, T::Real, Js::AbstractArray; measure::Bool=t
         for (n,b) in neighbors(model, site)
             de += 2center * model.spins[n] * Js[bondtype(model,b)]
         end
-        if rand() < exp(mbeta*de)
+        if rand(rng) < exp(mbeta*de)
             model.spins[site] *= -1
         end
     end
@@ -37,19 +38,20 @@ function local_update!(model::Ising, T::Real, Js::AbstractArray; measure::Bool=t
 end
 
 function local_update!(model::Potts, T::Real, Js::AbstractArray; measure::Bool=true)
+    rng = model.rng
     nsites = numsites(model)
     nbonds = numbonds(model)
     mbeta = -1.0/T
 
     @inbounds for site in 1:nsites
         center = model.spins[site]
-        new_center = mod1(center+rand(1:(model.Q-1)), model.Q)
+        new_center = mod1(center+rand(rng, 1:(model.Q-1)), model.Q)
         de = 0.0
         for (n,b) in neighbors(model, site)
             de += ifelse(center == model.spins[n], Js[bondtype(model, b)], 0.0)
             de -= ifelse(new_center == model.spins[n], Js[bondtype(model, b)], 0.0)
         end
-        if rand() < exp(mbeta*de)
+        if rand(rng) < exp(mbeta*de)
             model.spins[site] = new_center
         end
     end
@@ -68,6 +70,7 @@ function local_update!(model::Potts, T::Real, Js::AbstractArray; measure::Bool=t
 end
 
 function local_update!(model::Clock, T::Real, Js::AbstractArray; measure::Bool=true)
+    rng = model.rng
     nsites = numsites(model)
     nbonds = numbonds(model)
     mbeta = -1.0/T
@@ -75,13 +78,13 @@ function local_update!(model::Clock, T::Real, Js::AbstractArray; measure::Bool=t
 
     @inbounds for site in 1:nsites
         center = model.spins[site]
-        new_center = mod1(center+rand(1:(model.Q-1)), model.Q)
+        new_center = mod1(center+rand(rng, 1:(model.Q-1)), model.Q)
         de = 0.0
         for (n,b) in neighbors(model, site)
             de += model.cosines[mod1(model.spins[n]-center, model.Q)] * Js[bondtype(model,b)]
             de -= model.cosines[mod1(model.spins[n]-new_center, model.Q)] * Js[bondtype(model,b)]
         end
-        if rand() < exp(mbeta*de)
+        if rand(rng) < exp(mbeta*de)
             model.spins[site] = new_center
         end
     end
@@ -102,19 +105,20 @@ function local_update!(model::Clock, T::Real, Js::AbstractArray; measure::Bool=t
 end
 
 function local_update!(model::XY, T::Real, Js::AbstractArray; measure::Bool=true)
+    rng = model.rng
     nsites = numsites(model)
     nbonds = numbonds(model)
     mbeta = -1.0/T
 
     @inbounds for site in 1:nsites
         center = model.spins[site]
-        new_center = rand()
+        new_center = rand(rng)
         de = 0.0
         for (n,b) in neighbors(model, site)
             de += cospi(2(center - model.spins[n])) * Js[bondtype(model,b)]
             de -= cospi(2(new_center - model.spins[n])) * Js[bondtype(model,b)]
         end
-        if rand() < exp(mbeta*de)
+        if rand(rng) < exp(mbeta*de)
             model.spins[site] = new_center
         end
     end

@@ -3,15 +3,16 @@ using Base.Test
 include("../src/SpinMonteCarlo.jl")
 using SpinMonteCarlo
 
-const SEED = 19937
+const SEED = 137
+const SEED2 = 19937
 const MCS = 10000
 const Therm = MCS
 const alpha = 0.01
 
 @testset begin
-    for filename in (#"lattice.jl",
-                     #"classical.jl",
-                     #"quantum.jl",
+    for filename in ("lattice.jl",
+                     "classical.jl",
+                     "quantum.jl",
                      "checkpoint.jl",
                     )
         t = @elapsed include(filename)
