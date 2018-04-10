@@ -3,7 +3,7 @@ export MCObservableSet
 
 export makeMCObservable!
 
-function makeMCObservable!{Obs}(oset::MCObservableSet{Obs}, name::String)
+function makeMCObservable!(oset::MCObservableSet{Obs}, name::String) where Obs <: MCObservable
     if haskey(oset, name)
         warn("""Observable "$name" already exists. (Skipped)""")
     else
