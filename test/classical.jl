@@ -74,12 +74,13 @@ end
                                               "Wolff_update!",
                                              )
                 p["UpdateMethod"] = eval(Symbol(upstr))
-                srand(SEED)
                 res1 = []
                 res2 = []
                 for i in 1:nT
                     p["T"] = Ts[i]
+                    p["Seed"] = SEED
                     push!(res1, runMC(p))
+                    p["Seed"] = SEED2
                     push!(res2, runMC(p))
                 end
                 @testset "$n" for n in obsnames

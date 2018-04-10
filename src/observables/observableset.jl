@@ -1,9 +1,9 @@
 export MCObservableSet
-@compat const MCObservableSet{Obs<:MCObservable} = Dict{String, Obs}
+const MCObservableSet{Obs<:MCObservable} = Dict{String, Obs}
 
 export makeMCObservable!
 
-function makeMCObservable!{Obs}(oset::MCObservableSet{Obs}, name::String)
+function makeMCObservable!(oset::MCObservableSet{Obs}, name::String) where Obs <: MCObservable
     if haskey(oset, name)
         warn("""Observable "$name" already exists. (Skipped)""")
     else

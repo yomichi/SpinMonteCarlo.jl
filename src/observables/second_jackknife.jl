@@ -1,7 +1,7 @@
 export SecondJackknife, SecondJackknifeSet
 export second_jackknife
 
-type SecondJackknife <: MCObservable
+mutable struct SecondJackknife <: MCObservable
     x_i  :: Vector{Float64}
     x_ij :: Matrix{Float64}
     b_i  :: Vector{Float64}

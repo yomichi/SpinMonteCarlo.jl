@@ -6,7 +6,7 @@
       LO_Cross,  # [1 0 0 0; 0 0 1 0; 0 1 0 0; 0 0 0 1]
      )
 
-type LocalOperator
+mutable struct LocalOperator
     op_type :: LocalOperatorType
     isdiagonal :: Bool
     time :: Float64
@@ -16,31 +16,46 @@ type LocalOperator
 end
 LocalOperator(op_type::LocalOperatorType, time::Real, space::Int) = LocalOperator(op_type, true, time, space, 0,0)
 
-@compat abstract type QuantumLocalZ2Model <: Model end
+abstract type QuantumLocalZ2Model <: Model end
 
-type QuantumXXZ <: QuantumLocalZ2Model
+mutable struct QuantumXXZ <: QuantumLocalZ2Model
     lat :: Lattice
     S2 :: Int
     spins :: Vector{Int}
     ops :: Vector{LocalOperator}
+    rng :: Random.MersenneTwister
 
     function QuantumXXZ(lat::Lattice, S2::Int)
         model = new()
+        model.rng = srand(Random.MersenneTwister(0))
         model.lat = lat
         model.S2 = S2
-        model.spins = rand([1,-1], numsites(lat)*S2)
+        model.spins = rand(model.rng,[1,-1], numsites(lat)*S2)
+        model.ops = LocalOperator[]
+        return model
+    end
+    function QuantumXXZ(lat::Lattice, S2::Int, seed)
+        model = new()
+        model.rng = srand(Random.MersenneTwister(0), seed)
+        model.lat = lat
+        model.S2 = S2
+        model.spins = rand(model.rng,[1,-1], numsites(lat)*S2)
         model.ops = LocalOperator[]
         return model
     end
 end
-function QuantumXXZ(params::Dict)
-    lat = params["Lattice"](params)
-    S = params["S"]
+function QuantumXXZ(param::Dict)
+    lat = param["Lattice"](param)
+    S = param["S"]
     if round(2S) != 2S
         error("`S` should be integer or half-integer")
     end
     S2 = round(Int,2S)
-    return QuantumXXZ(lat,S2)
+    if "Seed" in keys(param)
+        return QuantumXXZ(lat,S2,param["Seed"])
+    else
+        return QuantumXXZ(lat,S2)
+    end
 end
 
 site2subspin(site::Integer, ss::Integer, S2::Integer) = (site-1)*S2+ss

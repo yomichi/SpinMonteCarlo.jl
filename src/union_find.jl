@@ -1,4 +1,4 @@
-type UnionFind
+mutable struct UnionFind
     parents :: Vector{Int}
     weights :: Vector{Int}
     ids :: Vector{Int}

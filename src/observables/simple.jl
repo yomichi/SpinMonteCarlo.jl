@@ -1,6 +1,6 @@
 export SimpleObservable, stddev
 
-type SimpleObservable <: ScalarObservable
+mutable struct SimpleObservable <: ScalarObservable
     bins :: Vector{Float64}
     num :: Int64
     sum :: Float64

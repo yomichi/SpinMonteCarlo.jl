@@ -1,7 +1,8 @@
-VERSION >= v"0.4.0-dev+6521" && __precompile__()
+__precompile__()
 
 module SpinMonteCarlo
 using Compat
+import Compat.Random
 using DataStructures
 
 export Model, Ising, XY, Potts, Clock
@@ -18,7 +19,10 @@ export runMC, print_result
 
 const Measurement = Dict{String, Any}
 
-@compat abstract type Model end
+abstract type Model end
+import Compat.Random.srand
+srand(model::Model) = srand(model.rng)
+srand(model::Model, seed) = srand(model.rng, seed)
 
 include("union_find.jl")
 include("lattice.jl")

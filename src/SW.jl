@@ -1,4 +1,4 @@
-type SWInfo
+mutable struct SWInfo
     activated_bonds :: Vector{Int}
     clustersize :: Vector{Int}
     clusterspin :: Vector{Int}
@@ -17,6 +17,7 @@ update spin configuration by Swendsen-Wang algorithm under the temperature `T`.
     return SW_update!(model, T, Js, measure=measure)
 end
 function SW_update!(model::Ising, T::Real, Js::AbstractArray; measure::Bool=true)
+    rng = model.rng
     ps = -expm1.((-2.0/T).*Js)
     nsites = numsites(model)
     nbonds = numbonds(model)
@@ -26,14 +27,14 @@ function SW_update!(model::Ising, T::Real, Js::AbstractArray; measure::Bool=true
     @inbounds for bond in 1:nbonds
         s1,s2 = source(model, bond), target(model, bond)
         bt = bondtype(model,bond)
-        if model.spins[s1] == model.spins[s2] && rand() < ps[bt]
+        if model.spins[s1] == model.spins[s2] && rand(rng) < ps[bt]
             activated_bonds[bt] += 1
             unify!(uf, s1,s2)
         end
     end
     nc = clusterize!(uf)
     clustersize = zeros(Int, nc)
-    clusterspin = rand([1,-1], nc)
+    clusterspin = rand(rng,[1,-1], nc)
 
     @inbounds for site in 1:nsites
         id = clusterid(uf, site)
@@ -55,6 +56,7 @@ function SW_update!(model::Ising, T::Real, Js::AbstractArray; measure::Bool=true
 end
 
 function SW_update!(model::Potts, T::Real, Js::AbstractArray; measure::Bool=true)
+    rng = model.rng
     ps = -expm1.((-1.0/T).*Js)
     nsites = numsites(model)
     nbonds = numbonds(model)
@@ -64,14 +66,14 @@ function SW_update!(model::Potts, T::Real, Js::AbstractArray; measure::Bool=true
     @inbounds for bond in 1:nbonds
         s1,s2 = source(model, bond), target(model, bond)
         bt = bondtype(model,bond)
-        if model.spins[s1] == model.spins[s2] && rand() < ps[bt]
+        if model.spins[s1] == model.spins[s2] && rand(rng) < ps[bt]
             activated_bonds[bt] += 1
             unify!(uf, s1,s2)
         end
     end
     nc = clusterize!(uf)
     clustersize = zeros(Int, nc)
-    clusterspin = rand(1:model.Q, nc)
+    clusterspin = rand(rng,1:model.Q, nc)
 
     @inbounds for site in 1:nsites
         id = clusterid(uf, site)
@@ -93,10 +95,11 @@ function SW_update!(model::Potts, T::Real, Js::AbstractArray; measure::Bool=true
 end
 
 function SW_update!(model::Clock, T::Real, Js::AbstractArray; measure::Bool=true)
+    rng = model.rng
     nsites = numsites(model)
     nbonds = numbonds(model)
     m2bJ = (-2/T).*Js
-    m = rand(1:model.Q)-1
+    m = rand(rng, 1:model.Q)-1
     rspins = zeros(Int, nsites)
     @inbounds for s in 1:nsites
         rspins[s] = mod1(model.spins[s]-m, model.Q)
@@ -105,12 +108,12 @@ function SW_update!(model::Clock, T::Real, Js::AbstractArray; measure::Bool=true
     @inbounds for bond in 1:nbonds
         s1,s2 = source(model, bond), target(model, bond)
         bt = bondtype(model,bond)
-        if rand() < -expm1(m2bJ[bt]*model.sines_sw[rspins[s1]]*model.sines_sw[rspins[s2]])
+        if rand(rng) < -expm1(m2bJ[bt]*model.sines_sw[rspins[s1]]*model.sines_sw[rspins[s2]])
             unify!(uf, s1,s2)
         end
     end
     nc = clusterize!(uf)
-    toflips = rand(Bool, nc)
+    toflips = rand(rng, Bool, nc)
     clustersize = zeros(Int, nc)
     @inbounds for site in 1:nsites
         id = clusterid(uf, site)
@@ -135,10 +138,11 @@ function SW_update!(model::Clock, T::Real, Js::AbstractArray; measure::Bool=true
 end
 
 function SW_update!(model::XY, T::Real, Js::AbstractArray; measure::Bool=true)
+    rng = model.rng
     nsites = numsites(model)
     nbonds = numbonds(model)
     m2bJ = (-2/T).*Js
-    m = 0.5*rand()
+    m = 0.5*rand(rng)
     pspins = zeros(nsites)
     @inbounds for s in 1:nsites
         pspins[s] = cospi(2(model.spins[s]-m))
@@ -147,12 +151,12 @@ function SW_update!(model::XY, T::Real, Js::AbstractArray; measure::Bool=true)
     @inbounds for bond in 1:nbonds
         s1,s2 = source(model, bond), target(model, bond)
         bt = bondtype(model,bond)
-        if rand() < -expm1(m2bJ[bt]*pspins[s1]*pspins[s2])
+        if rand(rng) < -expm1(m2bJ[bt]*pspins[s1]*pspins[s2])
             unify!(uf, s1,s2)
         end
     end
     nc = clusterize!(uf)
-    toflips = rand(Bool, nc)
+    toflips = rand(rng, Bool, nc)
     clustersize = zeros(Int, nc)
     @inbounds for site in 1:nsites
         id = clusterid(uf, site)

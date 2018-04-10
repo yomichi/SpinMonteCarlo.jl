@@ -1,7 +1,7 @@
 export Jackknife, JackknifeSet
 export jackknife
 
-type Jackknife <: ScalarObservable
+mutable struct Jackknife <: ScalarObservable
     xs :: Vector{Float64}
 end
 
