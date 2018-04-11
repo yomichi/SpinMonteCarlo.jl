@@ -1,4 +1,33 @@
+"""
+    Lattice
+
+Representing a lattice structure.
+
+# Arguments
+
+- `dim :: Int`: Dimension of the lattice
+- `size :: Vector{Int}`: Size
+- `nsitetypes :: Int`: The number of site types
+- `nbondtypes :: Int`: The number of bond types
+- `sites :: Vector{Vector{Int}}`: Site indices belonging each site type
+- `bonds :: Vector{Vector{Int}}`: Bond indices belonging each bond type
+- `nsites :: Int`: The number of sites
+- `nbonds :: Int`: The number of bonds
+- `sitetypes :: Vector{Int}`: Site type of each site
+- `bondtypes :: Vector{Int}`: Bond type of each bond
+- `transvector :: Matrix{Float64}`: Translational vectors as a `dim` x `dim` matrix
+- `site_coords :: Matrix{Float64}`: Coordinate of each site  as a `dim` x `nsites` matrix
+- `bond_dirs :: Matrix{Float64}`: Direction of each bond as a `dim` x `nbonds` matrix
+- `neighborsites :: Vector{Vector{Int}}`: Indices of neighbor sites of each site
+- `neighborbonds :: Vector{Vector{Int}}`: Indices of adjacent bonds of each site
+- `source :: Vector{Int}`: Index of a site connected to each bond
+- `target :: Vector{Int}`: Index of another site connected to each bond
+- `site_L2 :: Vector{Int}`: Index of the site that is `size/2` from each site
+- `site_L4 :: Vector{Int}`: Index of the site that is `size/4` from each site
+
+"""
 mutable struct Lattice
+    "dim"
     dim :: Int
     size :: Vector{Int}
     nsitetypes :: Int
