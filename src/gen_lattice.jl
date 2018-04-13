@@ -52,7 +52,7 @@ dimer_lattice(param::Dict) = dimer_lattice()
     
 generate chain lattice with length `L = param["L"]`
 
-`nsitetypes` is 2: they make two sublattice.
+`nsitetypes` is 2: all `1` (`2`) sites does not connect to another `1` (`2`) site.
 
 `nbondtypes` is 2: `1` bond connects `2n-1` and `2n` sites and `2` bond connects `2n` and `2n+1` sites.
 """
@@ -114,7 +114,7 @@ chain_lattice(param::Dict) = chain_lattice(param["L"])
     
 generate square lattice with size `L=param["L"]` \\times `W=param["W"]`.
 
-`nsitetypes` is 2: they make two sublattice.
+`nsitetypes` is 2: all `1` (`2`) sites does not connect to another `1` (`2`) site.
 
 `nbondtypes` is 2: `1` bonds are parallel to `x` axis and `2` are parallel to `y` axis.
 """
@@ -197,7 +197,7 @@ end
     
 generate triangular lattice with size `L=param["L"]` \\times `W=param["W"]`.
 
-`nsitetypes` is 3: They make three sublattices.
+`nsitetypes` is 3: all `1`, `2`, and `3` sites does not connect to another `1`, `2`, and `3` site, respectively.
 
 `nbondtypes` is 3: `1`, `2`, and `3` bonds make an angle of 0, 60, and 120 degree with `x` axis, respectively.
 """
@@ -295,7 +295,7 @@ end
     
 generate cubic lattice with size `L=param["L"]` \\times `W=param["W"]` \\times `H=param["H"]`.
 
-`nsitetypes` is 2: they make two sublattice.
+`nsitetypes` is 2: all `1` (`2`) sites does not connect to another `1` (`2`) site.
 
 `nbondtypes` is 2: `1`, `2`, and `3` bonds are parallel to `x`, `y`, and `z` axis, respectively.
 """
