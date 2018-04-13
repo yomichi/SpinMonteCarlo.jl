@@ -26,6 +26,7 @@ srand(model::Model, seed) = srand(model.rng, seed)
 
 include("union_find.jl")
 include("lattice.jl")
+include("gen_lattice.jl")
 include("model.jl")
 include("qmodel.jl")
 include("SW.jl")
