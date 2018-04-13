@@ -28,10 +28,10 @@ const MCS = 8192
 const Therm = MCS >> 3
 
 for T in Ts
-    params = Dict{String,Any}( "Model"=>model, "Lattice"=>lat,
-                                 "L"=>L, "T"=>T, "J"=>1.0,
-                                 "UpdateMethod"=>update,
-                                 "MCS"=>MCS, "Thermalization"=>Therm,
+    params = Dict{String,Any}("Model"=>model, "Lattice"=>lat,
+                              "L"=>L, "T"=>T, "J"=>1.0,
+                              "Update Method"=>update,
+                              "MCS"=>MCS, "Thermalization"=>Therm,
                              )
     result = runMC(params)
     println(@sprintf("%f %.15f %.15f",
@@ -147,18 +147,16 @@ end
     - Quantum model
         - SU(N) model
 - `Lattice`
-    - ladder
-    - tube
+    - open boundary condition
 - `UpdateMethod`
     - worm algorithm
 - Others
-    - resume and restart
     - random number parallelization
         - NOTE: parameter parallelization can be realized simply by using `@parallel for` or `pmap`.
     - write algorithmic note
         - especially, Foutuin-Kasteleyn representaion and improved estimators
 
 # Author
-[Yuichi Motoyama](https://github.com/yomichi), the University of Tokyo, 2016-2017
+[Yuichi Motoyama](https://github.com/yomichi), the University of Tokyo, 2016-
 
 This package distributed under the MIT license.
