@@ -17,8 +17,8 @@ for update in ups
                   Dict{String,Any}("Model"=>Ising, "Lattice"=>square_lattice,
                                    "L"=>L, "T"=>T, "J"=>1.0,
                                    "MCS"=>MCS, "Thermalization"=>Therm,
-                                   "UpdateMethod"=> (update==0 ? local_update! :
-                                                     update==1 ? SW_update! : Wolff_update!),
+                                   "Update Method"=> (update==0 ? local_update! :
+                                                      update==1 ? SW_update! : Wolff_update!),
                                    "update"=>update,
                                    "Verbose"=>true,
                                   ))

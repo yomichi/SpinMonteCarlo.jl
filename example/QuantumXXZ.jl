@@ -16,7 +16,9 @@ for L in Ls
         push!(params, Dict("Model"=>QuantumXXZ,
                            "Lattice"=>chain_lattice,
                            "L"=>L, "T"=>T, "J"=>J, "S"=>S, "Gamma"=>Gamma,
-                           "MCS"=>MCS, "Therm"=>Therm, "Verbose"=>true,
+                           "Update Method"=>loop_update!,
+                           "MCS"=>MCS, "Therm"=>Therm,
+                           "Verbose"=>true,
                           ))
     end
 end
