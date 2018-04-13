@@ -30,19 +30,12 @@ function parse_filename(filename)
     return p
 end
 
-function QMC(T; S=0.5, Jz=1.0, Jxy=1.0, Gamma=0.0, L=8)
-    p = Dict("Model"=>QuantumXXZ, "Lattice"=>chain_lattice,
-             "S"=>S, "L"=>L,
-             "Jz"=>Jz, "Jxy"=>Jxy,
-             "Gamma"=>Gamma,
-             "T"=>T,
-             "MCS"=>MCS,
-             "Thermalization"=>Therm,
-            )
-    return runMC(p)
-end
-
-@testset "$modelstr" for (modelstr, pnames, obsnames) in [("QuantumXXZ", ("S", "Jz", "Jxy", "Gamma", "L"), obsnames_XXZ)]
+@testset "$modelstr" for (modelstr, pnames, obsnames, updatestrs) in [("QuantumXXZ",
+                                                                       ("S", "Jz", "Jxy", "Gamma", "L"),
+                                                                       obsnames_XXZ,
+                                                                       ("loop_update!",),
+                                                                      ),
+                                                                     ]
     model = eval(Symbol(modelstr))
     @testset "$(latticestr)" for latticestr in ["chain_lattice"]
         lattice = eval(Symbol(latticestr))
@@ -62,37 +55,40 @@ end
                 p["Lattice"] = lattice
                 p["MCS"] = MCS
                 p["Thermalization"] = Therm
-                res1 = []
-                res2 = []
-                for i in 1:nT
-                    p["T"] = Ts[i]
-                    p["Seed"] = SEED
-                    push!(res1, runMC(p))
-                    p["Seed"] = SEED2
-                    push!(res2, runMC(p))
-                end
-                @testset "$n" for n in obsnames
+                @testset "$updatestr" for updatestr in updatestrs
+                    p["Update Method"] = eval(Symbol(updatestr))
+                    res1 = []
+                    res2 = []
                     for i in 1:nT
-                        T = Ts[i]
-                        exact = exacts[n][i]
-                        r1 = res1[i]
-                        r2 = res2[i]
-                        ## single MC test may fail.
-                        mc1 = r1[n]
-                        mc2 = r2[n]
-                        ex = exact
-                        if  mean(r1["Sign"]) < 1.0 && (!(isfinite(mean(mc1))) || !(isfinite(mean(mc2))))
-                            ## Sign problem makes test very difficult...
-                            continue
+                        p["T"] = Ts[i]
+                        p["Seed"] = SEED
+                        push!(res1, runMC(p))
+                        p["Seed"] = SEED2
+                        push!(res2, runMC(p))
+                    end
+                    @testset "$n" for n in obsnames
+                        for i in 1:nT
+                            T = Ts[i]
+                            exact = exacts[n][i]
+                            r1 = res1[i]
+                            r2 = res2[i]
+                            ## single MC test may fail.
+                            mc1 = r1[n]
+                            mc2 = r2[n]
+                            ex = exact
+                            if  mean(r1["Sign"]) < 1.0 && (!(isfinite(mean(mc1))) || !(isfinite(mean(mc2))))
+                                ## Sign problem makes test very difficult...
+                                continue
+                            end
+                            # @show exact, mc1, mc2
+                            if !(p_value(mc1, exact) > alpha/nT || p_value(mc2, exact) > alpha/nT)
+                                @show T
+                                @show exact
+                                @show mc1, p_value(mc1, exact)
+                                @show mc2, p_value(mc2, exact)
+                            end
+                            @test p_value(mc1, exact) > alpha/nT || p_value(mc2, exact) > alpha/nT
                         end
-                        # @show exact, mc1, mc2
-                        if !(p_value(mc1, exact) > alpha/nT || p_value(mc2, exact) > alpha/nT)
-                            @show T
-                            @show exact
-                            @show mc1, p_value(mc1, exact)
-                            @show mc2, p_value(mc2, exact)
-                        end
-                        @test p_value(mc1, exact) > alpha/nT || p_value(mc2, exact) > alpha/nT
                     end
                 end
             end

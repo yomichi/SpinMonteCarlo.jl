@@ -1,33 +1,4 @@
-"""
-    Lattice
-
-Representing a lattice structure.
-
-# Arguments
-
-- `dim :: Int`: Dimension of the lattice
-- `size :: Vector{Int}`: Size
-- `nsitetypes :: Int`: The number of site types
-- `nbondtypes :: Int`: The number of bond types
-- `sites :: Vector{Vector{Int}}`: Site indices belonging each site type
-- `bonds :: Vector{Vector{Int}}`: Bond indices belonging each bond type
-- `nsites :: Int`: The number of sites
-- `nbonds :: Int`: The number of bonds
-- `sitetypes :: Vector{Int}`: Site type of each site
-- `bondtypes :: Vector{Int}`: Bond type of each bond
-- `transvector :: Matrix{Float64}`: Translational vectors as a `dim` x `dim` matrix
-- `site_coords :: Matrix{Float64}`: Coordinate of each site  as a `dim` x `nsites` matrix
-- `bond_dirs :: Matrix{Float64}`: Direction of each bond as a `dim` x `nbonds` matrix
-- `neighborsites :: Vector{Vector{Int}}`: Indices of neighbor sites of each site
-- `neighborbonds :: Vector{Vector{Int}}`: Indices of adjacent bonds of each site
-- `source :: Vector{Int}`: Index of a site connected to each bond
-- `target :: Vector{Int}`: Index of another site connected to each bond
-- `site_L2 :: Vector{Int}`: Index of the site that is `size/2` from each site
-- `site_L4 :: Vector{Int}`: Index of the site that is `size/4` from each site
-
-"""
 mutable struct Lattice
-    "dim"
     dim :: Int
     size :: Vector{Int}
     nsitetypes :: Int
@@ -314,6 +285,9 @@ dimer_lattice(params::Dict) = dimer_lattice()
     chain_lattice(params::Dict)
     
 generate chain lattice with length `L` or params["L"].
+
+`nsitetypes` is 2: they make two sublattice.
+`nbondtypes` is 2: `1` bond connects `2n-1` and `2n` sites and `2` bond connects `2n` and `2n+1` sites.
 """
 function chain_lattice(L::Integer)
     dim = 1
@@ -372,6 +346,9 @@ chain_lattice(params::Dict) = chain_lattice(params["L"])
     square_lattice(params::Dict)
     
 generate square lattice with size `L` \\times `W`.
+
+`nsitetypes` is 2: they make two sublattice.
+`nbondtypes` is 2: `1` bonds are parallel to `x` axis and `2` are parallel to `y` axis.
 """
 square_lattice(L::Integer) = square_lattice(L,L)
 function square_lattice(L::Integer, W::Integer)
@@ -451,6 +428,9 @@ end
     triangular_lattice(params::Dict)
     
 generate triangular lattice with size `L` \\times `W`.
+
+`nsitetypes` is 3: They make three sublattices.
+`nbondtypes` is 3: `1`, `2`, and `3` bonds make an angle of 0, 60, and 120 degree with `x` axis, respectively.
 """
 triangular_lattice(L::Integer) = triangular_lattice(L,L)
 function triangular_lattice(L::Integer, W::Integer)
@@ -544,6 +524,9 @@ end
     cubic_lattice(L::Integer, W::Integer=L, H::Integer=W)
     
 generate cubic lattice with size `L` \\times `W` \\times `H`.
+
+`nsitetypes` is 2: they make two sublattice.
+`nbondtypes` is 2: `1`, `2`, and `3` bonds are parallel to `x`, `y`, and `z` axis, respectively.
 """
 cubic_lattice(L::Integer) = cubic_lattice(L,L,L)
 cubic_lattice(L::Integer, W::Integer) = cubic_lattice(L,W,W)
@@ -638,6 +621,8 @@ end
     fully_connected_lattice(N::Integer)
     
 generate `N` site fully connected lattice
+
+Both `nsitetypes` and `nbondtypes` are 1.
 """
 function fully_connected_lattice(N::Integer)
     dim = 1

@@ -7,11 +7,17 @@ end
 numclusters(sw::SWInfo) = length(sw.clustersize)
 
 """
+    SW_update!(model, param; measure::Bool=true)
     SW_update!(model, T::Real, J::Real; measure::Bool=true)
     SW_update!(model, T::Real, Js::AbstractArray; measure::Bool=true)
     
-update spin configuration by Swendsen-Wang algorithm under the temperature `T`.
+update spin configuration by Swendsen-Wang algorithm under temperature `T=param["T"]` and coupling constants `J=param["J"]`
 """
+@inline function SW_update!(model::Union{Ising, Potts, Clock, XY}, param::Dict; measure::Bool=true)
+    T = param["T"]
+    J = get(param, "J", 1.0)
+    return SW_update!(model, T, J, measure=measure)
+end
 @inline function SW_update!(model::Model, T::Real, J::Real; measure::Bool=true)
     Js = J*ones(numbondtypes(model))
     return SW_update!(model, T, Js, measure=measure)

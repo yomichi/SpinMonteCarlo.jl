@@ -73,7 +73,7 @@ end
                                               "SW_update!",
                                               "Wolff_update!",
                                              )
-                p["UpdateMethod"] = eval(Symbol(upstr))
+                p["Update Method"] = eval(Symbol(upstr))
                 res1 = []
                 res2 = []
                 for i in 1:nT

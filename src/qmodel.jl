@@ -18,6 +18,25 @@ LocalOperator(op_type::LocalOperatorType, time::Real, space::Int) = LocalOperato
 
 abstract type QuantumLocalZ2Model <: Model end
 
+doc"""
+    QuantumXXZ(lat::Lattice, S::Real, [seed])
+
+Spin-$S$ XXZ model denoted by the following Hamiltonian,
+\begin{equation}
+\mathcal{H} = \sum_{i,j} \left[ J_{ij}^z S_i^z S_j^z 
+            + \frac{J_{ij}^{xy}}{2} (S_i^+ S_j^- + S_i^-S_j^+) \right]
+            - \sum_i \Gamma_i S_i^x,
+\end{equation}
+where $S^x, S^y, S^z$ are $x, y$ and $z$ component of spin operator with length $S$,
+and $S^\pm \equiv S^x \pm iS^y$ are ladder operator.
+A state is represented by a product state (spins at $\tau=0$) of local $S^z$ diagonal basis and an operator string (perturbations).
+A local spin with length $S$ is represented by a symmetrical summation of $2S$ sub spins with length $1/2$.
+Each subspin will be initialized independently and randomly.
+
+    QuantumXXZ(param)
+
+`param["Lattice"](param)`, `param["S"]` and `param["Seed"]` (if defined) will be used as the args of the former form.
+"""
 mutable struct QuantumXXZ <: QuantumLocalZ2Model
     lat :: Lattice
     S2 :: Int
@@ -25,7 +44,11 @@ mutable struct QuantumXXZ <: QuantumLocalZ2Model
     ops :: Vector{LocalOperator}
     rng :: Random.MersenneTwister
 
-    function QuantumXXZ(lat::Lattice, S2::Int)
+    function QuantumXXZ(lat::Lattice, S::Real)
+        if round(2S) != 2S
+            error("`S` should be integer or half-integer")
+        end
+        S2 = round(Int,2S)
         model = new()
         model.rng = srand(Random.MersenneTwister(0))
         model.lat = lat
@@ -34,7 +57,11 @@ mutable struct QuantumXXZ <: QuantumLocalZ2Model
         model.ops = LocalOperator[]
         return model
     end
-    function QuantumXXZ(lat::Lattice, S2::Int, seed)
+    function QuantumXXZ(lat::Lattice, S::Real, seed)
+        if round(2S) != 2S
+            error("`S` should be integer or half-integer")
+        end
+        S2 = round(Int,2S)
         model = new()
         model.rng = srand(Random.MersenneTwister(0), seed)
         model.lat = lat
@@ -47,14 +74,10 @@ end
 function QuantumXXZ(param::Dict)
     lat = param["Lattice"](param)
     S = param["S"]
-    if round(2S) != 2S
-        error("`S` should be integer or half-integer")
-    end
-    S2 = round(Int,2S)
     if "Seed" in keys(param)
-        return QuantumXXZ(lat,S2,param["Seed"])
+        return QuantumXXZ(lat,S,param["Seed"])
     else
-        return QuantumXXZ(lat,S2)
+        return QuantumXXZ(lat,S)
     end
 end
 

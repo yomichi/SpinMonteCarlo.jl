@@ -1,8 +1,27 @@
-@inline function loop_update!(model::QuantumXXZ, T::Real, Jz, Jxy, G; measure::Bool=true)
+"""
+    loop_update!(model, param; measure::Bool=true)
+    loop_update!(model, T::Real, Jz::Union{Real, AbstractArray}, Jxy::Union{Real, AbstractArray}, Gamma::Union{Real, AbstractArray}; measure::Bool=true)
+
+updates spin configuration by loop algorithm 
+under the temperature `T = param["T"]` and coupling constants `Jz, Jxy` and transverse field `Gamma`
+"""
+@inline function loop_update!(model::QuantumXXZ, param; measure::Bool=true)
+    T = param["T"]
+    if "J" in keys(param)
+        Jz = Jxy = param["J"]
+    else
+        Jz = param["Jz"]
+        Jxy = param["Jxy"]
+    end
+    Gamma = get(param, "Gamma", 0.0)
+    return loop_update!(model, T, Jz, Jxy, Gamma, measure=measure)
+end
+
+@inline function loop_update!(model::QuantumXXZ, T::Real, Jz, Jxy, Gamma; measure::Bool=true)
     Jzs  = isa(Jz, Real) ? Jz  .* ones(numbondtypes(model)) : Jz
     Jxys  = isa(Jxy, Real) ? Jxy  .* ones(numbondtypes(model)) : Jxy
-    Gs  = isa(G, Real) ? G  .* ones(numsitetypes(model)) : G
-    return loop_update!(model, T, Jzs, Jxys, Gs, measure=measure)
+    Gammas  = isa(Gamma, Real) ? Gamma  .* ones(numsitetypes(model)) : Gamma
+    return loop_update!(model, T, Jzs, Jxys, Gammas, measure=measure)
 end
 @inline function loop_update!(model::QuantumXXZ, T::Real, Jz, Jxy; measure::Bool=true)
     return loop_update!(model, T, Jz, Jxy, 0.0, measure=measure)

@@ -1,3 +1,14 @@
+doc"""
+    Ising(lat::Lattice, [seed])
+
+Ising model $\mathcal{H} = -\sum_{ij} J_{ij} \sigma_i \sigma_j$,
+where $\sigma_i$ takes value of 1 (up spin) or -1 (down spin).
+Each spin will be initialize randomly and independently.
+
+    Ising(param)
+
+`param["Lattice"](param)` and `param["Seed"]` (if defined) will be used as the args of the former form.
+"""
 mutable struct Ising <: Model
     lat :: Lattice
     spins :: Vector{Int}
@@ -27,6 +38,23 @@ function Ising(param::Dict)
     end
 end
 
+doc"""
+    Potts(lat::Lattice, Q::Integer, [seed])
+
+`Q` state Potts model, $\mathcal{H} = -\sum{i,j} \delta_{\sigma_i, \sigma_j}$,
+where $\sigma_i$ takes an integer value from $1$ to $Q$ and $\delta$ is a Kronecker's delta.
+Order parameter (total magnetization) is defined as
+\begin{equation}
+    M = \frac{Q-1}{Q}N_1 - \frac{1}{Q}(N-N_1),
+\end{equation}
+where $N$ is the number of sites and $N_1$ is the number of $\sigma=1$ spins.
+
+Each spin will be initialize randomly and independently.
+
+    Potts(param)
+
+`param["Lattice"](param)`, `param["Q"]`,  and `param["Seed"]` (if defined) will be used as the args of the former form.
+"""
 mutable struct Potts <: Model
     lat :: Lattice
     Q :: Int
@@ -54,6 +82,16 @@ function Potts(param::Dict)
     end
 end
 
+doc"""
+    Clock(lat::Lattice, Q::Integer, [seed])
+
+`Q` state clock model, $\mathcal{H} = -\sum_{ij} J_{ij} \cos(\theta_i - \theta_j)$,
+where $\theta_i = 2\pi \sigma_i/Q$ and $\sigma_i$ takes an integer value from $1$ to $Q$.
+
+    Clock(param)
+
+`param["Lattice"](param)`, `param["Q"]`,  and `param["Seed"]` (if defined) will be used as the args of the former form.
+"""
 mutable struct Clock <: Model
     lat :: Lattice
     Q :: Int
@@ -90,6 +128,16 @@ function Clock(param::Dict)
     end
 end
 
+doc"""
+    XY(lat::Lattice, [seed])
+
+XY model, $\mathcal{H} = -\sum_{ij} J_{ij} \cos(\theta_i - \theta_j)$,
+where $\theta_i = 2\pi \sigma_i$ and $\sigma_i \in [0, 1)$.
+
+   XY(param)
+
+`param["Lattice"](param)`,  and `param["Seed"]` (if defined) will be used as the args of the former form.
+"""
 mutable struct XY <: Model
     lat :: Lattice
     spins :: Vector{Float64}

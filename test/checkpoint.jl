@@ -9,7 +9,7 @@
         @testset "$updatestr" for updatestr in updatestrs
             update = eval(Symbol(updatestr))
             p = Dict("Model"=>model, "Lattice"=>chain_lattice, "L"=>8, "J"=>1.0, "T"=>1.0,
-                     "UpdateMethod" => update,
+                     "Update Method" => update,
                      "Q"=>5, "S"=>0.5,
                      "Seed"=>SEED,
                      "MCS"=>100, "Thermalization"=>100,

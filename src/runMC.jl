@@ -1,6 +1,36 @@
 using JLD2
 
-function runMC(params::AbstractArray; parallel::Bool=false)
+"""
+    runMC(param::Dict)
+    runMC(params::AbstractArray{T}; parallel::Bool=false) where T<:Dict
+
+Runs Monte Carlo simulation and returns calculated observables.
+
+If `"\$(param["Checkpoint Filename Prefix"])__\$(param["ID"]).jld2"` exists and
+`param["Checkpoint Interval"] > 0.0`, this loads the checkpoint file and restarts the pending simulation.
+
+When `parallel==true`, `runMC(params)` uses `pmap` instead of `map`.
+
+# Required keys in `param`
+- "Model"
+    - `param` will be used as the argument of the constructor.
+- "Update Method"
+    - `param` will be used as an argument.
+- "T": Temperature
+# Optional keys in `param`
+- "MCS": The number of Monte Carlo steps after thermalization
+    - Default: 8192
+- "Thermalization": The number of Monte Carlo steps for thermalization
+    - Default: `MCS>>3`
+- "Seed": The initial seed of the random number generator, `MersenneTwister`
+    - Default: determined randomly (see `Random.srand`)
+- "Checkpoint Filename Prefix"
+    - Default: "cp"
+- "Checkpoint Interval": Interval (in seconds) between saving checkpoint files
+    - Default: 0.0, this means that NO checkpoint files will be loaded and saved.
+
+"""
+function runMC(params::AbstractArray{T}; parallel::Bool=false) where T<:Dict
     map_fn = ifelse(parallel, pmap, map)
     return map_fn(enumerate(params)) do id, p
         p["ID"] = id
@@ -9,53 +39,42 @@ function runMC(params::AbstractArray; parallel::Bool=false)
 end
 
 function runMC(param::Dict)
-    verbose = get(param, "Verbose", false)
-    cp_filename = @sprintf("%s_%d.jld2", get(param, "Checkpoint Filename Prefix", "cp"), get(param, "ID", 1))
-    if verbose
-        println("Start: ", param)
-    end
     model = param["Model"](param)
     if "Seed" in keys(param)
         srand(model, param["Seed"])
     end
-    ret = runMC(model, param, cp_filename=cp_filename, cp_interval=get(param, "Checkpoint Interval", 0.0))
-    if verbose
-        println("Finish: ", param)
-    end
+    ret = runMC(model, param)
     return ret
 end
 
-function runMC(model::Union{Ising, Potts}, param::Dict; cp_filename::AbstractString="cp.jld2", cp_interval::Real=0.0)
-    T = param["T"]
-    Js = param["J"]
+function runMC(model, param)
+    verbose = get(param, "Verbose", false)
+    if verbose
+        println("Start: ", param)
+    end
+    cp_filename = @sprintf("%s_%d.jld2", get(param, "Checkpoint Filename Prefix", "cp"), get(param, "ID", 1))
+    cp_interval = get(param, "Checkpoint Interval", 0.0)
+    tm = time()
+
     MCS = get(param, "MCS", 8192)
     Therm = get(param, "Thermalization", MCS>>3)
-    update! = get(param, "UpdateMethod", SW_update!)
-    return runMC(model, T, Js, MCS, Therm, update!, cp_filename=cp_filename, cp_interval=cp_interval)
-end
-function runMC(model::Union{Ising, Potts}, T::Real, Js::Union{Real,AbstractArray}, MCS::Integer, Therm::Integer, update! = SW_update!
-               ;
-               cp_filename::AbstractString="cp.jld2", cp_interval::Real=0.0)
-    tm = time()
+
     mcs = 0
     MCS += Therm
-    obs = BinningObservableSet()
-    makeMCObservable!(obs, "Time per MCS")
-    makeMCObservable!(obs, "Magnetization")
-    makeMCObservable!(obs, "|Magnetization|")
-    makeMCObservable!(obs, "Magnetization^2")
-    makeMCObservable!(obs, "Magnetization^4")
-    makeMCObservable!(obs, "Energy")
-    makeMCObservable!(obs, "Energy^2")
-
+    obs = initObservables(model)
 
     if cp_interval > 0.0 && ispath(cp_filename)
         @load(cp_filename, model, obs, mcs)
     end
 
+    if "UpdateMethod" in keys(param)
+        warn("\"UpdateMethod\" is deprecated. Use instead \"Update Method\".")
+        param["Update Method"] = param["UpdateMethod"]
+    end
+    update! = param["Update Method"]
 
     while mcs < Therm
-        update!(model,T,Js,measure=false)
+        update!(model,param,measure=false)
         mcs += 1
         if cp_interval > 0.0 && time() - tm > cp_interval
             @save(cp_filename, model, obs, mcs)
@@ -67,21 +86,10 @@ function runMC(model::Union{Ising, Potts}, T::Real, Js::Union{Real,AbstractArray
     invV = 1.0/nsites
     while mcs < MCS
         t = @elapsed begin
-            localobs = update!(model,T,Js)
+            localobs = update!(model,param)
         end
-        M = localobs["M"]
-        M2 = localobs["M2"]
-        M4 = localobs["M4"]
-        E = localobs["E"]
-        E2 = localobs["E2"]
-
         obs["Time per MCS"] << t
-        obs["Magnetization"] << M
-        obs["|Magnetization|"] << abs(M)
-        obs["Magnetization^2"] << M2
-        obs["Magnetization^4"] << M4
-        obs["Energy"] << E
-        obs["Energy^2"] << E2
+        accumulateObservables!(model, obs, localobs)
         mcs += 1
         if cp_interval > 0.0 && time() - tm > cp_interval
             @save(cp_filename, model, obs, mcs)
@@ -93,32 +101,27 @@ function runMC(model::Union{Ising, Potts}, T::Real, Js::Union{Real,AbstractArray
         @save(cp_filename, model, obs, mcs)
     end
 
-    beta = 1.0/T
+    jk = postproc(model, param, obs)
 
-    jk = jackknife(obs)
-    jk["Binder Ratio"] = jk["Magnetization^4"] / (jk["Magnetization^2"]^2)
-    jk["Susceptibility"] = (nsites*beta)*jk["Magnetization^2"]
-    jk["Connected Susceptibility"] = (nsites*beta)*(jk["Magnetization^2"] - jk["|Magnetization|"]^2)
-    jk["Specific Heat"] = (nsites*beta*beta)*(jk["Energy^2"] - jk["Energy"]^2)
-    jk["MCS per Second"] = 1.0/jk["Time per MCS"]
-
+    if verbose
+        println("Finish: ", param)
+    end
     return jk
 end
 
-function runMC(model::Union{Clock, XY}, param::Dict; cp_filename::AbstractString="cp.jld2", cp_interval::Real=0.0)
-    T = param["T"]
-    Js = param["J"]
-    MCS = get(param, "MCS", 8192)
-    Therm = get(param, "Thermalization", MCS>>3)
-    update! = get(param, "UpdateMethod", SW_update!)
-    return runMC(model, T, Js, MCS, Therm, update!, cp_filename=cp_filename, cp_interval=cp_interval)
+function initObservables(::Union{Ising, Potts})
+    obs = BinningObservableSet()
+    makeMCObservable!(obs, "Time per MCS")
+    makeMCObservable!(obs, "Magnetization")
+    makeMCObservable!(obs, "|Magnetization|")
+    makeMCObservable!(obs, "Magnetization^2")
+    makeMCObservable!(obs, "Magnetization^4")
+    makeMCObservable!(obs, "Energy")
+    makeMCObservable!(obs, "Energy^2")
+    return obs
 end
-function runMC(model::Union{Clock, XY}, T::Real, Js::Union{Real,AbstractArray}, MCS::Integer, Therm::Integer, update! =SW_update!
-               ;
-               cp_filename::AbstractString="cp.jld2", cp_interval::Real=0.0)
-    tm = time()
-    mcs = 0
-    MCS += Therm
+
+function initObservables(::Union{Clock, XY})
     obs = BinningObservableSet()
     makeMCObservable!(obs, "Time per MCS")
     makeMCObservable!(obs, "|Magnetization|")
@@ -136,65 +139,99 @@ function runMC(model::Union{Clock, XY}, T::Real, Js::Union{Real,AbstractArray}, 
     makeMCObservable!(obs, "Helicity Modulus y")
     makeMCObservable!(obs, "Energy")
     makeMCObservable!(obs, "Energy^2")
+    return obs
+end
 
-    if cp_interval > 0.0 && ispath(cp_filename)
-        @load(cp_filename, model, obs, mcs)
-    end
+function initObservables(::QuantumXXZ)
+    obs = BinningObservableSet()
+    makeMCObservable!(obs, "Time per MCS")
+    makeMCObservable!(obs, "Sign * Magnetization")
+    makeMCObservable!(obs, "Sign * |Magnetization|")
+    makeMCObservable!(obs, "Sign * Magnetization^2")
+    makeMCObservable!(obs, "Sign * Magnetization^4")
+    makeMCObservable!(obs, "Sign * Energy")
+    makeMCObservable!(obs, "Sign * Energy^2")
+    makeMCObservable!(obs, "Sign")
+    return obs
+end
 
-    while mcs < Therm
-        update!(model,T,Js,measure=false)
-        mcs += 1
-        if cp_interval > 0.0 && time() - tm > cp_interval
-            @save(cp_filename, model, obs, mcs)
-            tm += cp_interval
-        end
-    end
+function accumulateObservables!(model::Union{Ising,Potts},obs,localobs)
+    M = localobs["M"]
+    M2 = localobs["M2"]
+    M4 = localobs["M4"]
+    E = localobs["E"]
+    E2 = localobs["E2"]
 
+    obs["Magnetization"] << M
+    obs["|Magnetization|"] << abs(M)
+    obs["Magnetization^2"] << M2
+    obs["Magnetization^4"] << M4
+    obs["Energy"] << E
+    obs["Energy^2"] << E2
+end
 
+function accumulateObservables!(model::Union{Clock,XY},obs,localobs)
+    M = localobs["M"]
+    E = localobs["E"]
+    U = localobs["U"]
+
+    x2 = M[1]*M[1]
+    y2 = M[2]*M[2]
+    m2 = x2+y2
+    x4 = x2*x2
+    y4 = y2*y2
+    m4 = m2*m2
+    obs["Magnetization x"] << M[1]
+    obs["|Magnetization x|"] << abs(M[1])
+    obs["Magnetization x^2"] << x2
+    obs["Magnetization x^4"] << x4
+    obs["Magnetization y"] << M[2]
+    obs["|Magnetization y|"] << abs(M[2])
+    obs["Magnetization y^2"] << y2
+    obs["Magnetization y^4"] << y4
+    obs["|Magnetization|"] << sqrt(m2)
+    obs["|Magnetization|^2"] << m2
+    obs["|Magnetization|^4"] << m4
+    obs["Helicity Modulus x"] << U[1]
+    obs["Helicity Modulus y"] << U[2]
+    obs["Energy"] << E
+    obs["Energy^2"] << E*E
+end
+
+function accumulateObservables!(model::QuantumXXZ,obs,localobs)
+    M = localobs["M"]
+    M2 = localobs["M2"]
+    M4 = localobs["M4"]
+    E = localobs["E"]
+    E2 = localobs["E2"]
+    sgn = localobs["Sign"]
+    obs["Sign * Magnetization"] << M*sgn
+    obs["Sign * |Magnetization|"] << abs(M)*sgn
+    obs["Sign * Magnetization^2"] << M2*sgn
+    obs["Sign * Magnetization^4"] << M4*sgn
+    obs["Sign * Energy"] << E*sgn
+    obs["Sign * Energy^2"] << E2*sgn
+    obs["Sign"] << sgn
+end
+
+function postproc(model::Union{Ising, Potts}, param, obs)
     nsites = numsites(model)
-    invV = 1.0/nsites
+    T = param["T"]
     beta = 1.0/T
 
-    while mcs < MCS
-        t = @elapsed begin
-            localobs = update!(model, T, Js)
-        end
+    jk = jackknife(obs)
+    jk["Binder Ratio"] = jk["Magnetization^4"] / (jk["Magnetization^2"]^2)
+    jk["Susceptibility"] = (nsites*beta)*jk["Magnetization^2"]
+    jk["Connected Susceptibility"] = (nsites*beta)*(jk["Magnetization^2"] - jk["|Magnetization|"]^2)
+    jk["Specific Heat"] = (nsites*beta*beta)*(jk["Energy^2"] - jk["Energy"]^2)
+    jk["MCS per Second"] = 1.0/jk["Time per MCS"]
+    return jk
+end
 
-        M = localobs["M"]
-        E = localobs["E"]
-        U = localobs["U"]
-
-        x2 = M[1]*M[1]
-        y2 = M[2]*M[2]
-        m2 = x2+y2
-        x4 = x2*x2
-        y4 = y2*y2
-        m4 = m2*m2
-        obs["Time per MCS"] << t
-        obs["Magnetization x"] << M[1]
-        obs["|Magnetization x|"] << abs(M[1])
-        obs["Magnetization x^2"] << x2
-        obs["Magnetization x^4"] << x4
-        obs["Magnetization y"] << M[2]
-        obs["|Magnetization y|"] << abs(M[2])
-        obs["Magnetization y^2"] << y2
-        obs["Magnetization y^4"] << y4
-        obs["|Magnetization|"] << sqrt(m2)
-        obs["|Magnetization|^2"] << m2
-        obs["|Magnetization|^4"] << m4
-        obs["Helicity Modulus x"] << U[1]
-        obs["Helicity Modulus y"] << U[2]
-        obs["Energy"] << E
-        obs["Energy^2"] << E*E
-        mcs += 1
-        if cp_interval > 0.0 && time() - tm > cp_interval
-            @save(cp_filename, model, obs, mcs)
-            tm += cp_interval
-        end
-    end
-    if cp_interval > 0.0
-        @save(cp_filename, model, obs, mcs)
-    end
+function postproc(model::Union{Clock, XY}, param, obs)
+    nsites = numsites(model)
+    T = param["T"]
+    beta = 1.0/T
 
     jk = jackknife(obs)
     jk["Binder Ratio x"] = jk["Magnetization x^4"] / (jk["Magnetization x^2"]^2)
@@ -208,85 +245,13 @@ function runMC(model::Union{Clock, XY}, T::Real, Js::Union{Real,AbstractArray}, 
     jk["Connected Susceptibility"] = (nsites*beta)*(jk["|Magnetization|^2"] - jk["|Magnetization|"]^2)
     jk["Specific Heat"] = (nsites*beta*beta)*(jk["Energy^2"] - jk["Energy"]^2)
     jk["MCS per Second"] = 1.0 / jk["Time per MCS"]
-
     return jk
 end
 
-function runMC(model::QuantumXXZ, param::Dict
-               ;
-               cp_filename::AbstractString="cp.jld2", cp_interval::Real=0.0)
+function postproc(model::QuantumXXZ, param, obs)
+    nsites = numsites(model)
     T = param["T"]
-    if "J" in keys(param)
-        Jz = Jxy = param["J"]
-    else
-        Jz = param["Jz"]
-        Jxy = param["Jxy"]
-    end
-    G = get(param, "Gamma", 0.0)
-    MCS = get(param, "MCS", 8192)
-    Therm = get(param, "Thermalization", MCS>>3)
-    return runMC(model, T, Jz, Jxy, G, MCS, Therm, cp_filename=cp_filename, cp_interval=cp_interval)
-end
-function runMC(model::QuantumXXZ, T::Real,
-               Jz::Union{Real, AbstractArray}, Jxy::Union{Real, AbstractArray},
-               Gs::Union{Real, AbstractArray}, MCS::Integer, Therm::Integer
-               ;
-               cp_filename::AbstractString="cp.jld2", cp_interval::Real=0.0)
-    tm = time()
-    mcs = 0
-    MCS += Therm
-    obs = BinningObservableSet()
-    makeMCObservable!(obs, "Time per MCS")
-    makeMCObservable!(obs, "Sign * Magnetization")
-    makeMCObservable!(obs, "Sign * |Magnetization|")
-    makeMCObservable!(obs, "Sign * Magnetization^2")
-    makeMCObservable!(obs, "Sign * Magnetization^4")
-    makeMCObservable!(obs, "Sign * Energy")
-    makeMCObservable!(obs, "Sign * Energy^2")
-    makeMCObservable!(obs, "Sign")
-
-    if cp_interval > 0.0 && ispath(cp_filename)
-        @load(cp_filename, model, obs, mcs)
-    end
-
-    while mcs < Therm
-        loop_update!(model,T, Jz, Jxy, Gs, measure=false)
-        mcs += 1
-        if cp_interval > 0.0 && time() - tm > cp_interval
-            @save(cp_filename, model, obs, mcs)
-            tm += cp_interval
-        end
-    end
-
-    nsites = numsites(model.lat)
-    invV = 1.0/nsites
-    while mcs < MCS
-        t = @elapsed begin 
-            localobs = loop_update!(model,T,Jz,Jxy,Gs)
-        end
-        M = localobs["M"]
-        M2 = localobs["M2"]
-        M4 = localobs["M4"]
-        E = localobs["E"]
-        E2 = localobs["E2"]
-        sgn = localobs["Sign"]
-        obs["Time per MCS"] << t
-        obs["Sign * Magnetization"] << M*sgn
-        obs["Sign * |Magnetization|"] << abs(M)*sgn
-        obs["Sign * Magnetization^2"] << M2*sgn
-        obs["Sign * Magnetization^4"] << M4*sgn
-        obs["Sign * Energy"] << E*sgn
-        obs["Sign * Energy^2"] << E2*sgn
-        obs["Sign"] << sgn
-        mcs += 1
-        if cp_interval > 0.0 && time() - tm > cp_interval
-            @save(cp_filename, model, obs, mcs)
-            tm += cp_interval
-        end
-    end
-    if cp_interval > 0.0
-        @save(cp_filename, model, obs, mcs)
-    end
+    beta = 1.0/T
 
     jk = jackknife(obs)
 
@@ -297,14 +262,12 @@ function runMC(model::QuantumXXZ, T::Real,
         jk[oname] = jk["Sign * $oname"] / jk["Sign"]
     end
 
-    beta = 1.0/T
-
     jk["Binder Ratio"] = jk["Magnetization^4"] / (jk["Magnetization^2"]^2)
     jk["Susceptibility"] = (nsites*beta)*jk["Magnetization^2"]
     jk["Connected Susceptibility"] = (nsites*beta)*(jk["Magnetization^2"] - jk["|Magnetization|"]^2)
     jk["Specific Heat"] = (nsites*beta*beta)*(jk["Energy^2"] - jk["Energy"]^2)
     jk["MCS per Second"] = 1.0/jk["Time per MCS"]
-
     return jk
 end
+
 

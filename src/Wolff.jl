@@ -1,9 +1,15 @@
 """
-    Wolff_update!(model, T::Real, J::Real)
-    Wolff_update!(model, T::Real, Js::AbstractArray)
+    Wolff_update!(model, param; meaure::Bool=true)
+    Wolff_update!(model, T::Real, J::Real; measure::Bool=true)
+    Wolff_update!(model, T::Real, Js::AbstractArray; measure::Bool=true)
 
-update spin configuration by Wolff algorithm under the temperature `T`.
+update spin configuration by Wolff algorithm under temperature `T=param["T"]` and coupling constants `J=param["J"]`
 """
+@inline function Wolff_update!(model::Union{Ising, Potts, Clock, XY}, param::Dict; measure::Bool=true)
+    T = param["T"]
+    J = get(param, "J", 1.0)
+    return Wolff_update!(model, T, J, measure=measure)
+end
 @inline function Wolff_update!(model::Model, T::Real, J::Real; measure::Bool=true)
     Js = J * ones(numbondtypes(model))
     return Wolff_update!(model, T, Js, measure=measure)

@@ -1,8 +1,16 @@
 """
+    local_update!(model, param; measure::Bool=true)
     local_update!(model, T::Real, J::Real; measure::Bool=true)
     local_update!(model, T::Real, Js::AbstractArray; measure::Bool=true)
-update spin configuration by local spin flip and Metropolice algorithm under the temperature `T`
+
+updates spin configuration by local spin flip and Metropolice algorithm 
+under the temperature `T = param["T"]` and coupling constants `J = param["J"]`
 """
+@inline function local_update!(model::Union{Ising, Potts, Clock, XY}, param::Dict; measure::Bool=true)
+    T = param["T"]
+    J = get(param, "J", 1.0)
+    return local_update!(model, T, J, measure=measure)
+end
 @inline function local_update!(model::Model, T::Real, J::Real; measure::Bool=true)
     Js = J*ones(numbondtypes(model))
     return local_update!(model,T,Js,measure=measure)
