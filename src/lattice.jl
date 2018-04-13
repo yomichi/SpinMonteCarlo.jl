@@ -234,7 +234,7 @@ siteL4(model::Model, site::Integer) = siteL4(model.lat, site)
 
 """
     dimer_lattice()
-    dimer_lattice(params::Dict)
+    dimer_lattice(param::Dict)
     
 generate dimer lattice (indeed, this is not a "lattice")
 """
@@ -278,15 +278,16 @@ function dimer_lattice()
             neighborsites, neighborbonds,
             source,target, site_L2, site_L4)
 end
-dimer_lattice(params::Dict) = dimer_lattice()
+dimer_lattice(param::Dict) = dimer_lattice()
 
 """
     chain_lattice(L::Integer)
-    chain_lattice(params::Dict)
+    chain_lattice(param::Dict)
     
-generate chain lattice with length `L` or params["L"].
+generate chain lattice with length `L = param["L"]`
 
 `nsitetypes` is 2: they make two sublattice.
+
 `nbondtypes` is 2: `1` bond connects `2n-1` and `2n` sites and `2` bond connects `2n` and `2n+1` sites.
 """
 function chain_lattice(L::Integer)
@@ -339,15 +340,16 @@ function chain_lattice(L::Integer)
             transvector, coords, bond_dirs, neighborsites, neighborbonds,
             source,target, site_L2, site_L4)
 end
-chain_lattice(params::Dict) = chain_lattice(params["L"])
+chain_lattice(param::Dict) = chain_lattice(param["L"])
 
 """
     square_lattice(L::Integer, W::Integer=L)
-    square_lattice(params::Dict)
+    square_lattice(param::Dict)
     
-generate square lattice with size `L` \\times `W`.
+generate square lattice with size `L=param["L"]` \\times `W=param["W"]`.
 
 `nsitetypes` is 2: they make two sublattice.
+
 `nbondtypes` is 2: `1` bonds are parallel to `x` axis and `2` are parallel to `y` axis.
 """
 square_lattice(L::Integer) = square_lattice(L,L)
@@ -417,19 +419,20 @@ function square_lattice(L::Integer, W::Integer)
             transvector, coords, bond_dirs, neighborsites, neighborbonds,
             source,target, site_L2, site_L4)
 end
-function square_lattice(params::Dict)
-    L = params["L"]
-    W = get(params, "W", L)
+function square_lattice(param::Dict)
+    L = param["L"]
+    W = get(param, "W", L)
     return square_lattice(L, W)
 end
 
 """
     triangular_lattice(L::Integer, W::Integer=L)
-    triangular_lattice(params::Dict)
+    triangular_lattice(param::Dict)
     
-generate triangular lattice with size `L` \\times `W`.
+generate triangular lattice with size `L=param["L"]` \\times `W=param["W"]`.
 
 `nsitetypes` is 3: They make three sublattices.
+
 `nbondtypes` is 3: `1`, `2`, and `3` bonds make an angle of 0, 60, and 120 degree with `x` axis, respectively.
 """
 triangular_lattice(L::Integer) = triangular_lattice(L,L)
@@ -514,18 +517,20 @@ function triangular_lattice(L::Integer, W::Integer)
             transvector, coords, bond_dirs, neighborsites, neighborbonds,
             source,target, site_L2, site_L4)
 end
-function triangular_lattice(params::Dict)
-    L = params["L"]
-    W = get(params, "W", L)
+function triangular_lattice(param::Dict)
+    L = param["L"]
+    W = get(param, "W", L)
     return triangular_lattice(L, W)
 end
 
 """
     cubic_lattice(L::Integer, W::Integer=L, H::Integer=W)
+    cubic_lattice(param::Dict)
     
-generate cubic lattice with size `L` \\times `W` \\times `H`.
+generate cubic lattice with size `L=param["L"]` \\times `W=param["W"]` \\times `H=param["H"]`.
 
 `nsitetypes` is 2: they make two sublattice.
+
 `nbondtypes` is 2: `1`, `2`, and `3` bonds are parallel to `x`, `y`, and `z` axis, respectively.
 """
 cubic_lattice(L::Integer) = cubic_lattice(L,L,L)
@@ -610,17 +615,18 @@ function cubic_lattice(L::Integer, W::Integer, H::Integer)
             neighborsites, neighborbonds,
             source,target, site_L2, site_L4)
 end
-function cubic_lattice(params::Dict)
-    L = params["L"]
-    W = get(params, "W", L)
-    H = get(params, "H", W)
+function cubic_lattice(param::Dict)
+    L = param["L"]
+    W = get(param, "W", L)
+    H = get(param, "H", W)
     return cubic_lattice(L, W, H)
 end
 
 """
     fully_connected_lattice(N::Integer)
+    fully_connected_lattice(param::Dict)
     
-generate `N` site fully connected lattice
+generate `N=param["N"]` site fully connected lattice
 
 Both `nsitetypes` and `nbondtypes` are 1.
 """
@@ -652,4 +658,4 @@ function fully_connected_lattice(N::Integer)
             zeros(1,1), zeros(1,N), zeros(1,nbonds), neighborsites, neighborbonds, source, target, zeros(Int,N), zeros(Int,N))
     return lat
 end
-fully_connected_lattice(params::Dict) = fully_connected_lattice(params["N"])
+fully_connected_lattice(param::Dict) = fully_connected_lattice(param["N"])
