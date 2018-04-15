@@ -1,3 +1,6 @@
+"""
+    Lattice
+"""
 mutable struct Lattice
     dim :: Int
     size :: Vector{Int}
