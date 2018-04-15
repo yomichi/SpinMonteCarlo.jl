@@ -6,7 +6,7 @@ using JLD2
 
 Runs Monte Carlo simulation and returns calculated observables.
 
-If `"\$(param["Checkpoint Filename Prefix"])__\$(param["ID"]).jld2"` exists and
+If a file named `"\$(param["Checkpoint Filename Prefix"])_\$(param["ID"]).jld2"` exists and
 `param["Checkpoint Interval"] > 0.0`, this loads the checkpoint file and restarts the pending simulation.
 
 When `parallel==true`, `runMC(params)` uses `pmap` instead of `map`.
@@ -61,7 +61,7 @@ function runMC(model, param)
 
     mcs = 0
     MCS += Therm
-    obs = initObservables(model)
+    obs = initObservables(model, binning=get(param,"Binning",true))
 
     if cp_interval > 0.0 && ispath(cp_filename)
         @load(cp_filename, model, obs, mcs)
@@ -109,8 +109,15 @@ function runMC(model, param)
     return jk
 end
 
-function initObservables(::Union{Ising, Potts})
-    obs = BinningObservableSet()
+"""
+    initObservables(model::Model; binning::Bool=true)
+
+    returns `BinningObservableSet` or `SimpleObservableSet` with some observables registered.
+"""
+function initObservables end
+
+function initObservables(::Union{Ising, Potts}; binning::Bool=true)
+    obs = ifelse(binning, BinningObservableSet(), SimpleObservableSet())
     makeMCObservable!(obs, "Time per MCS")
     makeMCObservable!(obs, "Magnetization")
     makeMCObservable!(obs, "|Magnetization|")
@@ -121,8 +128,8 @@ function initObservables(::Union{Ising, Potts})
     return obs
 end
 
-function initObservables(::Union{Clock, XY})
-    obs = BinningObservableSet()
+function initObservables(::Union{Clock, XY}, binning::Bool=true)
+    obs = ifelse(binning, BinningObservableSet(), SimpleObservableSet())
     makeMCObservable!(obs, "Time per MCS")
     makeMCObservable!(obs, "|Magnetization|")
     makeMCObservable!(obs, "|Magnetization|^2")
@@ -142,8 +149,8 @@ function initObservables(::Union{Clock, XY})
     return obs
 end
 
-function initObservables(::QuantumXXZ)
-    obs = BinningObservableSet()
+function initObservables(::QuantumXXZ; binning::Bool=true)
+    obs = ifelse(binning, BinningObservableSet(), SimpleObservableSet())
     makeMCObservable!(obs, "Time per MCS")
     makeMCObservable!(obs, "Sign * Magnetization")
     makeMCObservable!(obs, "Sign * |Magnetization|")
@@ -155,7 +162,14 @@ function initObservables(::QuantumXXZ)
     return obs
 end
 
-function accumulateObservables!(model::Union{Ising,Potts},obs,localobs)
+"""
+    accumulateObservables!(model, obs::MCObservableSet, localobs::Dict)
+
+accumulates `localobs` into `obs`. For example, `obs["Energy"] << localobs["E"]`.
+"""
+function accumulateObservables! end
+
+function accumulateObservables!(model::Union{Ising,Potts}, obs::MCObservableSet, localobs::Dict)
     M = localobs["M"]
     M2 = localobs["M2"]
     M4 = localobs["M4"]
@@ -170,7 +184,7 @@ function accumulateObservables!(model::Union{Ising,Potts},obs,localobs)
     obs["Energy^2"] << E2
 end
 
-function accumulateObservables!(model::Union{Clock,XY},obs,localobs)
+function accumulateObservables!(model::Union{Clock,XY}, obs::MCObservableSet, localobs::Dict)
     M = localobs["M"]
     E = localobs["E"]
     U = localobs["U"]
@@ -198,7 +212,7 @@ function accumulateObservables!(model::Union{Clock,XY},obs,localobs)
     obs["Energy^2"] << E*E
 end
 
-function accumulateObservables!(model::QuantumXXZ,obs,localobs)
+function accumulateObservables!(model::QuantumXXZ, obs::MCObservableSet, localobs::Dict)
     M = localobs["M"]
     M2 = localobs["M2"]
     M4 = localobs["M4"]
@@ -214,7 +228,14 @@ function accumulateObservables!(model::QuantumXXZ,obs,localobs)
     obs["Sign"] << sgn
 end
 
-function postproc(model::Union{Ising, Potts}, param, obs)
+"""
+    postproc(model::Model, param::Dict, obs::MCObservableSet)
+
+post process of observables. For example, Specific heat will be calculated from energy, energy^2, and temperature.
+"""
+function postproc end
+
+function postproc(model::Union{Ising, Potts}, param::Dict, obs::MCObservableSet)
     nsites = numsites(model)
     T = param["T"]
     beta = 1.0/T
@@ -228,7 +249,7 @@ function postproc(model::Union{Ising, Potts}, param, obs)
     return jk
 end
 
-function postproc(model::Union{Clock, XY}, param, obs)
+function postproc(model::Union{Clock, XY}, param::Dict, obs::MCObservableSet)
     nsites = numsites(model)
     T = param["T"]
     beta = 1.0/T
@@ -248,7 +269,7 @@ function postproc(model::Union{Clock, XY}, param, obs)
     return jk
 end
 
-function postproc(model::QuantumXXZ, param, obs)
+function postproc(model::QuantumXXZ, param::Dict, obs::MCObservableSet)
     nsites = numsites(model)
     T = param["T"]
     beta = 1.0/T
