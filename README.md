@@ -45,12 +45,12 @@ end
 - Classical spin model
     - `Ising` model
     - `Q` state `Potts` model
-        - order parameter defined as `M = (Q-1)/Q * n_1 - (1-n_1)/Q`, where `n_1` is the number density of `q=1` spins and `N` is the number of all spins.
+        - order parameter defined as `M = (Q-1)/Q * n_1 - (1-n_1)/Q`, where `n_1` is the number density of `q=1` spins.
     - `XY` model
     - `Q` state `Clock` model
 - Quantum spin model
     - spin-`S` `QuantumXXZ` model
-        - `\mathcal{H} = \sum_{ij} [ Jz_{ij} S_i^z S_j^z + Jxy_{ij} (S_i^+ S_j^- + S_i^-S_j^+) ] - \sum_i Gamma_i S_i^x`
+        - `\mathcal{H} = \sum_{ij} [ Jz_{ij} S_i^z S_j^z + \frac{Jxy_{ij}}{2} (S_i^+ S_j^- + S_i^-S_j^+) ] - \sum_i Gamma_i S_i^x`
 
 ## Lattice
 - `chain_lattice`
