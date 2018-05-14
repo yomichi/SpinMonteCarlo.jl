@@ -4,7 +4,7 @@ function convert_parameter(model::Union{Ising, Potts, Clock, XY}, param::Paramet
     T = Float64(param["T"])
     nbt = numbondtypes(model)
 
-    J = get(param, "J", 1.0) :: Union{Float64, AbstractArray{Float64}}
+    J = get(param, "J", 1.0)
     Js = zeros(nbt)
     Js .= J
     return T, Js

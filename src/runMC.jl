@@ -48,16 +48,17 @@ function runMC(param::Parameter)
 end
 
 function runMC(model, param::Parameter)
-    verbose = get(param, "Verbose", false)
+    MODEL = typeof(model)
+    verbose = get(param, "Verbose", false) :: Bool
     if verbose
         println("Start: ", param)
     end
-    cp_filename = @sprintf("%s_%d.jld2", get(param, "Checkpoint Filename Prefix", "cp"), get(param, "ID", 1))
-    cp_interval = get(param, "Checkpoint Interval", 0.0)
+    cp_filename = @sprintf("%s_%d.jld2", get(param, "Checkpoint Filename Prefix", "cp")::String, get(param, "ID", 1)::Int)
+    cp_interval = get(param, "Checkpoint Interval", 0.0) :: Float64
     tm = time()
 
-    MCS = get(param, "MCS", 8192)
-    Therm = get(param, "Thermalization", MCS>>3)
+    MCS = get(param, "MCS", 8192) :: Int
+    Therm = get(param, "Thermalization", MCS>>3) :: Int
 
     mcs = 0
     MCS += Therm
@@ -65,15 +66,19 @@ function runMC(model, param::Parameter)
     makeMCObservable!(obs, "Time per MCS")
 
     if cp_interval > 0.0 && ispath(cp_filename)
-        @load(cp_filename, model, obs, mcs)
+        jld = jldopen(cp_filename)
+        model = jld["model"] :: MODEL
+        obs = jld["obs"] :: BinningObservableSet
+        mcs = convert(Int, jld["mcs"]) :: Int
+        close(jld)
     end
 
     if "UpdateMethod" in keys(param)
         warn("\"UpdateMethod\" is deprecated. Use instead \"Update Method\".")
-        param["Update Method"] = param["UpdateMethod"]
+        param["Update Method"] = param["UpdateMethod"] :: Function
     end
-    update! = param["Update Method"]
-    estimator = get(param, "Estimator", default_estimator(model, update!))
+    update! = param["Update Method"] :: Function
+    estimator = get(param, "Estimator", default_estimator(model, update!)) :: Function
 
     while mcs < MCS
         t = @elapsed begin
@@ -86,13 +91,21 @@ function runMC(model, param::Parameter)
         end
         mcs += 1
         if cp_interval > 0.0 && time() - tm > cp_interval
-            @save(cp_filename, model, obs, mcs)
+            jld = jldopen(cp_filename, "w")
+            jld["model"] = model
+            jld["obs"] = obs
+            jld["mcs"] = mcs
+            close(jld)
             tm += cp_interval
-        end
+         end
     end
 
     if cp_interval > 0.0
-        @save(cp_filename, model, obs, mcs)
+        jld = jldopen(cp_filename, "w")
+        jld["model"] = model
+        jld["obs"] = obs
+        jld["mcs"] = mcs
+        close(jld)
     end
 
     jk = postproc(model, param, obs)
