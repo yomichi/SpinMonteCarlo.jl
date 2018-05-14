@@ -1,5 +1,10 @@
+@inline function improved_estimator(model, param::Parameter, extra)
+    p = convert_parameter(model, param)
+    return improved_estimator(model, p..., extra)
+end
+
 """
-    improved_estimate(model::Ising, T::Real, Js::AbstractArray, sw::SWInfo)
+    improved_estimator(model::Ising, T::Real, Js::AbstractArray, sw::SWInfo)
 
     return `M`, `M2`, `M4`, `E`, `E2`.
 
@@ -9,7 +14,7 @@
     `E`  : energy density
     `E2` : square of energy density
 """
-function improved_estimate(model::Ising, T::Real, Js::AbstractArray, sw::SWInfo)
+function improved_estimator(model::Ising, T::Real, Js::AbstractArray, sw::SWInfo)
     nsites = numsites(model)
     nbonds = numbonds(model)
     nc = numclusters(sw)
@@ -50,11 +55,19 @@ function improved_estimate(model::Ising, T::Real, Js::AbstractArray, sw::SWInfo)
     E *= -invV
     E2 *= invV*invV
 
-    return M, M2, M4, E, E2
+    res = Measurement()
+    res["Magnetization"] = M
+    res["|Magnetization|"] = abs(M)
+    res["Magnetization^2"] = M2
+    res["Magnetization^4"] = M4
+    res["Energy"] = E
+    res["Energy^2"] = E2
+
+    return res
 end
 
 """
-    improved_estimate(model::Potts, T::Real, Js::AbstractArray, sw::SWInfo)
+    improved_estimator(model::Potts, T::Real, Js::AbstractArray, sw::SWInfo)
 
     return `M`, `M2`, `M4`, `E`, `E2`.
 
@@ -66,7 +79,7 @@ end
 
     local magnetization `M_i` is defined by local spin variable `s_i` as `M_i = \\delta_{s_i, 1}-1/q`.
 """
-function improved_estimate(model::Potts, T::Real, Js::AbstractArray, sw::SWInfo)
+function improved_estimator(model::Potts, T::Real, Js::AbstractArray, sw::SWInfo)
     nsites = numsites(model)
     Q = model.Q
     nc = numclusters(sw)
@@ -105,10 +118,18 @@ function improved_estimate(model::Potts, T::Real, Js::AbstractArray, sw::SWInfo)
     E *= -invV
     E2 *= invV*invV
 
-    return M, M2, M4, E, E2
+    res = Measurement()
+    res["Magnetization"] = M
+    res["|Magnetization|"] = abs(M)
+    res["Magnetization^2"] = M2
+    res["Magnetization^4"] = M4
+    res["Energy"] = E
+    res["Energy^2"] = E2
+
+    return res
 end
 
-function improved_estimate(model::QuantumXXZ, T::Real, Jzs::AbstractArray, Jxys::AbstractArray, Gs::AbstractArray, uf::UnionFind)
+function improved_estimator(model::QuantumXXZ, T::Real, Jzs::AbstractArray, Jxys::AbstractArray, Gs::AbstractArray, uf::UnionFind)
     S2 = model.S2
     nsites = numsites(model)
     nspins = nsites*S2
@@ -169,5 +190,14 @@ function improved_estimate(model::QuantumXXZ, T::Real, Jzs::AbstractArray, Jxys:
         end
     end
 
-    return M, M2, M4, E, E2, sgn
+    res = Measurement()
+    res["Sign * Magnetization"] = sgn*M
+    res["Sign * |Magnetization|"] = sgn*abs(M)
+    res["Sign * Magnetization^2"] = sgn*M2
+    res["Sign * Magnetization^4"] = sgn*M4
+    res["Sign * Energy"] = sgn*E
+    res["Sign * Energy^2"] = sgn*E2
+    res["Sign"] = sgn
+
+    return res
 end

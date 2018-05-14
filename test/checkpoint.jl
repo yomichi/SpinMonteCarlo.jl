@@ -8,7 +8,7 @@
         model = eval(Symbol(modelstr))
         @testset "$updatestr" for updatestr in updatestrs
             update = eval(Symbol(updatestr))
-            p = Dict("Model"=>model, "Lattice"=>chain_lattice, "L"=>8, "J"=>1.0, "T"=>1.0,
+            p = Parameter("Model"=>model, "Lattice"=>chain_lattice, "L"=>8, "J"=>1.0, "T"=>1.0,
                      "Update Method" => update,
                      "Q"=>5, "S"=>0.5,
                      "Seed"=>SEED,

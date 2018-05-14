@@ -5,7 +5,7 @@ const obsnames_XXZ = ["Energy", "Energy^2", "Specific Heat",
 
 function loaddata(filename, obsnames)
     Ts = zeros(0)
-    res = Dict(n=>zeros(0) for n in obsnames)
+    res = Parameter(n=>zeros(0) for n in obsnames)
     for line in eachline(filename)
         words = split(line)
         push!(Ts, parse(words[1]))
@@ -21,7 +21,7 @@ function parse_filename(filename)
     if m == nothing
         return nothing
     end
-    p = Dict()
+    p = Parameter()
     p["S"] = parse(m.captures[1])
     p["Jz"] = parse(m.captures[2])
     p["Jxy"] = parse(m.captures[3])

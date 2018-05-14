@@ -13,13 +13,14 @@ const Therm = MCS >> 3
 params = Dict{String, Any}[]
 for L in Ls
     for T in Ts
-        push!(params, Dict("Model"=>QuantumXXZ,
-                           "Lattice"=>chain_lattice,
-                           "L"=>L, "T"=>T, "J"=>J, "S"=>S, "Gamma"=>Gamma,
-                           "Update Method"=>loop_update!,
-                           "MCS"=>MCS, "Therm"=>Therm,
-                           "Verbose"=>true,
-                          ))
+        push!(params,
+              Parameter("Model"=>QuantumXXZ,
+                        "Lattice"=>chain_lattice,
+                        "L"=>L, "T"=>T, "J"=>J, "S"=>S, "Gamma"=>Gamma,
+                        "Update Method"=>loop_update!,
+                        "MCS"=>MCS, "Therm"=>Therm,
+                        "Verbose"=>true,
+                       ))
     end
 end
 
