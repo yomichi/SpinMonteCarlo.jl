@@ -7,22 +7,18 @@ end
 numclusters(sw::SWInfo) = length(sw.clustersize)
 
 """
-    SW_update!(model, param; measure::Bool=true)
-    SW_update!(model, T::Real, J::Real; measure::Bool=true)
-    SW_update!(model, T::Real, Js::AbstractArray; measure::Bool=true)
+    SW_update!(model, param::Parameter)
+    SW_update!(model, T::Real, Js::AbstractArray)
     
-update spin configuration by Swendsen-Wang algorithm under temperature `T=param["T"]` and coupling constants `J=param["J"]`
+update spin configuration by Swendsen-Wang algorithm
+under temperature `T=param["T"]` and coupling constants `J=param["J"]`
 """
-@inline function SW_update!(model::Union{Ising, Potts, Clock, XY}, param::Dict; measure::Bool=true)
-    T = param["T"]
-    J = get(param, "J", 1.0)
-    return SW_update!(model, T, J, measure=measure)
+@inline function SW_update!(model::Union{Ising, Potts, Clock, XY}, param::Parameter)
+    p = convert_parameter(model, param)
+    return SW_update!(model, p...)
 end
-@inline function SW_update!(model::Model, T::Real, J::Real; measure::Bool=true)
-    Js = J*ones(numbondtypes(model))
-    return SW_update!(model, T, Js, measure=measure)
-end
-function SW_update!(model::Ising, T::Real, Js::AbstractArray; measure::Bool=true)
+
+function SW_update!(model::Ising, T::Real, Js::AbstractArray)
     rng = model.rng
     ps = -expm1.((-2.0/T).*Js)
     nsites = numsites(model)
@@ -47,21 +43,10 @@ function SW_update!(model::Ising, T::Real, Js::AbstractArray; measure::Bool=true
         model.spins[site] = clusterspin[id]
         clustersize[id] += 1
     end
-    swinfo = SWInfo(activated_bonds, clustersize, clusterspin)
-
-    res = Measurement()
-    if measure
-        M, M2, M4, E, E2 = improved_estimate(model, T, Js, swinfo)
-        res["M"] = M
-        res["M2"] = M2
-        res["M4"] = M4
-        res["E"] = E
-        res["E2"] = E2
-    end
-    return res
+    return SWInfo(activated_bonds, clustersize, clusterspin)
 end
 
-function SW_update!(model::Potts, T::Real, Js::AbstractArray; measure::Bool=true)
+function SW_update!(model::Potts, T::Real, Js::AbstractArray)
     rng = model.rng
     ps = -expm1.((-1.0/T).*Js)
     nsites = numsites(model)
@@ -86,21 +71,10 @@ function SW_update!(model::Potts, T::Real, Js::AbstractArray; measure::Bool=true
         model.spins[site] = clusterspin[id]
         clustersize[id] += 1
     end
-    swinfo =  SWInfo(activated_bonds, clustersize, clusterspin)
-
-    res = Measurement()
-    if measure
-        M, M2, M4, E, E2 = improved_estimate(model, T, Js, swinfo)
-        res["M"] = M
-        res["M2"] = M2
-        res["M4"] = M4
-        res["E"] = E
-        res["E2"] = E2
-    end
-    return res
+    return SWInfo(activated_bonds, clustersize, clusterspin)
 end
 
-function SW_update!(model::Clock, T::Real, Js::AbstractArray; measure::Bool=true)
+function SW_update!(model::Clock, T::Real, Js::AbstractArray)
     rng = model.rng
     nsites = numsites(model)
     nbonds = numbonds(model)
@@ -128,22 +102,10 @@ function SW_update!(model::Clock, T::Real, Js::AbstractArray; measure::Bool=true
         model.spins[site] = mod1(s+m, model.Q)
     end
 
-    res = Measurement()
-    if measure
-        M, E, U = simple_estimate(model, T, Js)
-        M2 = sum(abs2,M)
-        res["M"] = M
-        res["M2"] = M2
-        res["M4"] = M2^2
-        res["E"] = E
-        res["E2"] = E^2
-        res["U"] = U
-    end
-
-    return res
+    return nothing
 end
 
-function SW_update!(model::XY, T::Real, Js::AbstractArray; measure::Bool=true)
+function SW_update!(model::XY, T::Real, Js::AbstractArray)
     rng = model.rng
     nsites = numsites(model)
     nbonds = numbonds(model)
@@ -173,18 +135,6 @@ function SW_update!(model::XY, T::Real, Js::AbstractArray; measure::Bool=true)
         model.spins[site] = s
     end
 
-    res = Measurement()
-    if measure
-        M, E, U = simple_estimate(model, T, Js)
-        M2 = sum(abs2,M)
-        res["M"] = M
-        res["M2"] = M2
-        res["M4"] = M2^2
-        res["E"] = E
-        res["E2"] = E^2
-        res["U"] = U
-    end
-
-    return res
+    return nothing
 end
 

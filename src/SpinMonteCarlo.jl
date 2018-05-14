@@ -5,32 +5,29 @@ using Compat
 import Compat.Random
 using DataStructures
 
+export Parameter
 export Model, Ising, XY, Potts, Clock
 export QuantumLocalZ2Model, QuantumXXZ
 export local_update!, SW_update!, Wolff_update!, loop_update!
-export magnetizations, energy
+export default_estimator, simple_estimator, improved_estimator
 export dimer_lattice, chain_lattice, square_lattice, triangular_lattice, cubic_lattice, fully_connected_lattice
 export Lattice, dim, size, numsites, numbonds, neighbors, source, target, sitetype, bondtype
 export sitecoordinate, bonddirection, lattice_sitecoordinate, lattice_bonddirection, siteL2, siteL4
 export UnionFind, addnode!, unify!, clusterize!, clusterid
-export measure
 export gen_snapshot!, gensave_snapshot!, load_snapshot
 export runMC, print_result
 
-const Measurement = Dict{String, Any}
-
 abstract type Model end
-import Compat.Random.srand
-srand(model::Model) = srand(model.rng)
-srand(model::Model, seed) = srand(model.rng, seed)
+const Measurement = Dict{String, Any}
 
 include("union_find.jl")
 include("lattice.jl")
 include("model.jl")
 include("qmodel.jl")
+include("parameter.jl")
+include("local_update.jl")
 include("SW.jl")
 include("loop.jl")
-include("local_update.jl")
 include("Wolff.jl")
 include("simple_estimator.jl")
 include("improved_estimator.jl")
