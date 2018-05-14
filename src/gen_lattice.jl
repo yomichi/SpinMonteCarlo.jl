@@ -1,4 +1,4 @@
-"""
+doc"""
     dimer_lattice()
     dimer_lattice(param::Dict)
     
@@ -46,7 +46,7 @@ function dimer_lattice()
 end
 dimer_lattice(param::Dict) = dimer_lattice()
 
-"""
+doc"""
     chain_lattice(L::Integer)
     chain_lattice(param::Dict)
     
@@ -108,11 +108,11 @@ function chain_lattice(L::Integer)
 end
 chain_lattice(param::Dict) = chain_lattice(param["L"])
 
-"""
+doc"""
     square_lattice(L::Integer, W::Integer=L)
     square_lattice(param::Dict)
     
-generate square lattice with size `L=param["L"]` \\times `W=param["W"]`.
+generate square lattice with size `L=param["L"]` $\times$ `W=param["W"]`.
 
 `nsitetypes` is 2: all `1` (`2`) sites do not connect to another `1` (`2`) site.
 
@@ -191,11 +191,11 @@ function square_lattice(param::Dict)
     return square_lattice(L, W)
 end
 
-"""
+doc"""
     triangular_lattice(L::Integer, W::Integer=L)
     triangular_lattice(param::Dict)
     
-generate triangular lattice with size `L=param["L"]` \\times `W=param["W"]`.
+generate triangular lattice with size `L=param["L"]` $\times$ `W=param["W"]`.
 
 `nsitetypes` is 3: all `1`, `2`, and `3` sites do not connect to another `1`, `2`, and `3` site, respectively.
 
@@ -289,11 +289,11 @@ function triangular_lattice(param::Dict)
     return triangular_lattice(L, W)
 end
 
-"""
+doc"""
     cubic_lattice(L::Integer, W::Integer=L, H::Integer=W)
     cubic_lattice(param::Dict)
     
-generate cubic lattice with size `L=param["L"]` \\times `W=param["W"]` \\times `H=param["H"]`.
+generate cubic lattice with size `L=param["L"]` $\times$ `W=param["W"]` $\times$ `H=param["H"]`.
 
 `nsitetypes` is 2: all `1` (`2`) sites do not connect to another `1` (`2`) site.
 
@@ -388,7 +388,7 @@ function cubic_lattice(param::Dict)
     return cubic_lattice(L, W, H)
 end
 
-"""
+doc"""
     fully_connected_lattice(N::Integer)
     fully_connected_lattice(param::Dict)
     

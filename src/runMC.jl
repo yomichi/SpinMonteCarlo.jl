@@ -6,8 +6,8 @@ using JLD2
 
 Runs Monte Carlo simulation and returns calculated observables.
 
-If a file named `"\$(param["Checkpoint Filename Prefix"])_\$(param["ID"]).jld2"` exists and
-`param["Checkpoint Interval"] > 0.0`, this loads the checkpoint file and restarts the pending simulation.
+If a checkpoint file named `"\$(param["Checkpoint Filename Prefix"])_\$(param["ID"]).jld2"` exists and
+`param["Checkpoint Interval"] > 0.0`, `runMC` loads this file and restarts the pending simulation.
 
 When `parallel==true`, `runMC(params)` uses `pmap` instead of `map`.
 
@@ -112,7 +112,7 @@ end
 """
     initObservables(model::Model; binning::Bool=true)
 
-    returns `BinningObservableSet` or `SimpleObservableSet` with some observables registered.
+returns `BinningObservableSet` or `SimpleObservableSet` with some observables registered.
 """
 function initObservables end
 

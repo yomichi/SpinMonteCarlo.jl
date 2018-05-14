@@ -1,9 +1,9 @@
 doc"""
     Ising(lat::Lattice, [seed])
 
-Ising model $\mathcal{H} = -\sum_{ij} J_{ij} \sigma_i \sigma_j$,
+Ising model, $\mathcal{H} = -\sum_{ij} J_{ij} \sigma_i \sigma_j$,
 where $\sigma_i$ takes value of 1 (up spin) or -1 (down spin).
-Each spin will be initialize randomly and independently.
+Each spin will be initialized randomly and independently.
 
     Ising(param)
 
@@ -41,7 +41,7 @@ end
 doc"""
     Potts(lat::Lattice, Q::Integer, [seed])
 
-`Q` state Potts model, $\mathcal{H} = -\sum{i,j} \delta_{\sigma_i, \sigma_j}$,
+`Q` state Potts model, $\mathcal{H} = -\sum_{i,j} \delta_{\sigma_i, \sigma_j}$,
 where $\sigma_i$ takes an integer value from $1$ to $Q$ and $\delta$ is a Kronecker's delta.
 Order parameter (total magnetization) is defined as
 \begin{equation}
@@ -49,7 +49,7 @@ Order parameter (total magnetization) is defined as
 \end{equation}
 where $N$ is the number of sites and $N_1$ is the number of $\sigma=1$ spins.
 
-Each spin will be initialize randomly and independently.
+Each spin will be initialized randomly and independently.
 
     Potts(param)
 
@@ -87,6 +87,8 @@ doc"""
 
 `Q` state clock model, $\mathcal{H} = -\sum_{ij} J_{ij} \cos(\theta_i - \theta_j)$,
 where $\theta_i = 2\pi \sigma_i/Q$ and $\sigma_i$ takes an integer value from $1$ to $Q$.
+
+Each spin $\sigma_i$ will be initialized randomly and independently.
 
     Clock(param)
 
@@ -133,6 +135,8 @@ doc"""
 
 XY model, $\mathcal{H} = -\sum_{ij} J_{ij} \cos(\theta_i - \theta_j)$,
 where $\theta_i = 2\pi \sigma_i$ and $\sigma_i \in [0, 1)$.
+
+Each spin $\sigma_i$ will be initialized randomly and independently.
 
    XY(param)
 
