@@ -79,13 +79,16 @@ function runMC(model, param::Parameter)
     end
     update! = param["Update Method"] :: Function
     estimator = get(param, "Estimator", default_estimator(model, update!)) :: Function
+    p = convert_parameter(model, param)
 
     while mcs < MCS
-        t = @elapsed begin
-            st = update!(model,param)
-            localobs = estimator(model, param, st)
-        end
-        if mcs >= Therm
+        if mcs < Therm
+            update!(model, p...)
+        else
+            t = @elapsed begin
+                st = update!(model,p...)
+                localobs = estimator(model, p..., st)
+            end
             obs["Time per MCS"] << t
             accumulateObservables!(model, obs, localobs)
         end
@@ -117,11 +120,13 @@ function runMC(model, param::Parameter)
 end
 
 function accumulateObservables!(::Model, obs::MCObservableSet, localobs::Measurement)
-    for key in keys(localobs)
-        if haskey(obs, key)
-            obs[key] << localobs[key]
-        else
+    if length(obs) == 1
+        @inbounds for key in keys(localobs)
             makeMCObservable!(obs, key)
+            obs[key] << localobs[key]
+        end
+    else
+        @inbounds for key in keys(localobs)
             obs[key] << localobs[key]
         end
     end
@@ -130,7 +135,7 @@ end
 
 function postproc(model::Union{Ising, Potts}, param, obs)
     nsites = numsites(model)
-    T = param["T"]
+    T = param["T"] :: Float64
     beta = 1.0/T
 
     jk = jackknife(obs)
