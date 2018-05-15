@@ -48,16 +48,17 @@ function runMC(param::Parameter)
 end
 
 function runMC(model, param::Parameter)
-    verbose = get(param, "Verbose", false)
+    MODEL = typeof(model)
+    verbose = get(param, "Verbose", false) :: Bool
     if verbose
         println("Start: ", param)
     end
-    cp_filename = @sprintf("%s_%d.jld2", get(param, "Checkpoint Filename Prefix", "cp"), get(param, "ID", 1))
-    cp_interval = get(param, "Checkpoint Interval", 0.0)
+    cp_filename = @sprintf("%s_%d.jld2", get(param, "Checkpoint Filename Prefix", "cp")::String, get(param, "ID", 1)::Int)
+    cp_interval = get(param, "Checkpoint Interval", 0.0) :: Float64
     tm = time()
 
-    MCS = get(param, "MCS", 8192)
-    Therm = get(param, "Thermalization", MCS>>3)
+    MCS = get(param, "MCS", 8192) :: Int
+    Therm = get(param, "Thermalization", MCS>>3) :: Int
 
     mcs = 0
     MCS += Therm
@@ -65,34 +66,49 @@ function runMC(model, param::Parameter)
     makeMCObservable!(obs, "Time per MCS")
 
     if cp_interval > 0.0 && ispath(cp_filename)
-        @load(cp_filename, model, obs, mcs)
+        jld = jldopen(cp_filename)
+        model = jld["model"] :: MODEL
+        obs = jld["obs"] :: BinningObservableSet
+        mcs = convert(Int, jld["mcs"]) :: Int
+        close(jld)
     end
 
     if "UpdateMethod" in keys(param)
         warn("\"UpdateMethod\" is deprecated. Use instead \"Update Method\".")
-        param["Update Method"] = param["UpdateMethod"]
+        param["Update Method"] = param["UpdateMethod"] :: Function
     end
-    update! = param["Update Method"]
-    estimator = get(param, "Estimator", default_estimator(model, update!))
+    update! = param["Update Method"] :: Function
+    estimator = get(param, "Estimator", default_estimator(model, update!)) :: Function
+    p = convert_parameter(model, param)
 
     while mcs < MCS
-        t = @elapsed begin
-            st = update!(model,param)
-            localobs = estimator(model, param, st)
-        end
-        if mcs >= Therm
+        if mcs < Therm
+            update!(model, p...)
+        else
+            t = @elapsed begin
+                st = update!(model,p...)
+                localobs = estimator(model, p..., st)
+            end
             obs["Time per MCS"] << t
             accumulateObservables!(model, obs, localobs)
         end
         mcs += 1
         if cp_interval > 0.0 && time() - tm > cp_interval
-            @save(cp_filename, model, obs, mcs)
+            jld = jldopen(cp_filename, "w")
+            jld["model"] = model
+            jld["obs"] = obs
+            jld["mcs"] = mcs
+            close(jld)
             tm += cp_interval
-        end
+         end
     end
 
     if cp_interval > 0.0
-        @save(cp_filename, model, obs, mcs)
+        jld = jldopen(cp_filename, "w")
+        jld["model"] = model
+        jld["obs"] = obs
+        jld["mcs"] = mcs
+        close(jld)
     end
 
     jk = postproc(model, param, obs)
@@ -109,11 +125,13 @@ end
 accumulates `localobs` into `obs`. For example, `obs["Energy"] << localobs["Energy"]`.
 """
 function accumulateObservables!(::Model, obs::MCObservableSet, localobs::Measurement)
-    for key in keys(localobs)
-        if haskey(obs, key)
-            obs[key] << localobs[key]
-        else
+    if length(obs) == 1
+        @inbounds for key in keys(localobs)
             makeMCObservable!(obs, key)
+            obs[key] << localobs[key]
+        end
+    else
+        @inbounds for key in keys(localobs)
             obs[key] << localobs[key]
         end
     end
@@ -129,7 +147,7 @@ function postproc end
 
 function postproc(model::Union{Ising, Potts}, param, obs)
     nsites = numsites(model)
-    T = param["T"]
+    T = param["T"] :: Float64
     beta = 1.0/T
 
     jk = jackknife(obs)

@@ -97,8 +97,8 @@ function loop_update!(model::QuantumXXZ, T::Real,
                 subbond = op.space
                 b,ss1,ss2 = subbond2bond(subbond,S2)
                 bt = bondtype(model,b)
-                ot = ifelse(rand(rng)*(weights[4bt-1]+weights[4bt])<weights[4bt-1], LO_Vertex, LO_Cross)
-                op.op_type = ot
+                otype = ifelse(rand(rng)*(weights[4bt-1]+weights[4bt])<weights[4bt-1], LO_Vertex, LO_Cross)
+                op.op_type = otype
             end
         end
         
