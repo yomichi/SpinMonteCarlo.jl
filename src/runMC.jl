@@ -122,7 +122,7 @@ end
 """
     accumulateObservables!(model, obs::MCObservableSet, localobs::Dict)
 
-accumulates `localobs` into `obs`. For example, `obs["Energy"] << localobs["E"]`.
+accumulates `localobs` into `obs`. For example, `obs["Energy"] << localobs["Energy"]`.
 """
 function accumulateObservables!(::Model, obs::MCObservableSet, localobs::Measurement)
     if length(obs) == 1
@@ -143,6 +143,8 @@ end
 
 post process of observables. For example, Specific heat will be calculated from energy, energy^2, and temperature.
 """
+function postproc end
+
 function postproc(model::Union{Ising, Potts}, param, obs)
     nsites = numsites(model)
     T = param["T"] :: Float64
