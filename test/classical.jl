@@ -12,7 +12,7 @@ const obsnames_clock = ["Energy", "Energy^2", "Specific Heat",
                        ]
 function loaddata(filename, obsnames)
     Ts = zeros(0)
-    res = Dict(n=>zeros(0) for n in obsnames)
+    res = Parameter(n=>zeros(0) for n in obsnames)
     for line in eachline(filename)
         words = split(line)
         push!(Ts, parse(words[1]))
@@ -28,7 +28,7 @@ function parse_filename(filename, ::Union{Type{Ising}, Type{XY}})
     if m == nothing
         return nothing
     end
-    p = Dict()
+    p = Parameter()
     p["J"] = parse(m.captures[1])
     p["N"] = parse(Int, m.captures[2])
     return p
@@ -39,7 +39,7 @@ function parse_filename(filename, ::Union{Type{Potts}, Type{Clock}})
     if m == nothing
         return nothing
     end
-    p = Dict()
+    p = Parameter()
     p["Q"] = parse(Int, m.captures[1])
     p["J"] = parse(m.captures[2])
     p["N"] = parse(Int, m.captures[3])

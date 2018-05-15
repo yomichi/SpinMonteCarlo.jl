@@ -1,20 +1,15 @@
 """
-    Wolff_update!(model, param; meaure::Bool=true)
-    Wolff_update!(model, T::Real, J::Real; measure::Bool=true)
-    Wolff_update!(model, T::Real, Js::AbstractArray; measure::Bool=true)
+    Wolff_update!(model, param::Parameter)
+    Wolff_update!(model, T::Real, Js::AbstractArray)
 
-update spin configuration by Wolff algorithm under temperature `T=param["T"]` and coupling constants `J=param["J"]`
+update spin configuration by Wolff algorithm
+under temperature `T=param["T"]` and coupling constants `J=param["J"]`
 """
-@inline function Wolff_update!(model::Union{Ising, Potts, Clock, XY}, param::Dict; measure::Bool=true)
-    T = param["T"]
-    J = get(param, "J", 1.0)
-    return Wolff_update!(model, T, J, measure=measure)
+@inline function Wolff_update!(model::Union{Ising, Potts, Clock, XY}, param::Parameter)
+    p = convert_parameter(model, param)
+    return Wolff_update!(model, p...)
 end
-@inline function Wolff_update!(model::Model, T::Real, J::Real; measure::Bool=true)
-    Js = J * ones(numbondtypes(model))
-    return Wolff_update!(model, T, Js, measure=measure)
-end
-function Wolff_update!(model::Ising, T::Real, Js::AbstractArray; measure::Bool=true)
+function Wolff_update!(model::Ising, T::Real, Js::AbstractArray)
     rng = model.rng
     ps = -expm1.((-2.0/T).*Js)
     nsites = numsites(model)
@@ -37,21 +32,10 @@ function Wolff_update!(model::Ising, T::Real, Js::AbstractArray; measure::Bool=t
         end
     end
 
-    res = Measurement()
-    if measure
-        M, E = simple_estimate(model, T, Js)
-        res["M"] = M
-        res["M2"] = clustersize/nsites
-        res["M4"] = M^4
-        res["E"] = E
-        res["E2"] = E^2
-    end
-
-    return res
-
+    return nothing
 end
 
-function Wolff_update!(model::Potts, T::Real, Js::AbstractArray; measure::Bool=true)
+function Wolff_update!(model::Potts, T::Real, Js::AbstractArray)
     rng = model.rng
     ps = -expm1.((-1.0/T).*Js)
     nsites = numsites(model)
@@ -74,22 +58,10 @@ function Wolff_update!(model::Potts, T::Real, Js::AbstractArray; measure::Bool=t
             end
         end
     end
-
-    res = Measurement()
-    if measure
-        I2 = (model.Q-1)/(model.Q*model.Q)
-        M, E = simple_estimate(model, T, Js)
-        res["M"] = M
-        res["M2"] = clustersize*I2/nsites
-        res["M4"] = M^4
-        res["E"] = E
-        res["E2"] = E^2
-    end
-
-    return res
+    return nothing
 end
 
-function Wolff_update!(model::Clock, T::Real, Js::AbstractArray; measure::Bool=true)
+function Wolff_update!(model::Clock, T::Real, Js::AbstractArray)
     rng = model.rng
     nsites = numsites(model)
     b2J = (2.0/T).*Js
@@ -118,22 +90,10 @@ function Wolff_update!(model::Clock, T::Real, Js::AbstractArray; measure::Bool=t
         end
     end
 
-    res = Measurement()
-    if measure
-        M, E, U = simple_estimate(model, T, Js)
-        M2 = sum(abs2,M)
-        res["M"] = M
-        res["M2"] = M2
-        res["M4"] = M2^2
-        res["E"] = E
-        res["E2"] = E^2
-        res["U"] = U
-    end
-
-    return res
+    return nothing
 end
 
-function Wolff_update!(model::XY, T::Real, Js::AbstractArray; measure::Bool=true)
+function Wolff_update!(model::XY, T::Real, Js::AbstractArray)
     rng = model.rng
     nsites = numsites(model)
     b2J = (2.0/T).*Js
@@ -163,18 +123,6 @@ function Wolff_update!(model::XY, T::Real, Js::AbstractArray; measure::Bool=true
         end
     end
 
-    res = Measurement()
-    if measure
-        M, E, U = simple_estimate(model, T, Js)
-        M2 = sum(abs2,M)
-        res["M"] = M
-        res["M2"] = M2
-        res["M4"] = M2^2
-        res["E"] = E
-        res["E2"] = E^2
-        res["U"] = U
-    end
-
-    return res
+    return nothing
 end
 

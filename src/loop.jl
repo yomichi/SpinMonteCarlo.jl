@@ -1,39 +1,20 @@
 """
-    loop_update!(model, param; measure::Bool=true)
-    loop_update!(model, T::Real, Jz::Union{Real, AbstractArray}, Jxy::Union{Real, AbstractArray}, Gamma::Union{Real, AbstractArray}; measure::Bool=true)
+    loop_update!(model, param::Parameter)
+    loop_update!(model, T::Real,
+                 Jz::Union{Real, AbstractArray},
+                 Jxy::Union{Real, AbstractArray},
+                 Gamma::Union{Real, AbstractArray})
 
 updates spin configuration by loop algorithm 
 under the temperature `T = param["T"]` and coupling constants `Jz, Jxy` and transverse field `Gamma`
 """
-@inline function loop_update!(model::QuantumXXZ, param; measure::Bool=true)
-    T = param["T"]
-    if "J" in keys(param)
-        Jz = Jxy = param["J"]
-    else
-        Jz = param["Jz"]
-        Jxy = param["Jxy"]
-    end
-    Gamma = get(param, "Gamma", 0.0)
-    return loop_update!(model, T, Jz, Jxy, Gamma, measure=measure)
-end
-
-@inline function loop_update!(model::QuantumXXZ, T::Real, Jz, Jxy, Gamma; measure::Bool=true)
-    Jzs  = isa(Jz, Real) ? Jz  .* ones(numbondtypes(model)) : Jz
-    Jxys  = isa(Jxy, Real) ? Jxy  .* ones(numbondtypes(model)) : Jxy
-    Gammas  = isa(Gamma, Real) ? Gamma  .* ones(numsitetypes(model)) : Gamma
-    return loop_update!(model, T, Jzs, Jxys, Gammas, measure=measure)
-end
-@inline function loop_update!(model::QuantumXXZ, T::Real, Jz, Jxy; measure::Bool=true)
-    return loop_update!(model, T, Jz, Jxy, 0.0, measure=measure)
-end
-@inline function loop_update!(model::QuantumXXZ, T::Real, J; measure::Bool=true)
-    return loop_update!(model, T, J, J, 0.0, measure=measure)
+@inline function loop_update!(model::QuantumXXZ, param::Parameter)
+    p = convert_parameter(model, param)
+    return loop_update!(model, p...)
 end
 
 function loop_update!(model::QuantumXXZ, T::Real,
-                      Jzs::AbstractArray, Jxys::AbstractArray, Gs::AbstractArray
-                      ;
-                      measure::Bool=true)
+                      Jzs::AbstractArray, Jxys::AbstractArray, Gs::AbstractArray)
     rng = model.rng
     lo_types = [LO_FMLink, LO_AFLink, LO_Vertex, LO_Cross]
     nsites = numsites(model)
@@ -116,8 +97,8 @@ function loop_update!(model::QuantumXXZ, T::Real,
                 subbond = op.space
                 b,ss1,ss2 = subbond2bond(subbond,S2)
                 bt = bondtype(model,b)
-                ot = ifelse(rand(rng)*(weights[4bt-1]+weights[4bt])<weights[4bt-1], LO_Vertex, LO_Cross)
-                op.op_type = ot
+                otype = ifelse(rand(rng)*(weights[4bt-1]+weights[4bt])<weights[4bt-1], LO_Vertex, LO_Cross)
+                op.op_type = otype
             end
         end
         
@@ -195,15 +176,5 @@ function loop_update!(model::QuantumXXZ, T::Real,
         end
     end
 
-    res = Measurement()
-    if measure
-        M, M2, M4, E, E2, sgn = improved_estimate(model, T, Jzs, Jxys, Gs, uf)
-        res["M"] = M
-        res["M2"] = M2
-        res["M4"] = M4
-        res["E"] = E
-        res["E2"] = E2
-        res["Sign"] = sgn
-    end
-    return res
+    return uf
 end

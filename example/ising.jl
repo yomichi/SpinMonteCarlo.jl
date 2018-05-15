@@ -14,14 +14,14 @@ for update in ups
     for L in Ls
         for T in Ts
             push!(params,
-                  Dict{String,Any}("Model"=>Ising, "Lattice"=>square_lattice,
-                                   "L"=>L, "T"=>T, "J"=>1.0,
-                                   "MCS"=>MCS, "Thermalization"=>Therm,
-                                   "Update Method"=> (update==0 ? local_update! :
-                                                      update==1 ? SW_update! : Wolff_update!),
-                                   "update"=>update,
-                                   "Verbose"=>true,
-                                  ))
+                  Parameter("Model"=>Ising, "Lattice"=>square_lattice,
+                            "L"=>L, "T"=>T, "J"=>1.0,
+                            "MCS"=>MCS, "Thermalization"=>Therm,
+                            "Update Method"=> (update==0 ? local_update! :
+                                               update==1 ? SW_update! : Wolff_update!),
+                            "update"=>update,
+                            "Verbose"=>true,
+                           ))
         end
     end
 end

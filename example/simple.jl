@@ -11,12 +11,12 @@ const MCS = 8192
 const Therm = MCS >> 3
 
 for T in Ts
-    params = Dict{String,Any}("Model"=>model, "Lattice"=>lat,
-                              "L"=>L, "T"=>T, "J"=>1.0,
-                              "Update Method"=>update,
-                              "MCS"=>MCS, "Thermalization"=>Therm,
-                             )
-    result = runMC(params)
+    param = Parameter("Model"=>model, "Lattice"=>lat,
+                      "L"=>L, "T"=>T, "J"=>1.0,
+                      "Update Method"=>update,
+                      "MCS"=>MCS, "Thermalization"=>Therm,
+                     )
+    result = runMC(param)
     println(@sprintf("%f %.15f %.15f",
                       T, mean(result["Specific Heat"]), stderror(result["Specific Heat"])))
 end

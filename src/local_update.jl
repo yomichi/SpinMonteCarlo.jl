@@ -1,21 +1,16 @@
 """
-    local_update!(model, param; measure::Bool=true)
-    local_update!(model, T::Real, J::Real; measure::Bool=true)
-    local_update!(model, T::Real, Js::AbstractArray; measure::Bool=true)
+    local_update!(model, param)
+    local_update!(model, T, Js)
 
 updates spin configuration by local spin flip and Metropolice algorithm 
 under the temperature `T = param["T"]` and coupling constants `J = param["J"]`
 """
-@inline function local_update!(model::Union{Ising, Potts, Clock, XY}, param::Dict; measure::Bool=true)
-    T = param["T"]
-    J = get(param, "J", 1.0)
-    return local_update!(model, T, J, measure=measure)
+@inline function local_update!(model::Model, param::Parameter)
+    p = convert_parameter(model, param)
+    return local_update!(model, p...)
 end
-@inline function local_update!(model::Model, T::Real, J::Real; measure::Bool=true)
-    Js = J*ones(numbondtypes(model))
-    return local_update!(model,T,Js,measure=measure)
-end
-function local_update!(model::Ising, T::Real, Js::AbstractArray; measure::Bool=true)
+
+function local_update!(model::Ising, T::Real, Js::AbstractArray)
     rng = model.rng
     nsites = numsites(model)
     nbonds = numbonds(model)
@@ -32,20 +27,10 @@ function local_update!(model::Ising, T::Real, Js::AbstractArray; measure::Bool=t
         end
     end
 
-    res = Measurement()
-    if measure
-        M, E = simple_estimate(model, T, Js)
-        res["M"] = M
-        res["M2"] = M^2
-        res["M4"] = M^4
-        res["E"] = E
-        res["E2"] = E^2
-    end
-
-    return res
+    return nothing
 end
 
-function local_update!(model::Potts, T::Real, Js::AbstractArray; measure::Bool=true)
+function local_update!(model::Potts, T::Real, Js::AbstractArray)
     rng = model.rng
     nsites = numsites(model)
     nbonds = numbonds(model)
@@ -64,20 +49,10 @@ function local_update!(model::Potts, T::Real, Js::AbstractArray; measure::Bool=t
         end
     end
 
-    res = Measurement()
-    if measure
-        M, E = simple_estimate(model, T, Js)
-        res["M"] = M
-        res["M2"] = M^2
-        res["M4"] = M^4
-        res["E"] = E
-        res["E2"] = E^2
-    end
-
-    return res
+    return nothing
 end
 
-function local_update!(model::Clock, T::Real, Js::AbstractArray; measure::Bool=true)
+function local_update!(model::Clock, T::Real, Js::AbstractArray)
     rng = model.rng
     nsites = numsites(model)
     nbonds = numbonds(model)
@@ -97,22 +72,10 @@ function local_update!(model::Clock, T::Real, Js::AbstractArray; measure::Bool=t
         end
     end
 
-    res = Measurement()
-    if measure
-        M, E, U = simple_estimate(model, T, Js)
-        M2 = sum(abs2,M)
-        res["M"] = M
-        res["M2"] = M2
-        res["M4"] = M2^2
-        res["E"] = E
-        res["E2"] = E^2
-        res["U"] = U
-    end
-
-    return res
+    return nothing
 end
 
-function local_update!(model::XY, T::Real, Js::AbstractArray; measure::Bool=true)
+function local_update!(model::XY, T::Real, Js::AbstractArray)
     rng = model.rng
     nsites = numsites(model)
     nbonds = numbonds(model)
@@ -131,18 +94,6 @@ function local_update!(model::XY, T::Real, Js::AbstractArray; measure::Bool=true
         end
     end
 
-    res = Measurement()
-    if measure
-        M, E, U = simple_estimate(model, T, Js)
-        M2 = sum(abs2,M)
-        res["M"] = M
-        res["M2"] = M2
-        res["M4"] = M2^2
-        res["E"] = E
-        res["E2"] = E^2
-        res["U"] = U
-    end
-
-    return res
+    return nothing
 end
 

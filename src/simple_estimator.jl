@@ -1,10 +1,19 @@
+default_estimator(model::Model, update) = simple_estimator
+default_estimator(model::QuantumXXZ, update) = improved_estimator
+default_estimator(model::Union{Ising, Potts}, update) = ifelse(update==SW_update!, improved_estimator, simple_estimator)
+
+function simple_estimator(model, param::Parameter, _=nothing)
+    p = convert_parameter(model,param)
+    return simple_estimator(model, p..., nothing)
+end
+
 """
-    simple_estimate(model::Ising, T::Real, Js::AbstractArray)
-    simple_estimate(model::Potts, T::Real, Js::AbstractArray)
+    simple_estimator(model::Ising, T::Real, Js::AbstractArray)
+    simple_estimator(model::Potts, T::Real, Js::AbstractArray)
 
 return magnetization density `M` and energy per site `E`.
 """
-function simple_estimate(model::Ising, T::Real, Js::AbstractArray)
+function simple_estimator(model::Ising, T::Real, Js::AbstractArray, _=nothing)
     nsites = numsites(model)
     nbonds = numbonds(model)
 
@@ -15,10 +24,18 @@ function simple_estimate(model::Ising, T::Real, Js::AbstractArray)
         E += ifelse(model.spins[s1] == model.spins[s2], -1.0, 1.0) * Js[bondtype(model,b)]
     end
     E /= nsites
-    return M,E
+
+    res = Measurement()
+    res["Magnetization"] = M
+    res["|Magnetization|"] = abs(M)
+    res["Magnetization^2"] = M^2
+    res["Magnetization^4"] = M^4
+    res["Energy"] = E
+    res["Energy^2"] = E^2
+    return res
 end
 
-function simple_estimate(model::Potts, T::Real, Js::AbstractArray)
+function simple_estimator(model::Potts, T::Real, Js::AbstractArray, _=nothing)
     nsites = numsites(model)
     nbonds = numbonds(model)
     invQ = 1.0/model.Q
@@ -34,17 +51,25 @@ function simple_estimate(model::Potts, T::Real, Js::AbstractArray)
         E -= ifelse(model.spins[s1] == model.spins[s2], 1.0, 0.0) * Js[bondtype(model,b)]
     end
     E /= nsites
-    return M,E
+
+    res = Measurement()
+    res["Magnetization"] = M
+    res["|Magnetization|"] = abs(M)
+    res["Magnetization^2"] = M^2
+    res["Magnetization^4"] = M^4
+    res["Energy"] = E
+    res["Energy^2"] = E^2
+    return res
 end
 
 
 """
-    simple_estimate(model::Clock, T::Real, Js::AbstractArray)
-    simple_estimate(model::XY, T::Real, Js::AbstractArray)
+    simple_estimator(model::Clock, T::Real, Js::AbstractArray)
+    simple_estimator(model::XY, T::Real, Js::AbstractArray)
 
 return magnetization density `M`, energy per site `E`, and helicity modulus `U`.
 """
-function simple_estimate(model::Clock, T::Real, Js::AbstractArray)
+function simple_estimator(model::Clock, T::Real, Js::AbstractArray, _=nothing)
     nsites = numsites(model)
     nbonds = numbonds(model)
     D = dim(model)
@@ -78,10 +103,26 @@ function simple_estimate(model::Clock, T::Real, Js::AbstractArray)
         U1[d] *= invN
     end
     E /= nsites
-    return M, E, U1
+
+    res = Measurement()
+    for (i,c) in enumerate(["x","y"])
+        res["Magnetization $c"] = M[i]
+        res["|Magnetization $c|"] = abs(M[i])
+        res["Magnetization $c^2"] = M[i]^2
+        res["Magnetization $c^4"] = M[i]^4
+        res["Helicity Modulus $c"] = U1[i]
+    end
+    M2 = sum(abs2, M)
+    res["|Magnetization|"] = sqrt(M2)
+    res["|Magnetization|^2"] = M2
+    res["|Magnetization|^4"] = M2^2
+    res["Energy"] = E
+    res["Energy^2"] = E^2
+
+    return res
 end
 
-function simple_estimate(model::XY, T::Real, Js::AbstractArray)
+function simple_estimator(model::XY, T::Real, Js::AbstractArray, _=nothing)
     nsites = numsites(model)
     nbonds = numbonds(model)
     D = dim(model)
@@ -116,6 +157,22 @@ function simple_estimate(model::XY, T::Real, Js::AbstractArray)
         U1[d] *= invN
     end
     E /= nsites
-    return M, E, U1
+
+    res = Measurement()
+    for (i,c) in enumerate(["x","y"])
+        res["Magnetization $c"] = M[i]
+        res["|Magnetization $c|"] = abs(M[i])
+        res["Magnetization $c^2"] = M[i]^2
+        res["Magnetization $c^4"] = M[i]^4
+        res["Helicity Modulus $c"] = U1[i]
+    end
+    M2 = sum(abs2, M)
+    res["|Magnetization|"] = sqrt(M2)
+    res["|Magnetization|^2"] = M2
+    res["|Magnetization|^4"] = M2^2
+    res["Energy"] = E
+    res["Energy^2"] = E^2
+
+    return res
 end
 
