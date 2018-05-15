@@ -8,7 +8,6 @@ CurrentModule = SpinMonteCarlo
 
 ```@docs
 runMC
-initObservables
 accumulateObservables!
 postproc
 ```
@@ -54,6 +53,11 @@ loop_update!
 
 ## Estimator
 ```@docs
-simple_estimate
-improved_estimate
+simple_estimator
+improved_estimator
+```
+
+## Utility
+```@docs
+convert_parameter
 ```

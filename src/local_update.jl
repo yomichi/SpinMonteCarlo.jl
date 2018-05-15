@@ -1,6 +1,6 @@
 """
     local_update!(model, param)
-    local_update!(model, T, Js)
+    local_update!(model, T::Real, Js::AbstractArray)
 
 updates spin configuration by local spin flip and Metropolice algorithm 
 under the temperature `T = param["T"]` and coupling constants `J = param["J"]`

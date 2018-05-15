@@ -1,9 +1,9 @@
 """
     loop_update!(model, param::Parameter)
     loop_update!(model, T::Real,
-                 Jz::Union{Real, AbstractArray},
-                 Jxy::Union{Real, AbstractArray},
-                 Gamma::Union{Real, AbstractArray})
+                 Jz::AbstractArray,
+                 Jxy::AbstractArray,
+                 Gamma:AbstractArray)
 
 updates spin configuration by loop algorithm 
 under the temperature `T = param["T"]` and coupling constants `Jz, Jxy` and transverse field `Gamma`
