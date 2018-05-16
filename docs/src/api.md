@@ -60,4 +60,7 @@ improved_estimator
 ## Utility
 ```@docs
 convert_parameter
+convert_parameter(::Ising, ::Parameter)
+convert_parameter(::QuantumXXZ, ::Parameter)
+@gen_convert_parameter
 ```

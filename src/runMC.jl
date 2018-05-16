@@ -1,7 +1,7 @@
 using JLD2
 
 """
-    runMC(param::Dict)
+    runMC(param::Parameter)
     runMC(params::AbstractArray{T}; parallel::Bool=false) where T<:Dict
 
 Runs Monte Carlo simulation and returns calculated observables.
@@ -17,6 +17,7 @@ When `parallel==true`, `runMC(params)` uses `pmap` instead of `map`.
 - "Update Method"
     - `param` will be used as an argument.
 - "T": Temperature
+
 # Optional keys in `param`
 - "MCS": The number of Monte Carlo steps after thermalization
     - Default: 8192
@@ -64,6 +65,7 @@ function runMC(model, param::Parameter)
     MCS += Therm
     obs = BinningObservableSet()
     makeMCObservable!(obs, "Time per MCS")
+    makeMCObservable!(obs, "MCS per Second")
 
     if cp_interval > 0.0 && ispath(cp_filename)
         jld = jldopen(cp_filename)
@@ -90,6 +92,7 @@ function runMC(model, param::Parameter)
                 localobs = estimator(model, p..., st)
             end
             obs["Time per MCS"] << t
+            obs["MCS per Second"] << 1.0/t
             accumulateObservables!(model, obs, localobs)
         end
         mcs += 1
@@ -145,7 +148,7 @@ post process of observables. For example, Specific heat will be calculated from 
 """
 function postproc end
 
-function postproc(model::Union{Ising, Potts}, param, obs)
+function postproc(model::Union{Ising, Potts}, param::Parameter, obs::MCObservableSet)
     nsites = numsites(model)
     T = param["T"] :: Float64
     beta = 1.0/T
@@ -155,11 +158,10 @@ function postproc(model::Union{Ising, Potts}, param, obs)
     jk["Susceptibility"] = (nsites*beta)*jk["Magnetization^2"]
     jk["Connected Susceptibility"] = (nsites*beta)*(jk["Magnetization^2"] - jk["|Magnetization|"]^2)
     jk["Specific Heat"] = (nsites*beta*beta)*(jk["Energy^2"] - jk["Energy"]^2)
-    jk["MCS per Second"] = 1.0/jk["Time per MCS"]
     return jk
 end
 
-function postproc(model::Union{Clock, XY}, param::Dict, obs::MCObservableSet)
+function postproc(model::Union{Clock, XY}, param::Parameter, obs::MCObservableSet)
     nsites = numsites(model)
     T = param["T"]
     beta = 1.0/T
@@ -175,11 +177,10 @@ function postproc(model::Union{Clock, XY}, param::Dict, obs::MCObservableSet)
     jk["Connected Susceptibility y"] = (nsites*beta)*(jk["Magnetization y^2"] - jk["|Magnetization y|"]^2)
     jk["Connected Susceptibility"] = (nsites*beta)*(jk["|Magnetization|^2"] - jk["|Magnetization|"]^2)
     jk["Specific Heat"] = (nsites*beta*beta)*(jk["Energy^2"] - jk["Energy"]^2)
-    jk["MCS per Second"] = 1.0 / jk["Time per MCS"]
     return jk
 end
 
-function postproc(model::QuantumXXZ, param::Dict, obs::MCObservableSet)
+function postproc(model::QuantumXXZ, param::Parameter, obs::MCObservableSet)
     nsites = numsites(model)
     T = param["T"]
     beta = 1.0/T
@@ -197,7 +198,6 @@ function postproc(model::QuantumXXZ, param::Dict, obs::MCObservableSet)
     jk["Susceptibility"] = (nsites*beta)*jk["Magnetization^2"]
     jk["Connected Susceptibility"] = (nsites*beta)*(jk["Magnetization^2"] - jk["|Magnetization|"]^2)
     jk["Specific Heat"] = (nsites*beta*beta)*(jk["Energy^2"] - jk["Energy"]^2)
-    jk["MCS per Second"] = 1.0/jk["Time per MCS"]
     return jk
 end
 
