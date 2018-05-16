@@ -5,7 +5,8 @@ using Compat
 import Compat.Random
 using DataStructures
 
-export Parameter, convert_parameter
+export Parameter
+export @gen_convert_parameter, convert_parameter
 export Model, Ising, XY, Potts, Clock
 export QuantumLocalZ2Model, QuantumXXZ
 export local_update!, SW_update!, Wolff_update!, loop_update!
