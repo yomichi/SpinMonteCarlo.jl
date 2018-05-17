@@ -1,3 +1,8 @@
+doc"""
+    default_estimator(model, updatemethod!)
+
+Determines estimator to be used when `param["Estimator"]` is not set.
+"""
 default_estimator(model::Model, update) = simple_estimator
 default_estimator(model::QuantumXXZ, update) = improved_estimator
 default_estimator(model::Union{Ising, Potts}, update) = ifelse(update==SW_update!, improved_estimator, simple_estimator)
@@ -8,10 +13,18 @@ function simple_estimator(model, param::Parameter, _=nothing)
 end
 
 """
-    simple_estimator(model::Ising, T::Real, Js::AbstractArray)
-    simple_estimator(model::Potts, T::Real, Js::AbstractArray)
+    simple_estimator(model::Clock, T::Real, Js::AbstractArray)
+    simple_estimator(model::XY, T::Real, Js::AbstractArray)
 
-return magnetization density `M` and energy per site `E`.
+Returns the following observables as `Dict{String, Any}`
+
+# Observables
+- "Energy"
+- "Energy^2"
+- "Magnetization"
+- "|Magnetization|"
+- "|Magnetization|^2"
+- "|Magnetization|^4"
 """
 function simple_estimator(model::Ising, T::Real, Js::AbstractArray, _=nothing)
     nsites = numsites(model)
@@ -67,7 +80,24 @@ end
     simple_estimator(model::Clock, T::Real, Js::AbstractArray)
     simple_estimator(model::XY, T::Real, Js::AbstractArray)
 
-return magnetization density `M`, energy per site `E`, and helicity modulus `U`.
+Returns the following observables as `Dict{String, Any}`
+
+# Observables
+- "Energy"
+- "Energy^2"
+- "|Magnetization|"
+- "|Magnetization|^2"
+- "|Magnetization|^4"
+- "Magnetization x"
+- "|Magnetization x|"
+- "Magnetization x^2"
+- "Magnetization x^4"
+- "Magnetization y"
+- "|Magnetization y|"
+- "Magnetization y^2"
+- "Magnetization y^4"
+- "Helicity Modulus x"
+- "Helicity Modulus y"
 """
 function simple_estimator(model::Clock, T::Real, Js::AbstractArray, _=nothing)
     nsites = numsites(model)

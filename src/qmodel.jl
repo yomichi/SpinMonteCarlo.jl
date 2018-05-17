@@ -1,26 +1,135 @@
-@enum(LocalOperatorType,
-      LO_Cut,    # [1 1; 1 1]
-      LO_FMLink, # [1 0 0 0; 0 0 0 0; 0 0 0 0; 0 0 0 1]
-      LO_AFLink, # [0 0 0 0; 0 1 0 0; 0 0 1 0; 0 0 0 1]
-      LO_Vertex, # [0 0 0 0; 0 1 1 0; 0 1 1 0; 0 0 0 0]
-      LO_Cross,  # [1 0 0 0; 0 0 1 0; 0 1 0 0; 0 0 0 1]
+doc"""
+Enumtype including `LET_*`
+"""
+@enum(LoopElementType,
+      LET_Cut,    # [1 1; 1 1]
+      LET_FMLink, # [1 0 0 0; 0 0 0 0; 0 0 0 0; 0 0 0 1]
+      LET_AFLink, # [0 0 0 0; 0 1 0 0; 0 0 1 0; 0 0 0 1]
+      LET_Vertex, # [0 0 0 0; 0 1 1 0; 0 1 1 0; 0 0 0 0]
+      LET_Cross,  # [1 0 0 0; 0 0 1 0; 0 1 0 0; 0 0 0 1]
      )
 
-mutable struct LocalOperator
-    op_type :: LocalOperatorType
+@doc """
+Loop element depicted as
+
+```
+|
+o
+|
+```
+
+or matrix 
+
+```
+1 1
+1 1
+```
+""" LET_Cut
+
+@doc """
+Loop element depicted as
+
+```
+|  |
+|--|
+|  |
+```
+
+or matrix 
+
+```
+1 0 0 0
+0 0 0 0
+0 0 0 0
+0 0 0 1
+```
+""" LET_FMLink
+
+@doc """
+Loop element depicted as
+
+```
+|  |
+|~~|
+|  |
+```
+
+or matrix 
+
+```
+0 0 0 0
+0 1 0 0
+0 0 1 0
+0 0 0 0
+```
+""" LET_AFLink
+
+@doc """
+Loop element depicted as
+
+```
+|  |
+~~~~
+~~~~
+|  |
+```
+
+or matrix 
+
+```
+0 0 0 0
+0 1 1 0
+0 1 1 0
+0 0 0 0
+```
+""" LET_Vertex
+
+@doc raw"""
+Loop element depicted as
+
+```
+|  |
+ \/
+ /\
+|  |
+```
+
+or matrix 
+
+```
+1 0 0 0
+0 0 1 0
+0 1 0 0
+0 0 0 1
+```
+""" LET_Cross
+
+doc"""
+(Imaginary-temporary and spatial) local operator as a perturbation with assigned loop element.
+# Fields
+- `let_type` : assigned loop element
+- `isdiagonal` : operator is diagonal or not
+    - in other words, two states connecting this perturbation are equivalent to
+      each other or not.
+- `time` : imaginary time ($\tau/\beta \in [0,1)$) which this perturbation acts on.
+- `space` : index of subspin or subbond which this perturbation acts on.
+- `bottom_id` :: index of node of union find assigned to a loop
+- `top_id` :: index of node of union find assigned to the other loop
+
+"""
+mutable struct LocalLoopOperator
+    let_type :: LoopElementType
     isdiagonal :: Bool
     time :: Float64
     space :: Int
     bottom_id :: Int
     top_id :: Int
 end
-LocalOperator(op_type::LocalOperatorType, time::Real, space::Int) = LocalOperator(op_type, true, time, space, 0,0)
+LocalLoopOperator(let_type::LoopElementType, time::Real, space::Int) = LocalLoopOperator(let_type, true, time, space, 0,0)
 
 abstract type QuantumLocalZ2Model <: Model end
 
 doc"""
-    QuantumXXZ(lat::Lattice, S::Real, [seed])
-
 Spin-$S$ XXZ model denoted by the following Hamiltonian,
 \begin{equation}
 \mathcal{H} = \sum_{i,j} \left[ J_{ij}^z S_i^z S_j^z 
@@ -31,17 +140,12 @@ where $S^x, S^y, S^z$ are $x, y$ and $z$ component of spin operator with length 
 and $S^\pm \equiv S^x \pm iS^y$ are ladder operator.
 A state is represented by a product state (spins at $\tau=0$) of local $S^z$ diagonal basis and an operator string (perturbations).
 A local spin with length $S$ is represented by a symmetrical summation of $2S$ sub spins with length $1/2$.
-Each subspin will be initialized independently and randomly.
-
-    QuantumXXZ(param)
-
-`param["Lattice"](param)`, `param["S"]` and `param["Seed"]` (if defined) will be used as the args of the former form.
 """
 mutable struct QuantumXXZ <: QuantumLocalZ2Model
     lat :: Lattice
     S2 :: Int
     spins :: Vector{Int}
-    ops :: Vector{LocalOperator}
+    ops :: Vector{LocalLoopOperator}
     rng :: Random.MersenneTwister
 
     function QuantumXXZ(lat::Lattice, S::Real)
@@ -54,7 +158,7 @@ mutable struct QuantumXXZ <: QuantumLocalZ2Model
         model.lat = lat
         model.S2 = S2
         model.spins = rand(model.rng,[1,-1], numsites(lat)*S2)
-        model.ops = LocalOperator[]
+        model.ops = LocalLoopOperator[]
         return model
     end
     function QuantumXXZ(lat::Lattice, S::Real, seed)
@@ -67,11 +171,17 @@ mutable struct QuantumXXZ <: QuantumLocalZ2Model
         model.lat = lat
         model.S2 = S2
         model.spins = rand(model.rng,[1,-1], numsites(lat)*S2)
-        model.ops = LocalOperator[]
+        model.ops = LocalLoopOperator[]
         return model
     end
 end
-function QuantumXXZ(param::Dict)
+doc"""
+    QuantumXXZ(param)
+
+Generates `QuantumXXZ` using `param["Lattice"](param)`, `param["S"]` and `param["Seed"]` (if defined).
+Each subspin will be initialized independently and randomly.
+"""
+function QuantumXXZ(param::Parameter)
     lat = param["Lattice"](param)
     S = param["S"]
     if "Seed" in keys(param)

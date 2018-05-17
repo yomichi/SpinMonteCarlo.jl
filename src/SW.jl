@@ -1,3 +1,11 @@
+doc"""
+Information of clusters in Swendsen-Wang algorithm.
+
+# Fields
+- `activated_bonds` : The number of activated (connected) bonds of each cluster.
+- `clustersize` : The number of sites in each cluster.
+- `clusterspin` : Spin variable of each cluster (e.g., 1 or -1 for `Ising`).
+"""
 mutable struct SWInfo
     activated_bonds :: Vector{Int}
     clustersize :: Vector{Int}
@@ -10,7 +18,7 @@ numclusters(sw::SWInfo) = length(sw.clustersize)
     SW_update!(model, param::Parameter)
     SW_update!(model, T::Real, Js::AbstractArray)
     
-update spin configuration by Swendsen-Wang algorithm
+Updates spin configuration by Swendsen-Wang algorithm
 under temperature `T=param["T"]` and coupling constants `J=param["J"]`
 """
 @inline function SW_update!(model::Union{Ising, Potts, Clock, XY}, param::Parameter)

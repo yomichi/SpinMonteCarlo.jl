@@ -1,11 +1,11 @@
 """
     loop_update!(model, param::Parameter)
     loop_update!(model, T::Real,
-                 Jz::Union{Real, AbstractArray},
-                 Jxy::Union{Real, AbstractArray},
-                 Gamma::Union{Real, AbstractArray})
+                 Jz::AbstractArray,
+                 Jxy::AbstractArray,
+                 Gamma:AbstractArray)
 
-updates spin configuration by loop algorithm 
+Updates spin configuration by loop algorithm 
 under the temperature `T = param["T"]` and coupling constants `Jz, Jxy` and transverse field `Gamma`
 """
 @inline function loop_update!(model::QuantumXXZ, param::Parameter)
@@ -16,7 +16,7 @@ end
 function loop_update!(model::QuantumXXZ, T::Real,
                       Jzs::AbstractArray, Jxys::AbstractArray, Gs::AbstractArray)
     rng = model.rng
-    lo_types = [LO_FMLink, LO_AFLink, LO_Vertex, LO_Cross]
+    lo_types = [LET_FMLink, LET_AFLink, LET_Vertex, LET_Cross]
     nsites = numsites(model)
     S2 = model.S2
     nspins = nsites*S2
@@ -50,7 +50,7 @@ function loop_update!(model::QuantumXXZ, T::Real,
     currents = collect(1:nspins)
     uf = UnionFind(nspins)
 
-    ops = LocalOperator[]
+    ops = LocalLoopOperator[]
     iops = 1 # index of the next operator in the original string
     t = randexp(rng)*op_dt
     while t <= 1.0 || iops <= length(model.ops)
@@ -67,9 +67,9 @@ function loop_update!(model::QuantumXXZ, T::Real,
                 s2 = target(model, b)
                 ss1, ss2 = rand(rng, 1:S2, 2)
                 if ifelse(spins[site2subspin(s1,ss1,S2)] == spins[site2subspin(s2,ss2,S2)],
-                          lo_type == LO_FMLink || lo_type == LO_Cross,
-                          lo_type == LO_AFLink || lo_type == LO_Vertex)
-                    push!(ops, LocalOperator(lo_type, t, bond2subbond(b,ss1,ss2,S2)))
+                          lo_type == LET_FMLink || lo_type == LET_Cross,
+                          lo_type == LET_AFLink || lo_type == LET_Vertex)
+                    push!(ops, LocalLoopOperator(lo_type, t, bond2subbond(b,ss1,ss2,S2)))
                     t += randexp(rng)*op_dt
                 else
                     t += randexp(rng)*op_dt
@@ -80,7 +80,7 @@ function loop_update!(model::QuantumXXZ, T::Real,
                 st = ot-4nbt
                 s = sites(model,st)[rand(rng, 1:numsites(model,st))]
                 ss = rand(rng, 1:S2)
-                push!(ops, LocalOperator(LO_Cut, t, site2subspin(s,ss,S2)))
+                push!(ops, LocalLoopOperator(LET_Cut, t, site2subspin(s,ss,S2)))
                 t += randexp(rng)*op_dt
             end
         else 
@@ -89,7 +89,7 @@ function loop_update!(model::QuantumXXZ, T::Real,
             if op.isdiagonal
                 ## REMOVE
                 continue
-            elseif op.op_type == LO_Cut
+            elseif op.let_type == LET_Cut
                 push!(ops, op)
             else
                 push!(ops, op)
@@ -97,13 +97,13 @@ function loop_update!(model::QuantumXXZ, T::Real,
                 subbond = op.space
                 b,ss1,ss2 = subbond2bond(subbond,S2)
                 bt = bondtype(model,b)
-                otype = ifelse(rand(rng)*(weights[4bt-1]+weights[4bt])<weights[4bt-1], LO_Vertex, LO_Cross)
-                op.op_type = otype
+                otype = ifelse(rand(rng)*(weights[4bt-1]+weights[4bt])<weights[4bt-1], LET_Vertex, LET_Cross)
+                op.let_type = otype
             end
         end
         
         op = ops[end]
-        if op.op_type == LO_Cut
+        if op.let_type == LET_Cut
             subspin = op.space
             s,ss = subspin2site(subspin,S2)
             op.bottom_id = currents[subspin]
@@ -118,16 +118,16 @@ function loop_update!(model::QuantumXXZ, T::Real,
             s2 = target(model, b)
             subspin1 = site2subspin(s1,ss1,S2)
             subspin2 = site2subspin(s2,ss2,S2)
-            if op.op_type == LO_FMLink || op.op_type == LO_AFLink
+            if op.let_type == LET_FMLink || op.let_type == LET_AFLink
                 c = unify!(uf, currents[subspin1], currents[subspin2])
                 currents[subspin1] = currents[subspin2] = c
                 op.bottom_id = op.top_id = c
-            elseif op.op_type == LO_Cross
+            elseif op.let_type == LET_Cross
                 op.bottom_id = currents[subspin1]
                 op.top_id = currents[subspin2]
                 spins[subspin1], spins[subspin2] = spins[subspin2], spins[subspin1]
                 currents[subspin1], currents[subspin2] = currents[subspin2], currents[subspin1]
-            else # if op.op_type == LO_Vertex
+            else # if op.let_type == LET_Vertex
                 unify!(uf, currents[subspin1], currents[subspin2])
                 op.bottom_id = currents[subspin1]
                 c = addnode!(uf)
@@ -169,7 +169,7 @@ function loop_update!(model::QuantumXXZ, T::Real,
         model.spins[s] *= flips[clusterid(uf, s)]
     end
     for op in model.ops
-        if op.op_type == LO_Cross || op.op_type == LO_Vertex || op.op_type == LO_Cut
+        if op.let_type == LET_Cross || op.let_type == LET_Vertex || op.let_type == LET_Cut
             bid = clusterid(uf, op.bottom_id)
             tid = clusterid(uf, op.top_id)
             op.isdiagonal ⊻= (flips[bid] != flips[tid])

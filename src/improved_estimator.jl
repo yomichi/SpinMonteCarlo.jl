@@ -6,13 +6,15 @@ end
 """
     improved_estimator(model::Ising, T::Real, Js::AbstractArray, sw::SWInfo)
 
-    return `M`, `M2`, `M4`, `E`, `E2`.
+Returns the following observables as `Dict{String, Any}` using cluster information `sw`
 
-    `M`  : magnetization density `M`
-    `M2` : square of mag density
-    `M4` : biquadratic of mag density
-    `E`  : energy density
-    `E2` : square of energy density
+# Observables
+- "Energy"
+- "Energy^2"
+- "Magnetization"
+- "|Magnetization|"
+- "|Magnetization|^2"
+- "|Magnetization|^4"
 """
 function improved_estimator(model::Ising, T::Real, Js::AbstractArray, sw::SWInfo)
     nsites = numsites(model)
@@ -69,15 +71,15 @@ end
 """
     improved_estimator(model::Potts, T::Real, Js::AbstractArray, sw::SWInfo)
 
-    return `M`, `M2`, `M4`, `E`, `E2`.
+Returns the following observables as `Dict{String, Any}` using cluster information `sw`
 
-    `M`  : magnetization density `M`
-    `M2` : square of mag density
-    `M4` : biquadratic of mag density
-    `E`  : energy density
-    `E2` : square of energy density
-
-    local magnetization `M_i` is defined by local spin variable `s_i` as `M_i = \\delta_{s_i, 1}-1/q`.
+# Observables
+- "Energy"
+- "Energy^2"
+- "Magnetization"
+- "|Magnetization|"
+- "|Magnetization|^2"
+- "|Magnetization|^4"
 """
 function improved_estimator(model::Potts, T::Real, Js::AbstractArray, sw::SWInfo)
     nsites = numsites(model)
@@ -129,6 +131,20 @@ function improved_estimator(model::Potts, T::Real, Js::AbstractArray, sw::SWInfo
     return res
 end
 
+"""
+    improved_estimator(model::QuantumXXZ, T::Real, Js::AbstractArray, uf::UnionFind)
+
+Returns the following observables as `Dict{String, Any}` using loop information `uf`
+
+# Observables
+- "Sign"
+- "Sign * Energy"
+- "Sign * Energy^2"
+- "Sign * Magnetization"
+- "Sign * |Magnetization|"
+- "Sign * |Magnetization|^2"
+- "Sign * |Magnetization|^4"
+"""
 function improved_estimator(model::QuantumXXZ, T::Real, Jzs::AbstractArray, Jxys::AbstractArray, Gs::AbstractArray, uf::UnionFind)
     S2 = model.S2
     nsites = numsites(model)
@@ -181,7 +197,7 @@ function improved_estimator(model::QuantumXXZ, T::Real, Jzs::AbstractArray, Jxys
     sgn = 1.0
     for op in model.ops
         if !op.isdiagonal
-            if op.op_type == LO_Vertex || op.op_type == LO_Cross
+            if op.let_type == LET_Vertex || op.let_type == LET_Cross
                 subbond = op.space
                 b,_,_ = subbond2bond(subbond,S2)
                 bt = bondtype(model, b)

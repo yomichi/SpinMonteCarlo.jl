@@ -20,7 +20,7 @@ function gen_snapshot!(model::Model, T::Real, N::Integer; MCS::Integer=8192)
     nsites = numsites(model.lat)
     X = zeros(nsites, N)
     for n in 1:N
-        spins[:,n] = snapshot(model, T, MCS=MCS)
+        spins[:,n] = gen_snapshot!(model, T, MCS=MCS)
     end
     return X
 end

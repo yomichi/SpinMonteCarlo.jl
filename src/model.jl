@@ -3,15 +3,8 @@ srand(model::Model) = srand(model.rng)
 srand(model::Model, seed) = srand(model.rng, seed)
 
 doc"""
-    Ising(lat::Lattice, [seed])
-
-Ising model $\mathcal{H} = -\sum_{ij} J_{ij} \sigma_i \sigma_j$,
+Ising model, $\mathcal{H} = -\sum_{ij} J_{ij} \sigma_i \sigma_j$,
 where $\sigma_i$ takes value of 1 (up spin) or -1 (down spin).
-Each spin will be initialize randomly and independently.
-
-    Ising(param)
-
-`param["Lattice"](param)` and `param["Seed"]` (if defined) will be used as the args of the former form.
 """
 mutable struct Ising <: Model
     lat :: Lattice
@@ -33,7 +26,13 @@ mutable struct Ising <: Model
         return model
     end
 end
-function Ising(param::Dict)
+doc"""
+    Ising(param)
+
+Generates `Ising` using `param["Lattice"](param)` and `param["Seed"]` (if defined).
+Each spin will be initialized randomly and independently.
+"""
+function Ising(param::Parameter)
     lat = param["Lattice"](param)
     if "Seed" in keys(param)
         return Ising(lat, param["Seed"])
@@ -43,21 +42,13 @@ function Ising(param::Dict)
 end
 
 doc"""
-    Potts(lat::Lattice, Q::Integer, [seed])
-
-`Q` state Potts model, $\mathcal{H} = -\sum{i,j} \delta_{\sigma_i, \sigma_j}$,
+`Q` state Potts model, $\mathcal{H} = -\sum_{i,j} \delta_{\sigma_i, \sigma_j}$,
 where $\sigma_i$ takes an integer value from $1$ to $Q$ and $\delta$ is a Kronecker's delta.
 Order parameter (total magnetization) is defined as
 \begin{equation}
     M = \frac{Q-1}{Q}N_1 - \frac{1}{Q}(N-N_1),
 \end{equation}
 where $N$ is the number of sites and $N_1$ is the number of $\sigma=1$ spins.
-
-Each spin will be initialize randomly and independently.
-
-    Potts(param)
-
-`param["Lattice"](param)`, `param["Q"]`,  and `param["Seed"]` (if defined) will be used as the args of the former form.
 """
 mutable struct Potts <: Model
     lat :: Lattice
@@ -76,7 +67,13 @@ mutable struct Potts <: Model
         return new(lat, Q, spins, rng)
     end
 end
-function Potts(param::Dict)
+doc"""
+    Potts(param)
+
+Generates `Potts` using `param["Lattice"](param)`, `param["Q"]`, and `param["Seed"]` (if defined).
+Each spin will be initialized randomly and independently.
+"""
+function Potts(param::Parameter)
     lat = param["Lattice"](param)
     Q = param["Q"]
     if "Seed" in keys(param)
@@ -87,14 +84,8 @@ function Potts(param::Dict)
 end
 
 doc"""
-    Clock(lat::Lattice, Q::Integer, [seed])
-
 `Q` state clock model, $\mathcal{H} = -\sum_{ij} J_{ij} \cos(\theta_i - \theta_j)$,
 where $\theta_i = 2\pi \sigma_i/Q$ and $\sigma_i$ takes an integer value from $1$ to $Q$.
-
-    Clock(param)
-
-`param["Lattice"](param)`, `param["Q"]`,  and `param["Seed"]` (if defined) will be used as the args of the former form.
 """
 mutable struct Clock <: Model
     lat :: Lattice
@@ -122,7 +113,13 @@ mutable struct Clock <: Model
         return new(lat, Q, spins, cosines, sines, sines_sw, rng)
     end
 end
-function Clock(param::Dict)
+doc"""
+    Clock(param)
+
+Generates `Clock` using `param["Lattice"](param)`, `param["Q"]`,  and `param["Seed"]` (if defined).
+Each spin $\sigma_i$ will be initialized randomly and independently.
+"""
+function Clock(param::Parameter)
     lat = param["Lattice"](param)
     Q = param["Q"]
     if "Seed" in keys(param)
@@ -133,14 +130,8 @@ function Clock(param::Dict)
 end
 
 doc"""
-    XY(lat::Lattice, [seed])
-
 XY model, $\mathcal{H} = -\sum_{ij} J_{ij} \cos(\theta_i - \theta_j)$,
 where $\theta_i = 2\pi \sigma_i$ and $\sigma_i \in [0, 1)$.
-
-   XY(param)
-
-`param["Lattice"](param)`,  and `param["Seed"]` (if defined) will be used as the args of the former form.
 """
 mutable struct XY <: Model
     lat :: Lattice
@@ -162,7 +153,13 @@ mutable struct XY <: Model
         return model
     end
 end
-function XY(param::Dict)
+doc"""
+   XY(param)
+
+Generates `XY` using `param["Lattice"](param)`,  and `param["Seed"]` (if defined).
+Each spin $\sigma_i$ will be initialized randomly and independently.
+"""
+function XY(param::Parameter)
     lat = param["Lattice"](param)
     if "Seed" in keys(param)
         return XY(lat, param["Seed"])

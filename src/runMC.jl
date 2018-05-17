@@ -1,13 +1,13 @@
 using JLD2
 
 """
-    runMC(param::Dict)
+    runMC(param::Parameter)
     runMC(params::AbstractArray{T}; parallel::Bool=false) where T<:Dict
 
 Runs Monte Carlo simulation and returns calculated observables.
 
-If `"\$(param["Checkpoint Filename Prefix"])__\$(param["ID"]).jld2"` exists and
-`param["Checkpoint Interval"] > 0.0`, this loads the checkpoint file and restarts the pending simulation.
+If a checkpoint file named `"\$(param["Checkpoint Filename Prefix"])_\$(param["ID"]).jld2"` exists and
+`param["Checkpoint Interval"] > 0.0`, `runMC` loads this file and restarts the pending simulation.
 
 When `parallel==true`, `runMC(params)` uses `pmap` instead of `map`.
 
@@ -17,6 +17,7 @@ When `parallel==true`, `runMC(params)` uses `pmap` instead of `map`.
 - "Update Method"
     - `param` will be used as an argument.
 - "T": Temperature
+
 # Optional keys in `param`
 - "MCS": The number of Monte Carlo steps after thermalization
     - Default: 8192
@@ -64,6 +65,7 @@ function runMC(model, param::Parameter)
     MCS += Therm
     obs = BinningObservableSet()
     makeMCObservable!(obs, "Time per MCS")
+    makeMCObservable!(obs, "MCS per Second")
 
     if cp_interval > 0.0 && ispath(cp_filename)
         jld = jldopen(cp_filename)
@@ -90,6 +92,7 @@ function runMC(model, param::Parameter)
                 localobs = estimator(model, p..., st)
             end
             obs["Time per MCS"] << t
+            obs["MCS per Second"] << 1.0/t
             accumulateObservables!(model, obs, localobs)
         end
         mcs += 1
@@ -119,6 +122,11 @@ function runMC(model, param::Parameter)
     return jk
 end
 
+"""
+    accumulateObservables!(model, obs::MCObservableSet, localobs::Dict)
+
+Accumulates `localobs` into `obs`. For example, `obs["Energy"] << localobs["Energy"]`.
+"""
 function accumulateObservables!(::Model, obs::MCObservableSet, localobs::Measurement)
     if length(obs) == 1
         @inbounds for key in keys(localobs)
@@ -133,7 +141,14 @@ function accumulateObservables!(::Model, obs::MCObservableSet, localobs::Measure
     return obs
 end
 
-function postproc(model::Union{Ising, Potts}, param, obs)
+"""
+    postproc(model::Model, param::Dict, obs::MCObservableSet)
+
+Post process of observables. For example, Specific heat will be calculated from energy, energy^2, and temperature.
+"""
+function postproc end
+
+function postproc(model::Union{Ising, Potts}, param::Parameter, obs::MCObservableSet)
     nsites = numsites(model)
     T = param["T"] :: Float64
     beta = 1.0/T
@@ -143,11 +158,10 @@ function postproc(model::Union{Ising, Potts}, param, obs)
     jk["Susceptibility"] = (nsites*beta)*jk["Magnetization^2"]
     jk["Connected Susceptibility"] = (nsites*beta)*(jk["Magnetization^2"] - jk["|Magnetization|"]^2)
     jk["Specific Heat"] = (nsites*beta*beta)*(jk["Energy^2"] - jk["Energy"]^2)
-    jk["MCS per Second"] = 1.0/jk["Time per MCS"]
     return jk
 end
 
-function postproc(model::Union{Clock, XY}, param, obs)
+function postproc(model::Union{Clock, XY}, param::Parameter, obs::MCObservableSet)
     nsites = numsites(model)
     T = param["T"]
     beta = 1.0/T
@@ -163,11 +177,10 @@ function postproc(model::Union{Clock, XY}, param, obs)
     jk["Connected Susceptibility y"] = (nsites*beta)*(jk["Magnetization y^2"] - jk["|Magnetization y|"]^2)
     jk["Connected Susceptibility"] = (nsites*beta)*(jk["|Magnetization|^2"] - jk["|Magnetization|"]^2)
     jk["Specific Heat"] = (nsites*beta*beta)*(jk["Energy^2"] - jk["Energy"]^2)
-    jk["MCS per Second"] = 1.0 / jk["Time per MCS"]
     return jk
 end
 
-function postproc(model::QuantumXXZ, param, obs)
+function postproc(model::QuantumXXZ, param::Parameter, obs::MCObservableSet)
     nsites = numsites(model)
     T = param["T"]
     beta = 1.0/T
@@ -185,7 +198,6 @@ function postproc(model::QuantumXXZ, param, obs)
     jk["Susceptibility"] = (nsites*beta)*jk["Magnetization^2"]
     jk["Connected Susceptibility"] = (nsites*beta)*(jk["Magnetization^2"] - jk["|Magnetization|"]^2)
     jk["Specific Heat"] = (nsites*beta*beta)*(jk["Energy^2"] - jk["Energy"]^2)
-    jk["MCS per Second"] = 1.0/jk["Time per MCS"]
     return jk
 end
 

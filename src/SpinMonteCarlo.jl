@@ -19,10 +19,16 @@ export gen_snapshot!, gensave_snapshot!, load_snapshot
 export runMC, print_result
 
 abstract type Model end
+
+doc"""
+Input parameter of simulation
+"""
+const Parameter = Dict{String, Any}
 const Measurement = Dict{String, Any}
 
 include("union_find.jl")
 include("lattice.jl")
+include("gen_lattice.jl")
 include("model.jl")
 include("qmodel.jl")
 include("parameter.jl")
