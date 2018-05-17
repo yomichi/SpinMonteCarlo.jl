@@ -1,4 +1,6 @@
-# API
+# Public interfaces
+
+Documentation for `SpinMonteCarlo.jl`'s public interface.
 
 ## Driver
 
@@ -8,8 +10,6 @@ CurrentModule = SpinMonteCarlo
 
 ```@docs
 runMC
-accumulateObservables!
-postproc
 ```
 
 ## Model
@@ -62,5 +62,4 @@ improved_estimator
 convert_parameter
 convert_parameter(::Ising, ::Parameter)
 convert_parameter(::QuantumXXZ, ::Parameter)
-@gen_convert_parameter
 ```

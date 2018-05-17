@@ -8,6 +8,9 @@ makedocs(
          pages = [
                   "Home" => "index.md",
                   "Develop your program" => "develop.md",
-                  "API" => "api.md",
+                  "Library" => Any[
+                    "Public" => "lib/public.md",
+                    "Interanals" => "lib/internals.md",
+                   ]
                  ]
         )

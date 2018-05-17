@@ -119,7 +119,7 @@ doc"""
 Generates `Clock` using `param["Lattice"](param)`, `param["Q"]`,  and `param["Seed"]` (if defined).
 Each spin $\sigma_i$ will be initialized randomly and independently.
 """
-function Clock(param::Dict)
+function Clock(param::Parameter)
     lat = param["Lattice"](param)
     Q = param["Q"]
     if "Seed" in keys(param)
@@ -159,7 +159,7 @@ doc"""
 Generates `XY` using `param["Lattice"](param)`,  and `param["Seed"]` (if defined).
 Each spin $\sigma_i$ will be initialized randomly and independently.
 """
-function XY(param::Dict)
+function XY(param::Parameter)
     lat = param["Lattice"](param)
     if "Seed" in keys(param)
         return XY(lat, param["Seed"])

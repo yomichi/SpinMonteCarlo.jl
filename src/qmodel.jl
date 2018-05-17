@@ -84,7 +84,7 @@ or matrix
 ```
 """ LET_Vertex
 
-@doc """
+@doc raw"""
 Loop element depicted as
 
 ```
@@ -181,7 +181,7 @@ doc"""
 Generates `QuantumXXZ` using `param["Lattice"](param)`, `param["S"]` and `param["Seed"]` (if defined).
 Each subspin will be initialized independently and randomly.
 """
-function QuantumXXZ(param::Dict)
+function QuantumXXZ(param::Parameter)
     lat = param["Lattice"](param)
     S = param["S"]
     if "Seed" in keys(param)
