@@ -128,7 +128,7 @@ end
 Accumulates `localobs` into `obs`. For example, `obs["Energy"] << localobs["Energy"]`.
 """
 function accumulateObservables!(::Model, obs::MCObservableSet, localobs::Measurement)
-    if length(obs) == 1
+    if length(obs) < 3
         @inbounds for key in keys(localobs)
             makeMCObservable!(obs, key)
             obs[key] << localobs[key]
