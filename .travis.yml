@@ -37,3 +37,5 @@ after_success:
   - julia -e 'cd(Pkg.dir("SpinMonteCarlo")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'
   # push coverage results to Codecov
   - julia -e 'cd(Pkg.dir("SpinMonteCarlo")); Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
+  # documenter
+  - julia -e 'cd(Pkg.dir("SpinMonteCarlo")); Pkg.add("Documenter"); include(joinpath("docs", "make.jl"))'
