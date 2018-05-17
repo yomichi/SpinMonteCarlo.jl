@@ -6,7 +6,7 @@ end
 """
     improved_estimator(model::Ising, T::Real, Js::AbstractArray, sw::SWInfo)
 
-    returns the following observables as `Dict{String, Any}` using cluster information `sw`
+Returns the following observables as `Dict{String, Any}` using cluster information `sw`
 
 # Observables
 - "Energy"
@@ -71,7 +71,7 @@ end
 """
     improved_estimator(model::Potts, T::Real, Js::AbstractArray, sw::SWInfo)
 
-    returns the following observables as `Dict{String, Any}` using cluster information `sw`
+Returns the following observables as `Dict{String, Any}` using cluster information `sw`
 
 # Observables
 - "Energy"
@@ -134,7 +134,7 @@ end
 """
     improved_estimator(model::QuantumXXZ, T::Real, Js::AbstractArray, uf::UnionFind)
 
-    returns the following observables as `Dict{String, Any}` using loop information `uf`
+Returns the following observables as `Dict{String, Any}` using loop information `uf`
 
 # Observables
 - "Sign"
@@ -197,7 +197,7 @@ function improved_estimator(model::QuantumXXZ, T::Real, Jzs::AbstractArray, Jxys
     sgn = 1.0
     for op in model.ops
         if !op.isdiagonal
-            if op.op_type == LO_Vertex || op.op_type == LO_Cross
+            if op.let_type == LET_Vertex || op.let_type == LET_Cross
                 subbond = op.space
                 b,_,_ = subbond2bond(subbond,S2)
                 bt = bondtype(model, b)

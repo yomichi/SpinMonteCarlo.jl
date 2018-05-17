@@ -2,7 +2,7 @@
     Wolff_update!(model, param::Parameter)
     Wolff_update!(model, T::Real, Js::AbstractArray)
 
-update spin configuration by Wolff algorithm
+Updates spin configuration by Wolff algorithm
 under temperature `T=param["T"]` and coupling constants `J=param["J"]`
 """
 @inline function Wolff_update!(model::Union{Ising, Potts, Clock, XY}, param::Parameter)

@@ -11,7 +11,7 @@ end
     simple_estimator(model::Clock, T::Real, Js::AbstractArray)
     simple_estimator(model::XY, T::Real, Js::AbstractArray)
 
-    returns the following observables as `Dict{String, Any}`
+Returns the following observables as `Dict{String, Any}`
 
 # Observables
 - "Energy"
@@ -75,7 +75,7 @@ end
     simple_estimator(model::Clock, T::Real, Js::AbstractArray)
     simple_estimator(model::XY, T::Real, Js::AbstractArray)
 
-    returns the following observables as `Dict{String, Any}`
+Returns the following observables as `Dict{String, Any}`
 
 # Observables
 - "Energy"

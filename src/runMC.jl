@@ -125,7 +125,7 @@ end
 """
     accumulateObservables!(model, obs::MCObservableSet, localobs::Dict)
 
-accumulates `localobs` into `obs`. For example, `obs["Energy"] << localobs["Energy"]`.
+Accumulates `localobs` into `obs`. For example, `obs["Energy"] << localobs["Energy"]`.
 """
 function accumulateObservables!(::Model, obs::MCObservableSet, localobs::Measurement)
     if length(obs) == 1
@@ -144,7 +144,7 @@ end
 """
     postproc(model::Model, param::Dict, obs::MCObservableSet)
 
-post process of observables. For example, Specific heat will be calculated from energy, energy^2, and temperature.
+Post process of observables. For example, Specific heat will be calculated from energy, energy^2, and temperature.
 """
 function postproc end
 

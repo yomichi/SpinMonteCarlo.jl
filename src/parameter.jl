@@ -1,14 +1,13 @@
+doc"""
+Input parameter of simulation
+"""
 const Parameter = Dict{String, Any}
 
 using MacroTools
 
-doc"""
-    combinedef
-
-similar to `MacroTools.combinedef`, but ignores `rtype`
-"""
 function combinedef(dict::Dict)
     ## This function is copied and modified from MacroTools.jl
+    ## The difference from original is ignoring `rtype`
     params = get(dict, :params, [])
     wparams = get(dict, :whereparams, [])
     name = dict[:name]
@@ -31,7 +30,7 @@ end
 doc"""
     @gen_convert_parameter(model_typename, (keyname, size_fn, default)...)
 
-generates `convert_parameter(model::model_typename, param::Parameter)`.
+Generates `convert_parameter(model::model_typename, param::Parameter)`.
 
 # Example
 
@@ -117,7 +116,7 @@ end
 doc"""
     convert_parameter(model, param)
 
-generates arguments of updater and estimator.
+Generates arguments of updater and estimator.
 
 # Example
 ``` julia-repl
