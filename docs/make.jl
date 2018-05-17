@@ -8,7 +8,7 @@ makedocs( format=:html,
                     "Develop your program" => "develop.md",
                     "Library" => Any[
                       "Public" => "lib/public.md",
-                      "Interanals" => "lib/internals.md",
+                      "Internals" => "lib/internals.md",
                      ]
                   ]
         )
