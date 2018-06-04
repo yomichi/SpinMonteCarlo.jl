@@ -33,7 +33,8 @@ When `parallel==true`, `runMC(params)` uses `pmap` instead of `map`.
 """
 function runMC(params::AbstractArray{T}; parallel::Bool=false) where T<:Dict
     map_fn = ifelse(parallel, pmap, map)
-    return map_fn(enumerate(params)) do id, p
+    return map_fn(enumerate(params)) do idp
+        id,p = idp
         p["ID"] = id
         return runMC(p)
     end
