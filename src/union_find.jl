@@ -15,15 +15,20 @@ numclusters(u::UnionFind) = u.nclusters
 
 isroot(u::UnionFind, n::Integer) = u.parents[n] == n
 
-function root_and_weight(u::UnionFind, n::Integer)
-    r = n
-    @inbounds while !isroot(u,r)
-        r = u.parents[r]
-    end
-    return r,u.weights[r]
-end
+doc"""
+    root!(u::UnionFind, n::Integer)
 
-root(u::UnionFind, n::Integer) = root_and_weight(u,n)[1]
+Returns the root node of the cluster where `n` belongs.
+This may changes graph connection by "Path halving" method.
+"""
+function root!(u::UnionFind, n::Integer)
+    @inbounds while !isroot(u,n)
+        p = u.parents[n]
+        u.parents[n] = u.parents[p]
+        n = p
+    end
+    return n
+end
 
 doc"""
     unify!(u, n1, n2)
@@ -31,19 +36,15 @@ doc"""
 Connects `n1` and `n2` nodes and returns the root.
 """
 function unify!(u::UnionFind, n1::Integer, n2::Integer)
-    r1,w1 = root_and_weight(u,n1)
-    r2,w2 = root_and_weight(u,n2)
-    if r1 != r2
+    r1 = root!(u,n1)
+    r2 = root!(u,n2)
+    @inbounds if r1 != r2
         u.nclusters -= 1
-        if w1<w2
-            @inbounds u.parents[r1] = r2
-            return r2
-        elseif w1 == w2
-            @inbounds u.parents[r2] = r1
-            @inbounds u.weights[r1]+=1
-        else
-            @inbounds u.parents[r2] = r1
+        if u.weights[r1] < u.weights[r2]
+            r1,r2 = r2,r1
         end
+        u.parents[r2] = r1
+        u.weights[r2] += u.weights[r1]
     end
     return r1
 end
@@ -63,7 +64,7 @@ function addnode!(u::UnionFind)
 end
 
 doc"""
-    clusterize!(u)
+    clusterize!(u::UnionFind)
 
 Assigns cluster ID to each node and returns the number of clusters.
 """
@@ -76,13 +77,13 @@ function clusterize!(u::UnionFind)
         end
     end
     @inbounds for i in 1:length(u.parents)
-        u.ids[i] = u.ids[root(u,i)]
+        u.ids[i] = u.ids[root!(u,i)]
     end
     return u.nclusters
 end
 
 doc"""
-    clusterid(u,i)
+    clusterid(u::UnionFind, i::Integer)
 
 Returns the index of the cluster where `i` node belongs.
 """
