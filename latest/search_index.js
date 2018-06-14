@@ -693,7 +693,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Internals",
     "title": "SpinMonteCarlo.clusterize!",
     "category": "function",
-    "text": "clusterize!(u)\n\nAssigns cluster ID to each node and returns the number of clusters.\n\n\n\n"
+    "text": "clusterize!(u::UnionFind)\n\nAssigns cluster ID to each node and returns the number of clusters.\n\n\n\n"
 },
 
 {
@@ -701,7 +701,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Internals",
     "title": "SpinMonteCarlo.clusterid",
     "category": "function",
-    "text": "clusterid(u,i)\n\nReturns the index of the cluster where i node belongs.\n\n\n\n"
+    "text": "clusterid(u::UnionFind, i::Integer)\n\nReturns the index of the cluster where i node belongs.\n\n\n\n"
 },
 
 {
