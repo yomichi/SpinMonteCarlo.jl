@@ -2,14 +2,19 @@ using JLD2
 
 """
     runMC(param::Parameter)
-    runMC(params::AbstractArray{T}; parallel::Bool=false) where T<:Dict
+    runMC(params::AbstractArray{Parameter}
+          ;
+          parallel::Bool=false,
+          autoID::Bool=true)
 
-Runs Monte Carlo simulation and returns calculated observables.
+Runs Monte Carlo simulation(s) and returns calculated observables.
 
 If a checkpoint file named `"\$(param["Checkpoint Filename Prefix"])_\$(param["ID"]).jld2"` exists and
 `param["Checkpoint Interval"] > 0.0`, `runMC` loads this file and restarts the pending simulation.
 
-When `parallel==true`, `runMC(params)` uses `pmap` instead of `map`.
+# Keyward aruguments
+- `autoID`: If true, `"ID"`s will be set (overwritten) as `params[i]["ID"] = i`.
+- `parallel`: If true, runs simulations in parallel (uses `pmap` instead of `map`).
 
 # Required keys in `param`
 - "Model"
@@ -20,22 +25,25 @@ When `parallel==true`, `runMC(params)` uses `pmap` instead of `map`.
 
 # Optional keys in `param`
 - "MCS": The number of Monte Carlo steps after thermalization
-    - Default: 8192
+    - Default: `8192`
 - "Thermalization": The number of Monte Carlo steps for thermalization
     - Default: `MCS>>3`
 - "Seed": The initial seed of the random number generator, `MersenneTwister`
     - Default: determined randomly (see `Random.srand`)
-- "Checkpoint Filename Prefix"
-    - Default: "cp"
-- "Checkpoint Interval": Interval (in seconds) between saving checkpoint files
-    - Default: 0.0, this means that NO checkpoint files will be loaded and saved.
-
+- "Checkpoint Filename Prefix": See above document.
+    - Default: `"cp"`
+- "ID": See above document.
+    - Default: `0`
+- "Checkpoint Interval": Time interval between writing checkpoint file in seconds.
+    - Default: `0.0`, this means that NO checkpoint file will be loaded and saved.
 """
-function runMC(params::AbstractArray{T}; parallel::Bool=false) where T<:Dict
+function runMC(params::AbstractArray{T}; parallel::Bool=false, autoID::Bool=true) where T<:Dict
     map_fn = ifelse(parallel, pmap, map)
     return map_fn(enumerate(params)) do idp
         id,p = idp
-        p["ID"] = id
+        if autoID
+            p["ID"] = id
+        end
         return runMC(p)
     end
 end
@@ -55,7 +63,9 @@ function runMC(model, param::Parameter)
     if verbose
         println("Start: ", param)
     end
-    cp_filename = @sprintf("%s_%d.jld2", get(param, "Checkpoint Filename Prefix", "cp")::String, get(param, "ID", 1)::Int)
+    cp_filename = @sprintf("%s_%d.jld2",
+                           get(param, "Checkpoint Filename Prefix", "cp")::String,
+                           get(param, "ID", 0)::Int)
     cp_interval = get(param, "Checkpoint Interval", 0.0) :: Float64
     tm = time()
 

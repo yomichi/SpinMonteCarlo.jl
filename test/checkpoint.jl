@@ -14,12 +14,12 @@
                      "Seed"=>SEED,
                      "MCS"=>100, "Thermalization"=>100,
                      "Checkpoint Interval"=>Inf)
-            rm("cp_1.jld2",force=true)
+            rm("cp_0.jld2",force=true)
             runMC(p)
             p["MCS"] = 200
             p["Seed"] = 0
             res1 = runMC(p)
-            rm("cp_1.jld2",force=true)
+            rm("cp_0.jld2",force=true)
             p["Seed"] = SEED
             res2 = runMC(p)
             p["Seed"] = 0
@@ -35,7 +35,7 @@
                     @test stderror(res2[name]) == stderror(res3[name])
                 end
             end
-            rm("cp_1.jld2",force=true)
+            rm("cp_0.jld2",force=true)
         end
     end
 end
