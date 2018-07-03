@@ -1,8 +1,8 @@
 # SpinMonteCarlo.jl
-<!--[![](https://img.shields.io/badge/docs-stable-blue.svg)](https://yomichi.github.io/SpinMonteCarlo.jl/stable)-->
-[![](https://img.shields.io/badge/docs-latest-blue.svg)](https://yomichi.github.io/SpinMonteCarlo.jl/latest)
-[![Build Status](https://travis-ci.org/yomichi/SpinMonteCarlo.jl.svg)](https://travis-ci.org/yomichi/SpinMonteCarlo.jl)
-[![Build status](https://ci.appveyor.com/api/projects/status/ooxw9wusg26bklq3?svg=true)](https://ci.appveyor.com/project/yomichi/spinmontecarlo-jl)
+<!--[![Docs (stable)](https://img.shields.io/badge/docs-stable-blue.svg)](https://yomichi.github.io/SpinMonteCarlo.jl/stable)-->
+[![Docs (latest)](https://img.shields.io/badge/docs-latest-blue.svg)](https://yomichi.github.io/SpinMonteCarlo.jl/latest)
+[![Build status (macos/Linux)](https://travis-ci.org/yomichi/SpinMonteCarlo.jl.svg)](https://travis-ci.org/yomichi/SpinMonteCarlo.jl)
+[![Build status (win)](https://ci.appveyor.com/api/projects/status/ooxw9wusg26bklq3?svg=true)](https://ci.appveyor.com/project/yomichi/spinmontecarlo-jl)
 
 Markov chain Monte Carlo solver for finite temperature problem of lattie spin system implemented by [Julia](https://julialang.org) language.
 
