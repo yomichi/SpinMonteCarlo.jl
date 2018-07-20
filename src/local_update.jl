@@ -1,4 +1,4 @@
-"""
+@doc """
     local_update!(model, param)
     local_update!(model, T::Real, Js::AbstractArray)
 

@@ -1,4 +1,12 @@
-import Base: show, <<, push!, mean, var, count, isempty, merge, merge!, zero, zeros, sum
+using Compat.Statistics
+
+using SpecialFunctions
+using Distributions
+using LsqFit
+
+import Base: show, <<, push!, count, isempty, merge, merge!, zero, zeros, sum
+import Statistics: mean, var
+
 export MCObservable, ScalarObservable, VectorObservable
 export mean, var, stderror, confidence_interval
 export p_value
@@ -6,8 +14,6 @@ export show, dump_plot
 export merge, merge!
 
 export confidence_interval
-
-using Distributions
 
 abstract type MCObservable end
 abstract type ScalarObservable <: MCObservable end
@@ -41,9 +47,9 @@ end
 
 isempty(obs::MCObservable) = count(obs) == 0
 
-zero{Obs<:MCObservable}(::Type{Obs}) = Obs()
+zero(::Type{Obs}) where (Obs<:MCObservable) = Obs()
 zero(obs::MCObservable) = zero(typeof(obs))
-function zeros{Obs<:MCObservable}(::Type{Obs}, dim...)
+function zeros(::Type{Obs}, dim...) where (Obs<:MCObservable)
     reshape(Obs[Obs() for i in 1:prod(dim)], dim)
 end
 

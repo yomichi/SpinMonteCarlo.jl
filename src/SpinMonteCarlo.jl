@@ -1,8 +1,12 @@
 __precompile__()
 
 module SpinMonteCarlo
+
 using Compat
 import Compat.Random
+using Compat.Printf
+using Compat.Markdown
+
 using DataStructures
 
 export Parameter
@@ -20,7 +24,7 @@ export runMC, print_result
 
 abstract type Model end
 
-doc"""
+@doc doc"""
 Input parameter of simulation
 """
 const Parameter = Dict{String, Any}

@@ -1,6 +1,6 @@
 using JLD2
 
-"""
+@doc """
     runMC(param::Parameter)
     runMC(params::AbstractArray{Parameter}
           ;
@@ -133,7 +133,7 @@ function runMC(model, param::Parameter)
     return jk
 end
 
-"""
+@doc """
     accumulateObservables!(model, obs::MCObservableSet, localobs::Dict)
 
 Accumulates `localobs` into `obs`. For example, `obs["Energy"] << localobs["Energy"]`.
@@ -152,7 +152,7 @@ function accumulateObservables!(::Model, obs::MCObservableSet, localobs::Measure
     return obs
 end
 
-"""
+@doc """
     postproc(model::Model, param::Dict, obs::MCObservableSet)
 
 Post process of observables. For example, Specific heat will be calculated from energy, energy^2, and temperature.

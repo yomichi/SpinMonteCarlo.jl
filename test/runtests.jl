@@ -1,6 +1,6 @@
-using Base.Test
+using Compat
+using Compat.Test
 
-include("../src/SpinMonteCarlo.jl")
 using SpinMonteCarlo
 
 const SEED = 137

@@ -1,7 +1,3 @@
-using LsqFit
-
-import Base: mean, var, sum
-
 export BinningVectorObservable, push!, tau, reset!
 export extrapolate_tau, extrapolate_stderror
 export BinningVectorObservableSet

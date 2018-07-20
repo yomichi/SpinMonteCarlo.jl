@@ -1,6 +1,6 @@
 using MacroTools
 
-doc"""
+@doc doc"""
     @gen_convert_parameter(model_typename, (keyname, size_fn, default)...)
 
 Generates `convert_parameter(model::model_typename, param::Parameter)`.
@@ -86,7 +86,7 @@ macro gen_convert_parameter(model_typename, args...)
     :( @doc $document $res_fn )
 end
 
-doc"""
+@doc doc"""
     convert_parameter(model, param)
 
 Generates arguments of updater and estimator.

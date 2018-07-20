@@ -1,4 +1,4 @@
-doc"""
+@doc doc"""
     dimer_lattice()
     dimer_lattice(param::Dict)
     
@@ -46,7 +46,7 @@ function dimer_lattice()
 end
 dimer_lattice(param::Dict) = dimer_lattice()
 
-doc"""
+@doc doc"""
     chain_lattice(L::Integer)
     chain_lattice(param::Dict)
     
@@ -108,7 +108,7 @@ function chain_lattice(L::Integer)
 end
 chain_lattice(param::Dict) = chain_lattice(param["L"])
 
-doc"""
+@doc doc"""
     square_lattice(L::Integer, W::Integer=L)
     square_lattice(param::Dict)
     
@@ -191,7 +191,7 @@ function square_lattice(param::Dict)
     return square_lattice(L, W)
 end
 
-doc"""
+@doc doc"""
     triangular_lattice(L::Integer, W::Integer=L)
     triangular_lattice(param::Dict)
     
@@ -289,7 +289,7 @@ function triangular_lattice(param::Dict)
     return triangular_lattice(L, W)
 end
 
-doc"""
+@doc doc"""
     cubic_lattice(L::Integer, W::Integer=L, H::Integer=W)
     cubic_lattice(param::Dict)
     
@@ -388,7 +388,7 @@ function cubic_lattice(param::Dict)
     return cubic_lattice(L, W, H)
 end
 
-doc"""
+@doc doc"""
     fully_connected_lattice(N::Integer)
     fully_connected_lattice(param::Dict)
     
