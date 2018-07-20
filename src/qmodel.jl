@@ -21,8 +21,8 @@ o
 or matrix 
 
 ```
-1 1
-1 1
+1 1 |+>
+1 1 |->
 ```
 """ LET_Cut
 
@@ -38,10 +38,10 @@ Loop element depicted as
 or matrix 
 
 ```
-1 0 0 0
-0 0 0 0
-0 0 0 0
-0 0 0 1
+1 0 0 0 |++>
+0 0 0 0 |+->
+0 0 0 0 |-+>
+0 0 0 1 |-->
 ```
 """ LET_FMLink
 
@@ -57,10 +57,10 @@ Loop element depicted as
 or matrix 
 
 ```
-0 0 0 0
-0 1 0 0
-0 0 1 0
-0 0 0 0
+0 0 0 0 |++>
+0 1 0 0 |+->
+0 0 1 0 |-+>
+0 0 0 0 |-->
 ```
 """ LET_AFLink
 
@@ -77,10 +77,10 @@ Loop element depicted as
 or matrix 
 
 ```
-0 0 0 0
-0 1 1 0
-0 1 1 0
-0 0 0 0
+0 0 0 0 |++>
+0 1 1 0 |+->
+0 1 1 0 |-+>
+0 0 0 0 |-->
 ```
 """ LET_Vertex
 
@@ -97,10 +97,10 @@ Loop element depicted as
 or matrix 
 
 ```
-1 0 0 0
-0 0 1 0
-0 1 0 0
-0 0 0 1
+1 0 0 0 |++>
+0 0 1 0 |+->
+0 1 0 0 |-+>
+0 0 0 1 |-->
 ```
 """ LET_Cross
 
@@ -130,7 +130,7 @@ LocalLoopOperator(let_type::LoopElementType, time::Real, space::Int) = LocalLoop
 abstract type QuantumLocalZ2Model <: Model end
 
 doc"""
-Spin-$S$ XXZ model denoted by the following Hamiltonian,
+Spin-$S$ XXZ model represented as the following Hamiltonian,
 \begin{equation}
 \mathcal{H} = \sum_{i,j} \left[ J_{ij}^z S_i^z S_j^z 
             + \frac{J_{ij}^{xy}}{2} (S_i^+ S_j^- + S_i^-S_j^+) \right]

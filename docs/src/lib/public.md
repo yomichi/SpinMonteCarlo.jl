@@ -1,6 +1,6 @@
 # Public interfaces
 
-Documentation for `SpinMonteCarlo.jl`'s public interface.
+Documentation for `SpinMonteCarlo.jl`'s public interface (exported).
 
 ## Driver
 
@@ -20,13 +20,6 @@ Potts
 Clock
 XY
 QuantumXXZ
-```
-
-## Lattice
-
-```@autodocs
-Modules = [SpinMonteCarlo]
-Pages = ["src/lattice.jl"]
 ```
 
 ## Lattice generator

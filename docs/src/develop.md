@@ -1,4 +1,4 @@
-# Develop your program
+# Develop Monte Carlo
 
 ## Lattice
 

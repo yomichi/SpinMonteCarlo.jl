@@ -4,12 +4,16 @@ using SpinMonteCarlo
 makedocs( format=:html,
           sitename="SpinMonteCarlo.jl",
           modules=[SpinMonteCarlo],
-          pages = [ "Home" => "index.md",
-                    "Develop your program" => "develop.md",
-                    "Library" => Any[
-                      "Public" => "lib/public.md",
-                      "Internals" => "lib/internals.md",
-                     ]
+          pages = [
+                   "Home" => "index.md",
+                   "Manual" => Any[
+                                   "Run Monte Carlo" => "runmc.md",
+                                   "Develop Monte Carlo" => "develop.md",
+                                  ],
+                   "Library" => Any[
+                                    "Public" => "lib/public.md",
+                                    "Internals" => "lib/internals.md",
+                                   ]
                   ]
         )
 

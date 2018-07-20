@@ -18,10 +18,7 @@ If a checkpoint file named `"\$(param["Checkpoint Filename Prefix"])_\$(param["I
 
 # Required keys in `param`
 - "Model"
-    - `param` will be used as the argument of the constructor.
 - "Update Method"
-    - `param` will be used as an argument.
-- "T": Temperature
 
 # Optional keys in `param`
 - "MCS": The number of Monte Carlo steps after thermalization
@@ -152,13 +149,28 @@ function accumulateObservables!(::Model, obs::MCObservableSet, localobs::Measure
     return obs
 end
 
-"""
-    postproc(model::Model, param::Dict, obs::MCObservableSet)
+doc"""
+    postproc(model::Model, param::Parameter, obs::MCObservableSet)
 
 Post process of observables. For example, Specific heat will be calculated from energy, energy^2, and temperature.
 """
 function postproc end
 
+doc"""
+    postproc(model::Union{Ising, Potts}, param::Parameter, obs::MCObservableSet)
+
+# Observables to be calculated
+In the following, $m$ is total magnetization per site and $\epsilon$ is total energy per site.
+
+- `"Binder Ratio"`
+    - $R := \frac{\left \langle m^4 \right \rangle}{\left \langle m^2 \right\rangle^2}$
+- `"Susceptibility"`
+    - $\chi := \frac{N}{T}\left(\left\langle m^2\right\rangle\right)$
+- `"Connected Susceptibility"`
+    - $\frac{N}{T}\left(\left\langle m^2\right\rangle - \left\langle |m| \right\rangle^2\right)$
+- `"Specific Heat"`
+    - $\frac{N}{T^2}\left(\left\langle \epsilon^2\right\rangle - \left\langle \epsilon \right\rangle^2\right)$
+"""
 function postproc(model::Union{Ising, Potts}, param::Parameter, obs::MCObservableSet)
     nsites = numsites(model)
     T = param["T"] :: Float64
@@ -172,6 +184,33 @@ function postproc(model::Union{Ising, Potts}, param::Parameter, obs::MCObservabl
     return jk
 end
 
+doc"""
+    postproc(model::Union{Clock, XY}, param::Parameter, obs::MCObservableSet)
+
+# Observables to be calculated
+In the following, $m$ is total magnetization per site and $\epsilon$ is total energy per site.
+
+- `"Binder Ratio x"`
+    - $\frac{\left \langle m_x^4 \right \rangle}{\left \langle m_x^2 \right\rangle^2}$
+- `"Binder Ratio y"`
+    - $\frac{\left \langle m_y^4 \right \rangle}{\left \langle m_y^2 \right\rangle^2}$
+- `"Binder Ratio"`
+    - $\frac{\left \langle |m|^4 \right \rangle}{\left \langle |m|^2 \right\rangle^2}$
+- `"Susceptibility x"`
+    - $\frac{N}{T}\left(\left\langle m_x^2\right\rangle\right)$
+- `"Susceptibility y"`
+    - $\frac{N}{T}\left(\left\langle m_y^2\right\rangle\right)$
+- `"Susceptibility y"`
+    - $\frac{N}{T}\left(\left\langle |m|^2\right\rangle\right)$
+- `"Connected Susceptibility x"`
+    - $\frac{N}{T}\left(\left\langle m_x^2\right\rangle - \left\langle |m_x| \right\rangle^2\right)$
+- `"Connected Susceptibility y"`
+    - $\frac{N}{T}\left(\left\langle m_y^2\right\rangle - \left\langle |m_y| \right\rangle^2\right)$
+- `"Connected Susceptibility"`
+    - $\frac{N}{T}\left(\left\langle |m|^2\right\rangle - \left\langle |m| \right\rangle^2\right)$
+- `"Specific Heat"`
+    - $\frac{N}{T^2}\left(\left\langle \epsilon^2\right\rangle - \left\langle \epsilon \right\rangle^2\right)$
+"""
 function postproc(model::Union{Clock, XY}, param::Parameter, obs::MCObservableSet)
     nsites = numsites(model)
     T = param["T"]
@@ -191,6 +230,34 @@ function postproc(model::Union{Clock, XY}, param::Parameter, obs::MCObservableSe
     return jk
 end
 
+doc"""
+    postproc(model::QuantumXXZ, param::Parameter, obs::MCObservableSet)
+
+# Observables to be calculated
+In the following, $s$ is sign of weight, $m$ is total magnetization per site,
+and $\epsilon$ is total energy per site.
+
+- `"Magnetization"`
+    - $\left\langle m s\right\rangle\Big/\left\langle s \right\rangle$
+- `"|Magnetization|"`
+    - $\left\langle |m| s\right\rangle\Big/\left\langle s \right\rangle$
+- `"Magnetization^2"`
+    - $\left\langle m^2 s\right\rangle\Big/\left\langle s \right\rangle$
+- `"Magnetization^4"`
+    - $\left\langle m^4 s\right\rangle\Big/\left\langle s \right\rangle$
+- `"Energy"`
+    - $\left\langle \epsilon s\right\rangle\Big/\left\langle s \right\rangle$
+- `"Energy^2"`
+    - $\left\langle \epsilon^2 s\right\rangle\Big/\left\langle s \right\rangle$
+- `"Binder Ratio"`
+    - $\frac{\left \langle m^4 \right \rangle}{\left \langle m^2 \right\rangle^2}$
+- `"Susceptibility"`
+    - $\frac{N}{T}\left(\left\langle m^2\right\rangle\right)$
+- `"Connected Susceptibility"`
+    - $\frac{N}{T}\left(\left\langle m^2\right\rangle - \left\langle |m| \right\rangle^2\right)$
+- `"Specific Heat"`
+    - $\frac{N}{T^2}\left(\left\langle \epsilon^2\right\rangle - \left\langle \epsilon \right\rangle^2\right)$
+"""
 function postproc(model::QuantumXXZ, param::Parameter, obs::MCObservableSet)
     nsites = numsites(model)
     T = param["T"]
@@ -211,5 +278,3 @@ function postproc(model::QuantumXXZ, param::Parameter, obs::MCObservableSet)
     jk["Specific Heat"] = (nsites*beta*beta)*(jk["Energy^2"] - jk["Energy"]^2)
     return jk
 end
-
-

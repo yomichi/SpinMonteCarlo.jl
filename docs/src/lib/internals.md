@@ -1,6 +1,6 @@
 # Internal APIs
 
-Documentation for `SpinMonteCarlo.jl`'s internals.
+Documentation for `SpinMonteCarlo.jl`'s internals (not exported).
 
 ## Driver
 
@@ -11,6 +11,16 @@ CurrentModule = SpinMonteCarlo
 ```@docs
 accumulateObservables!
 postproc
+postproc(::Ising,::Parameter,::MCObservableSet)
+postproc(::Clock,::Parameter,::MCObservableSet)
+postproc(::QuantumXXZ,::Parameter,::MCObservableSet)
+```
+
+## Lattice
+
+```@autodocs
+Modules = [SpinMonteCarlo]
+Pages = ["src/lattice.jl"]
 ```
 
 ## Model
