@@ -8,7 +8,7 @@ const obsnames = ["Energy", "Energy^2", "Specific Heat",
                  ]
 const Ns = [2,3,4]
 const J = 1.0
-const Ts = [0.5, 1.0, 2.0, 5.0, 10.0]
+const Ts = [0.3, 1.0, 3.0, 10.0]
 
 """
 exact finite-T energy (per site) of XY model on `N` site fully connected network
