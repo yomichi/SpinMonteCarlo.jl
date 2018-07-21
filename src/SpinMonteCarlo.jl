@@ -3,9 +3,11 @@ __precompile__()
 module SpinMonteCarlo
 
 using Compat
-import Compat.Random
+using Compat.Random
 using Compat.Printf
 using Compat.Markdown
+using Compat.Statistics
+using Compat.LinearAlgebra
 
 using DataStructures
 
@@ -46,5 +48,4 @@ include("snapshot.jl")
 include("observables/MCObservables.jl")
 include("runMC.jl")
 include("print.jl")
-
 end # of module

@@ -1,11 +1,15 @@
-using Compat.Statistics
-
 using SpecialFunctions
-using Distributions
 using LsqFit
 
+import Distributions: TDist, cdf
+
 import Base: show, <<, push!, count, isempty, merge, merge!, zero, zeros, sum
-import Statistics: mean, var
+
+if VERSION < v"0.7.0-beta.85"
+    import Base: mean, var
+else
+    import Statistics: mean, var
+end
 
 export MCObservable, ScalarObservable, VectorObservable
 export mean, var, stderror, confidence_interval

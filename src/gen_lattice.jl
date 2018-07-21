@@ -15,7 +15,7 @@ function dimer_lattice()
     nbonds = 1
     sitetypes = [1,2]
     bondtypes = [1]
-    transvector = eye(dim)
+    transvector = @compat Matrix(1.0I, dim, dim)
     coords = zeros(dim, 2)
     bond_dirs = zeros(dim, 1)
     neighborsites = [[2],[1]]
@@ -65,7 +65,7 @@ function chain_lattice(L::Integer)
     nbonds = L
     sitetypes = zeros(Int,L)
     bondtypes = zeros(Int,L)
-    transvector = eye(dim)
+    transvector = @compat Matrix(1.0I, dim, dim)
     coords = zeros(dim, L)
     bond_dirs = zeros(dim, L)
     neighborsites = Vector{Int}[]
@@ -131,7 +131,7 @@ function square_lattice(L::Integer, W::Integer)
     nbonds = 2*L*W
     sitetypes = zeros(Int, nsites)
     bondtypes = zeros(Int, nbonds)
-    transvector = eye(dim)
+    transvector = @compat Matrix(1.0I, dim, dim)
     coords = zeros(dim, nsites)
     bond_dirs = zeros(dim, nbonds)
     neighborsites = Vector{Int}[]
@@ -319,7 +319,7 @@ function cubic_lattice(L::Integer, W::Integer, H::Integer)
     nbonds = 3nsites
     sitetypes = zeros(Int,nsites)
     bondtypes = zeros(Int,nbonds)
-    transvector = eye(dim)
+    transvector = @compat Matrix(1.0I, dim, dim)
     coords = zeros(dim, nsites)
     bond_dirs = zeros(dim, nbonds)
     neighborsites = Vector{Int}[]
