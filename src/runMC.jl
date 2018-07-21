@@ -67,6 +67,10 @@ function runMC(model, param::Parameter)
                            get(param, "Checkpoint Filename Prefix", "cp")::String,
                            get(param, "ID", 0)::Int)
     cp_interval = get(param, "Checkpoint Interval", 0.0) :: Float64
+    if VERSION > v"0.6.4" && cp_interval != 0.0
+        Compat.@info """"Checkpoint Interval" is set to 0.0 automatically since current JLD2.jl cannot save/load Random.MersenneTwister object properly in julia-0.7"""
+        cp_interval = 0.0
+    end
     tm = time()
 
     MCS = get(param, "MCS", 8192) :: Int
