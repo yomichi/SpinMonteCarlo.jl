@@ -15,9 +15,9 @@ function loaddata(filename, obsnames)
     res = Parameter(n=>zeros(0) for n in obsnames)
     for line in eachline(filename)
         words = split(line)
-        push!(Ts, parse(words[1]))
+        push!(Ts, parse(Float64, words[1]))
         for (i,n) in enumerate(obsnames)
-            push!(res[n], parse(words[i+1]))
+            push!(res[n], parse(Float64, words[i+1]))
         end
     end
     return Ts, res
@@ -29,7 +29,7 @@ function parse_filename(filename, ::Union{Type{Ising}, Type{XY}})
         return nothing
     end
     p = Parameter()
-    p["J"] = parse(m.captures[1])
+    p["J"] = parse(Float64, m.captures[1])
     p["N"] = parse(Int, m.captures[2])
     return p
 end
@@ -41,7 +41,7 @@ function parse_filename(filename, ::Union{Type{Potts}, Type{Clock}})
     end
     p = Parameter()
     p["Q"] = parse(Int, m.captures[1])
-    p["J"] = parse(m.captures[2])
+    p["J"] = parse(Float64, m.captures[2])
     p["N"] = parse(Int, m.captures[3])
     return p
 end

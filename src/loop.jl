@@ -1,4 +1,4 @@
-"""
+@doc """
     loop_update!(model, param::Parameter)
     loop_update!(model, T::Real,
                  Jz::AbstractArray,

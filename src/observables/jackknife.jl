@@ -89,21 +89,10 @@ unary_functions = (
                    :exp, :exp2, :exp10, :expm1,
                    :abs, :abs2,
                    :sqrt, :cbrt,
-                   :erf, :erfc, :erfcx,
-                   :erfinv, :erfcinv,
-                   :gamma, :lgamma, :lfact,
-                   :digamma, :invdigamma, :trigamma,
-                   :airyai, :airyprime, :airyaiprime,
-                   :airybi, :airybiprime,
-                   :besselj0, :besselj1, 
-                   :bessely0, :bessely1,
-                   :eta, :zeta
                   )
 
 for op in unary_functions
-    eval( Expr(:import, :Base, op) )
-    eval( Expr(:export, op) )
-    @eval ($op)(jk::Jackknife) = Jackknife(jk, $op)
+    @eval Base.$op(jk::Jackknife) = Jackknife(jk, $op)
 end
 
 binary_functions = (
@@ -111,12 +100,10 @@ binary_functions = (
                    )
 
 for op in binary_functions
-    eval( Expr(:import, :Base, op) )
-    eval( Expr(:export, op) )
-    @eval ($op)(jk::Jackknife, rhs::Real) = Jackknife(jk, lhs->($op)(lhs,rhs))
-    @eval ($op)(lhs::Real, jk::Jackknife) = Jackknife(jk, rhs->($op)(lhs,rhs))
+    @eval Base.$op(jk::Jackknife, rhs::Real) = Jackknife(jk, lhs->($op)(lhs,rhs))
+    @eval Base.$op(lhs::Real, jk::Jackknife) = Jackknife(jk, rhs->($op)(lhs,rhs))
     op_bw = Symbol("."*string(op))
-    @eval ($op)(lhs::Jackknife, rhs::Jackknife) = Jackknife( ($op_bw)(lhs.xs, rhs.xs))
+    @eval Base.$op(lhs::Jackknife, rhs::Jackknife) = Jackknife( ($op_bw)(lhs.xs, rhs.xs))
 end
 
 const JackknifeSet = MCObservableSet{Jackknife}

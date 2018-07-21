@@ -1,5 +1,3 @@
-import Base: zero, zeros, deepcopy, mean, show
-
 export TinyVectorObservable, stddev
 
 mutable struct TinyVectorObservable <: VectorObservable

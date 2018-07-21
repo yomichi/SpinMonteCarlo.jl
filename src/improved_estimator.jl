@@ -3,7 +3,7 @@
     return improved_estimator(model, p..., extra)
 end
 
-"""
+@doc """
     improved_estimator(model::Ising, T::Real, Js::AbstractArray, sw::SWInfo)
 
 Returns the following observables as `Dict{String, Any}` using cluster information `sw`
@@ -68,7 +68,7 @@ function improved_estimator(model::Ising, T::Real, Js::AbstractArray, sw::SWInfo
     return res
 end
 
-"""
+@doc """
     improved_estimator(model::Potts, T::Real, Js::AbstractArray, sw::SWInfo)
 
 Returns the following observables as `Dict{String, Any}` using cluster information `sw`
@@ -131,7 +131,7 @@ function improved_estimator(model::Potts, T::Real, Js::AbstractArray, sw::SWInfo
     return res
 end
 
-"""
+@doc """
     improved_estimator(model::QuantumXXZ, T::Real, Js::AbstractArray, uf::UnionFind)
 
 Returns the following observables as `Dict{String, Any}` using loop information `uf`

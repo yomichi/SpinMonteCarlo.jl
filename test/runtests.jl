@@ -1,6 +1,6 @@
-using Base.Test
+using Compat
+using Compat.Test
 
-include("../src/SpinMonteCarlo.jl")
 using SpinMonteCarlo
 
 const SEED = 137
@@ -10,11 +10,14 @@ const Therm = MCS
 const alpha = 0.001
 
 @testset begin
-    for filename in ("lattice.jl",
-                     "classical.jl",
-                     "quantum.jl",
-                     "checkpoint.jl",
-                    )
+    filenames = ["lattice.jl",
+                 "classical.jl",
+                 "quantum.jl",
+                ]
+    if VERSION <= v"0.6.4"
+        push!(filenames, "checkpoint.jl")
+    end
+    for filename in filenames
         t = @elapsed include(filename)
         println("$(filename): $t sec")
     end

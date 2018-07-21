@@ -1,8 +1,14 @@
 __precompile__()
 
 module SpinMonteCarlo
+
 using Compat
-import Compat.Random
+using Compat.Random
+using Compat.Printf
+using Compat.Markdown
+using Compat.Statistics
+using Compat.LinearAlgebra
+
 using DataStructures
 
 export Parameter
@@ -20,7 +26,7 @@ export runMC, print_result
 
 abstract type Model end
 
-doc"""
+@doc doc"""
 Input parameter of simulation
 """
 const Parameter = Dict{String, Any}
@@ -42,5 +48,4 @@ include("snapshot.jl")
 include("observables/MCObservables.jl")
 include("runMC.jl")
 include("print.jl")
-
 end # of module

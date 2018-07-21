@@ -1,4 +1,4 @@
-doc"""
+@doc doc"""
 Enumtype including `LET_*`
 """
 @enum(LoopElementType,
@@ -104,7 +104,7 @@ or matrix
 ```
 """ LET_Cross
 
-doc"""
+@doc doc"""
 (Imaginary-temporary and spatial) local operator as a perturbation with assigned loop element.
 # Fields
 - `let_type` : assigned loop element
@@ -129,7 +129,7 @@ LocalLoopOperator(let_type::LoopElementType, time::Real, space::Int) = LocalLoop
 
 abstract type QuantumLocalZ2Model <: Model end
 
-doc"""
+@doc doc"""
 Spin-$S$ XXZ model denoted by the following Hamiltonian,
 \begin{equation}
 \mathcal{H} = \sum_{i,j} \left[ J_{ij}^z S_i^z S_j^z 
@@ -175,7 +175,7 @@ mutable struct QuantumXXZ <: QuantumLocalZ2Model
         return model
     end
 end
-doc"""
+@doc doc"""
     QuantumXXZ(param)
 
 Generates `QuantumXXZ` using `param["Lattice"](param)`, `param["S"]` and `param["Seed"]` (if defined).

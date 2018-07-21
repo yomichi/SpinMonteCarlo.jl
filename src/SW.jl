@@ -1,4 +1,4 @@
-doc"""
+@doc doc"""
 Information of clusters in Swendsen-Wang algorithm.
 
 # Fields
@@ -14,7 +14,7 @@ end
 
 numclusters(sw::SWInfo) = length(sw.clustersize)
 
-"""
+@doc """
     SW_update!(model, param::Parameter)
     SW_update!(model, T::Real, Js::AbstractArray)
     

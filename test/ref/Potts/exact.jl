@@ -5,7 +5,7 @@ const obsnames = ["Energy", "Energy^2", "Specific Heat",
 const Ns = [2,8]
 const Qs = [2,4]
 const J = 1.0
-const Ts = [0.2, 0.5, 1.0, 2.0, 5.0, 10.0]
+const Ts = [0.3, 1.0, 3.0, 10.0]
 
 """
 exact calculation for `Q` state Potts model on `N` site fully connected network

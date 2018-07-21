@@ -47,8 +47,6 @@ function SecondJackknife(b::BinningObservable)
     end
 end
 
-import Base.count, Base.isempty
-
 count(jk::SecondJackknife) = length(jk.x_ij)
 isempty(jk::SecondJackknife) = isempty(jk.x_ij)
 
@@ -95,15 +93,6 @@ unary_functions = (
                    :exp, :exp2, :exp10, :expm1,
                    :abs, :abs2,
                    :sqrt, :cbrt,
-                   :erf, :erfc, :erfcx,
-                   :erfinv, :erfcinv,
-                   :gamma, :lgamma, :lfact,
-                   :digamma, :invdigamma, :trigamma,
-                   :airyai, :airyprime, :airyaiprime,
-                   :airybi, :airybiprime,
-                   :besselj0, :besselj1, 
-                   :bessely0, :bessely1,
-                   :eta, :zeta
                   )
 
 for op in unary_functions

@@ -1,5 +1,3 @@
-using LsqFit
-
 export BinningObservable, tau
 export extrapolate_tau, extrapolate_stderror
 export BinningObservableSet

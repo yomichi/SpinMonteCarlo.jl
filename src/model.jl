@@ -2,7 +2,7 @@ import Compat.Random.srand
 srand(model::Model) = srand(model.rng)
 srand(model::Model, seed) = srand(model.rng, seed)
 
-doc"""
+@doc doc"""
 Ising model, $\mathcal{H} = -\sum_{ij} J_{ij} \sigma_i \sigma_j$,
 where $\sigma_i$ takes value of 1 (up spin) or -1 (down spin).
 """
@@ -26,7 +26,7 @@ mutable struct Ising <: Model
         return model
     end
 end
-doc"""
+@doc doc"""
     Ising(param)
 
 Generates `Ising` using `param["Lattice"](param)` and `param["Seed"]` (if defined).
@@ -41,7 +41,7 @@ function Ising(param::Parameter)
     end
 end
 
-doc"""
+@doc doc"""
 `Q` state Potts model, $\mathcal{H} = -\sum_{i,j} \delta_{\sigma_i, \sigma_j}$,
 where $\sigma_i$ takes an integer value from $1$ to $Q$ and $\delta$ is a Kronecker's delta.
 Order parameter (total magnetization) is defined as
@@ -67,7 +67,7 @@ mutable struct Potts <: Model
         return new(lat, Q, spins, rng)
     end
 end
-doc"""
+@doc doc"""
     Potts(param)
 
 Generates `Potts` using `param["Lattice"](param)`, `param["Q"]`, and `param["Seed"]` (if defined).
@@ -83,7 +83,7 @@ function Potts(param::Parameter)
     end
 end
 
-doc"""
+@doc doc"""
 `Q` state clock model, $\mathcal{H} = -\sum_{ij} J_{ij} \cos(\theta_i - \theta_j)$,
 where $\theta_i = 2\pi \sigma_i/Q$ and $\sigma_i$ takes an integer value from $1$ to $Q$.
 """
@@ -113,7 +113,7 @@ mutable struct Clock <: Model
         return new(lat, Q, spins, cosines, sines, sines_sw, rng)
     end
 end
-doc"""
+@doc doc"""
     Clock(param)
 
 Generates `Clock` using `param["Lattice"](param)`, `param["Q"]`,  and `param["Seed"]` (if defined).
@@ -129,7 +129,7 @@ function Clock(param::Parameter)
     end
 end
 
-doc"""
+@doc doc"""
 XY model, $\mathcal{H} = -\sum_{ij} J_{ij} \cos(\theta_i - \theta_j)$,
 where $\theta_i = 2\pi \sigma_i$ and $\sigma_i \in [0, 1)$.
 """
@@ -153,7 +153,7 @@ mutable struct XY <: Model
         return model
     end
 end
-doc"""
+@doc doc"""
    XY(param)
 
 Generates `XY` using `param["Lattice"](param)`,  and `param["Seed"]` (if defined).

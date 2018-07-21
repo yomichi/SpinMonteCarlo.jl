@@ -1,4 +1,4 @@
-doc"""
+@doc doc"""
     default_estimator(model, updatemethod!)
 
 Determines estimator to be used when `param["Estimator"]` is not set.
@@ -12,7 +12,7 @@ function simple_estimator(model, param::Parameter, _=nothing)
     return simple_estimator(model, p..., nothing)
 end
 
-"""
+@doc """
     simple_estimator(model::Clock, T::Real, Js::AbstractArray)
     simple_estimator(model::XY, T::Real, Js::AbstractArray)
 
@@ -76,7 +76,7 @@ function simple_estimator(model::Potts, T::Real, Js::AbstractArray, _=nothing)
 end
 
 
-"""
+@doc """
     simple_estimator(model::Clock, T::Real, Js::AbstractArray)
     simple_estimator(model::XY, T::Real, Js::AbstractArray)
 
