@@ -18,7 +18,7 @@ makedocs( format=:html,
         )
 
 deploydocs( repo = "github.com/yomichi/SpinMonteCarlo.jl.git",
-            julia="0.6",
+            julia="0.7",
             target="build",
             deps = nothing,
             make = nothing,
