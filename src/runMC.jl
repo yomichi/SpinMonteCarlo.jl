@@ -160,7 +160,7 @@ Post process of observables. For example, Specific heat will be calculated from 
 """
 function postproc end
 
-doc"""
+@doc doc"""
     postproc(model::Union{Ising, Potts}, param::Parameter, obs::MCObservableSet)
 
 # Observables to be calculated
@@ -188,7 +188,7 @@ function postproc(model::Union{Ising, Potts}, param::Parameter, obs::MCObservabl
     return jk
 end
 
-doc"""
+@doc doc"""
     postproc(model::Union{Clock, XY}, param::Parameter, obs::MCObservableSet)
 
 # Observables to be calculated
@@ -234,7 +234,7 @@ function postproc(model::Union{Clock, XY}, param::Parameter, obs::MCObservableSe
     return jk
 end
 
-doc"""
+@doc doc"""
     postproc(model::QuantumXXZ, param::Parameter, obs::MCObservableSet)
 
 # Observables to be calculated
