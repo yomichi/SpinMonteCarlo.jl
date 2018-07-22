@@ -1,9 +1,9 @@
 import Compat.Random.srand
 srand(model::Model) = srand(model.rng)
-srand(model::Model, seed) = srand(model.rng, seed)
+srand(model::Model, seed...) = srand(model.rng, seed...)
 
 @doc doc"""
-Ising model, $\mathcal{H} = -\sum_{ij} J_{ij} \sigma_i \sigma_j$,
+Ising model with energy $E = -\sum_{ij} J_{ij} \sigma_i \sigma_j$,
 where $\sigma_i$ takes value of 1 (up spin) or -1 (down spin).
 """
 mutable struct Ising <: Model
@@ -42,7 +42,7 @@ function Ising(param::Parameter)
 end
 
 @doc doc"""
-`Q` state Potts model, $\mathcal{H} = -\sum_{i,j} \delta_{\sigma_i, \sigma_j}$,
+`Q` state Potts model with energy $E = -\sum_{i,j} \delta_{\sigma_i, \sigma_j}$,
 where $\sigma_i$ takes an integer value from $1$ to $Q$ and $\delta$ is a Kronecker's delta.
 Order parameter (total magnetization) is defined as
 \begin{equation}
@@ -84,7 +84,7 @@ function Potts(param::Parameter)
 end
 
 @doc doc"""
-`Q` state clock model, $\mathcal{H} = -\sum_{ij} J_{ij} \cos(\theta_i - \theta_j)$,
+`Q` state clock model with energy $E = -\sum_{ij} J_{ij} \cos(\theta_i - \theta_j)$,
 where $\theta_i = 2\pi \sigma_i/Q$ and $\sigma_i$ takes an integer value from $1$ to $Q$.
 """
 mutable struct Clock <: Model
@@ -130,7 +130,7 @@ function Clock(param::Parameter)
 end
 
 @doc doc"""
-XY model, $\mathcal{H} = -\sum_{ij} J_{ij} \cos(\theta_i - \theta_j)$,
+XY model with energy $E = -\sum_{ij} J_{ij} \cos(\theta_i - \theta_j)$,
 where $\theta_i = 2\pi \sigma_i$ and $\sigma_i \in [0, 1)$.
 """
 mutable struct XY <: Model

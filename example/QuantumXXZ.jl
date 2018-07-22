@@ -24,7 +24,7 @@ for L in Ls
     end
 end
 
-obs = map(runMC, params)
+obs = runMC(params)
 
 const pnames = ["S", "J", "Gamma", "L", "T"]
 const onames = ["Magnetization",

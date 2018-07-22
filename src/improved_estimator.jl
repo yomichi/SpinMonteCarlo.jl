@@ -9,12 +9,14 @@ end
 Returns the following observables as `Dict{String, Any}` using cluster information `sw`
 
 # Observables
-- "Energy"
-- "Energy^2"
-- "Magnetization"
-- "|Magnetization|"
-- "|Magnetization|^2"
-- "|Magnetization|^4"
+- `"Energy"`
+    - Energy per spin (site)
+- `"Energy^2"`
+- `"Magnetization"`
+    - Total magnetization per spin (site)
+- `"|Magnetization|"`
+- `"|Magnetization|^2"`
+- `"|Magnetization|^4"`
 """
 function improved_estimator(model::Ising, T::Real, Js::AbstractArray, sw::SWInfo)
     nsites = numsites(model)
@@ -74,12 +76,12 @@ end
 Returns the following observables as `Dict{String, Any}` using cluster information `sw`
 
 # Observables
-- "Energy"
-- "Energy^2"
-- "Magnetization"
-- "|Magnetization|"
-- "|Magnetization|^2"
-- "|Magnetization|^4"
+- `"Energy"`
+- `"Energy^2"`
+- `"Magnetization"`
+- `"|Magnetization|"`
+- `"|Magnetization|^2"`
+- `"|Magnetization|^4"`
 """
 function improved_estimator(model::Potts, T::Real, Js::AbstractArray, sw::SWInfo)
     nsites = numsites(model)
@@ -137,13 +139,16 @@ end
 Returns the following observables as `Dict{String, Any}` using loop information `uf`
 
 # Observables
-- "Sign"
-- "Sign * Energy"
-- "Sign * Energy^2"
-- "Sign * Magnetization"
-- "Sign * |Magnetization|"
-- "Sign * |Magnetization|^2"
-- "Sign * |Magnetization|^4"
+- `"Sign"`
+    - Sign of the weight function
+- `"Sign * Energy"`
+    - Energy per spin (site)
+- `"Sign * Energy^2"`
+- `"Sign * Magnetization"`
+    - Total magnetization (Sz) per spin (site)
+- `"Sign * |Magnetization|"`
+- `"Sign * Magnetization^2"`
+- `"Sign * Magnetization^4"`
 """
 function improved_estimator(model::QuantumXXZ, T::Real, Jzs::AbstractArray, Jxys::AbstractArray, Gs::AbstractArray, uf::UnionFind)
     S2 = model.S2
