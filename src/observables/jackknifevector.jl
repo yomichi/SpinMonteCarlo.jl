@@ -91,21 +91,10 @@ unary_functions = (
                    :exp, :exp2, :exp10, :expm1,
                    :abs, :abs2,
                    :sqrt, :cbrt,
-                   :erf, :erfc, :erfcx,
-                   :erfinv, :erfcinv,
-                   :gamma, :lgamma, :lfact,
-                   :digamma, :invdigamma, :trigamma,
-                   :airyai, :airyprime, :airyaiprime,
-                   :airybi, :airybiprime,
-                   :besselj0, :besselj1, 
-                   :bessely0, :bessely1,
-                   :eta, :zeta
                   )
 
 for op in unary_functions
-    eval( Expr(:import, :Base, op) )
-    eval( Expr(:export, op) )
-    @eval ($op)(jk::JackknifeVector) = JackknifeVector(jk, $op)
+    @eval Base.$op(jk::JackknifeVector) = JackknifeVector(jk, $op)
 end
 
 binary_functions = (
@@ -114,13 +103,11 @@ binary_functions = (
 
 import Base.broadcast
 for op in ( :+, :- )
-    eval( Expr(:import, :Base, op) )
-    eval( Expr(:export, op) )
-    @eval ($op)(jk::JackknifeVector, rhs::Real) = JackknifeVector(jk, lhs->($op)(lhs,rhs))
-    @eval ($op)(jk::JackknifeVector, rhs::Vector) = JackknifeVector(jk, lhs->($op)(lhs,rhs))
-    @eval ($op)(lhs::Real, jk::JackknifeVector) = JackknifeVector(jk, rhs->($op)(lhs,rhs))
-    @eval ($op)(lhs::Vector, jk::JackknifeVector) = JackknifeVector(jk, rhs->($op)(lhs,rhs))
-    @eval ($op)(lhs::JackknifeVector, rhs::JackknifeVector) = JackknifeVector( ($op)(lhs.xs, rhs.xs))
+    @eval Base.$op(jk::JackknifeVector, rhs::Real) = JackknifeVector(jk, lhs->($op)(lhs,rhs))
+    @eval Base.$op(jk::JackknifeVector, rhs::Vector) = JackknifeVector(jk, lhs->($op)(lhs,rhs))
+    @eval Base.$op(lhs::Real, jk::JackknifeVector) = JackknifeVector(jk, rhs->($op)(lhs,rhs))
+    @eval Base.$op(lhs::Vector, jk::JackknifeVector) = JackknifeVector(jk, rhs->($op)(lhs,rhs))
+    @eval Base.$op(lhs::JackknifeVector, rhs::JackknifeVector) = JackknifeVector( ($op)(lhs.xs, rhs.xs))
     @eval broadcast(::typeof($op), jk::JackknifeVector, rhs::Real) = JackknifeVector(jk, lhs->($op)(lhs,rhs))
     @eval broadcast(::typeof($op), jk::JackknifeVector, rhs::Vector) = JackknifeVector(jk, lhs->($op)(lhs,rhs))
     @eval broadcast(::typeof($op), lhs::Real, jk::JackknifeVector) = JackknifeVector(jk, rhs->($op)(lhs,rhs))
@@ -128,10 +115,8 @@ for op in ( :+, :- )
     @eval broadcast(::typeof($op), lhs::JackknifeVector, rhs::JackknifeVector) = JackknifeVector( ($op)(lhs.xs, rhs.xs))
 end
 for op in ( :*, :/, :\)
-    eval( Expr(:import, :Base, op) )
-    eval( Expr(:export, op) )
-    @eval ($op)(lhs::Real, jk::JackknifeVector) = JackknifeVector(jk, rhs->($op)(lhs,rhs))
-    @eval ($op)(jk::JackknifeVector, rhs::Real) = JackknifeVector(jk, lhs->($op)(lhs,rhs))
+    @eval Base.$op(lhs::Real, jk::JackknifeVector) = JackknifeVector(jk, rhs->($op)(lhs,rhs))
+    @eval Base.$op(jk::JackknifeVector, rhs::Real) = JackknifeVector(jk, lhs->($op)(lhs,rhs))
 end
 for op in ( :*, :/, :\, :^)
     @eval broadcast(::typeof($op), lhs::Real, jk::JackknifeVector) = JackknifeVector(jk, rhs->($op)(lhs,rhs))
@@ -150,7 +135,7 @@ end
 const JackknifeSet = MCObservableSet{Jackknife}
 
 jackknife(obs::VectorObservable) = JackknifeVector(obs)
-function jackknife{Obs<:VectorObservable}(obsset :: MCObservableSet{Obs})
+function jackknife(obsset :: MCObservableSet{Obs}) where (Obs<: VectorObservable)
     JK = JackknifeSet()
     for (k,v) in obsset
         JK[k] = JackknifeVector(v)

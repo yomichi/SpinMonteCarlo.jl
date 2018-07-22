@@ -1,4 +1,4 @@
-"""
+@doc """
     Wolff_update!(model, param::Parameter)
     Wolff_update!(model, T::Real, Js::AbstractArray)
 

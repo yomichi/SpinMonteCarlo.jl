@@ -1,4 +1,4 @@
-"""
+@doc """
     gen_snapshot!(model, T, [N=1])
 
 generate and return `N` snapshots (spin configuration).
@@ -25,7 +25,7 @@ function gen_snapshot!(model::Model, T::Real, N::Integer; MCS::Integer=8192)
     return X
 end
 
-"""
+@doc """
     gensave_snapshot!(io, model, T, [N=1])
     gensave_snapshot!(filename, model, T, [N=1])
 
@@ -82,7 +82,7 @@ function load_snapshot_impl(filename::String, splitter)
 end
 const _default_delims = [' ','\t','\n','\v','\f','\r']
 
-"""
+@doc """
     load_snapshot(io, splitter)
     load_snapshot(filename, splitter)
 

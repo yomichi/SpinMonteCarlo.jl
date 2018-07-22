@@ -9,7 +9,7 @@ const obsnames = ["Energy", "Energy^2", "Specific Heat",
 const Ns = [2,8]
 const Qs = [3,6]
 const J = 1.0
-const Ts = [0.5, 1.0, 2.0, 0.5, 10.0]
+const Ts = [0.5, 1.0, 3.0, 10.0]
 
 """
 exact calculation for `Q` state Clock model on `N` site fully connected network

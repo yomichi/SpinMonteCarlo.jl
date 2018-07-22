@@ -1,4 +1,4 @@
-doc"""
+@doc doc"""
 Union-find algorithm.
 """
 mutable struct UnionFind
@@ -15,7 +15,7 @@ numclusters(u::UnionFind) = u.nclusters
 
 isroot(u::UnionFind, n::Integer) = u.parents[n] == n
 
-doc"""
+@doc doc"""
     root!(u::UnionFind, n::Integer)
 
 Returns the root node of the cluster where `n` belongs.
@@ -30,7 +30,7 @@ function root!(u::UnionFind, n::Integer)
     return n
 end
 
-doc"""
+@doc doc"""
     unify!(u, n1, n2)
 
 Connects `n1` and `n2` nodes and returns the root.
@@ -49,7 +49,7 @@ function unify!(u::UnionFind, n1::Integer, n2::Integer)
     return r1
 end
 
-doc"""
+@doc doc"""
     addnode!(u::UnionFind)
 
 Adds a new node into `u` and returns the number of nodes including the added node.
@@ -63,7 +63,7 @@ function addnode!(u::UnionFind)
     return u.nnodes
 end
 
-doc"""
+@doc doc"""
     clusterize!(u::UnionFind)
 
 Assigns cluster ID to each node and returns the number of clusters.
@@ -82,7 +82,7 @@ function clusterize!(u::UnionFind)
     return u.nclusters
 end
 
-doc"""
+@doc doc"""
     clusterid(u::UnionFind, i::Integer)
 
 Returns the index of the cluster where `i` node belongs.
