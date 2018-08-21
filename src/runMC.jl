@@ -104,7 +104,7 @@ function runMC(model, param::Parameter)
                 localobs = estimator(model, p..., st)
             end
             obs["Time per MCS"] << t
-            obs["MCS per Second"] << 1.0/t
+            obs["MCS per Second"] << (1.0/t)
             accumulateObservables!(model, obs, localobs)
         end
         mcs += 1
