@@ -19,8 +19,6 @@ mutable struct Lattice
     neighborbonds :: Vector{Vector{Int}}
     source :: Vector{Int}
     target :: Vector{Int}
-    site_L2 :: Vector{Int}
-    site_L4 :: Vector{Int}
 end
 
 import Base.size
@@ -216,22 +214,4 @@ Returns the direction of the `bond` as vector in the lattice system
 """
 lattice_bonddirection(lat::Lattice, bond::Integer) = lat.bond_dirs[:, bond]
 lattice_bonddirection(model::Model, bond::Integer) = lattice_bonddirection(model.lat, bond)
-
-@doc """
-    siteL2(lat::Lattice, site::Integer)
-    siteL2(model::Model, site::Integer)
-
-Returns (x+L/2, y+W/2, ...) site
-"""
-siteL2(lat::Lattice, site::Integer) = lat.site_L2[site]
-siteL2(model::Model, site::Integer) = siteL2(model.lat, site)
-
-@doc """
-    siteL4(lat::Lattice, site::Integer)
-    siteL4(model::Model, site::Integer)
-
-Returns (x+L/4, y+W/4, ...) site
-"""
-siteL4(lat::Lattice, site::Integer) = lat.site_L4[site]
-siteL4(model::Model, site::Integer) = siteL4(model.lat, site)
 
