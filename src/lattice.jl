@@ -1,5 +1,44 @@
 @doc """
     Lattice
+
+# Fields
+- `dim :: Int`
+    - dimension of lattice
+- `size :: Vector{Int}`
+    - length of lattice in each dimension
+- `nsitetypes :: Int`
+    - the number of `sitetype`s
+- `nbondtypes :: Int`
+    - the number of `bondtype`s
+- `sites :: Vector{Vector{Int}}`
+    - list of site indecies for each `sitetype`
+- `bonds :: Vector{Vector{Int}}`
+    - list of bond indecies for each `sitetype`
+- `nsites :: Int`
+    - the number of sites
+- `nbonds :: Int`
+    - the number of bonds
+- `sitetypes :: Vector{Int}`
+    - `sitetype` of each site
+- `bondtypes :: Vector{Int}`
+    - `bondtype` of each bond
+- `transvector :: Matrix{Float64}`
+    - lattice vector represented in Cartesian system
+    - `@assert size(transvector) == (dim, dim)`
+- `site_coords :: Matrix{Float64}`
+    - coordinate of each site represented in lattice system
+    - `@assert size(site_coords) == (dim, nsites)`
+- `bond_dirs :: Matrix{Float64}`
+    - displacement of each bond represented in lattice system
+    - `@assert size(bond_dirs) == (dim, nbonds)`
+- `neighborsites :: Vector{Vector{Int}}`
+    - list of indecies of neighbor sites of each site
+- `neighborbonds :: Vector{Vector{Int}}`
+    - list of indecies of neighbor bonds of each site
+- `source :: Vector{Int}`
+    - the index of an end site of each bond index
+- `target :: Vector{Int}`
+    - the index of the other end site of each bond index
 """
 mutable struct Lattice
     dim :: Int
