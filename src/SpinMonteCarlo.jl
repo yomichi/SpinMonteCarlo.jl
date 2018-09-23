@@ -32,6 +32,12 @@ Input parameter of simulation
 const Parameter = Dict{String, Any}
 const Measurement = Dict{String, Any}
 
+@static if VERSION >= v"0.7.0-beta2.171"
+    const srand = Compat.Random.seed!
+else
+    import Compat.Random.srand
+end
+
 include("union_find.jl")
 include("lattice.jl")
 include("gen_lattice.jl")

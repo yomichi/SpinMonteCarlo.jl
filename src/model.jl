@@ -1,4 +1,3 @@
-import Compat.Random.srand
 srand(model::Model) = srand(model.rng)
 srand(model::Model, seed...) = srand(model.rng, seed...)
 
