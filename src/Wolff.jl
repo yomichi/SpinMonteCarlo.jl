@@ -15,7 +15,7 @@ function Wolff_update!(model::Ising, T::Real, Js::AbstractArray)
     nsites = numsites(model)
 
     clustersize = 0
-    st = Stack{Int}()
+    st = Stack(Deque{Int}())
     center = rand(rng, 1:nsites)
     sp = model.spins[center]
     model.spins[center] *= -1
@@ -41,7 +41,7 @@ function Wolff_update!(model::Potts, T::Real, Js::AbstractArray)
     nsites = numsites(model)
 
     clustersize = 0
-    st = Stack{Int}()
+    st = Stack(Deque{Int}())
     center = rand(rng, 1:nsites)
     sp = model.spins[center]
     newsp = mod1(sp+rand(rng, 1:(model.Q-1)), model.Q)
@@ -67,7 +67,7 @@ function Wolff_update!(model::Clock, T::Real, Js::AbstractArray)
     b2J = (2.0/T).*Js
 
     clustersize = 0
-    st = Stack{Int}()
+    st = Stack(Deque{Int}())
     
     m = rand(rng, 1:model.Q)-1
     center = rand(rng, 1:nsites)
@@ -99,7 +99,7 @@ function Wolff_update!(model::XY, T::Real, Js::AbstractArray)
     b2J = (2.0/T).*Js
 
     clustersize = 0
-    st = Stack{Int}()
+    st = Stack(Deque{Int}())
     
     m = 0.5*rand(rng)
     center = rand(rng,1:nsites)
