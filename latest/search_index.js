@@ -69,7 +69,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Develop Monte Carlo",
     "title": "Lattice",
     "category": "section",
-    "text": ""
+    "text": "You can define your own lattice as an instance of Lattice."
 },
 
 {
@@ -429,7 +429,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Internals",
     "title": "SpinMonteCarlo.Lattice",
     "category": "type",
-    "text": "Lattice\n\n\n\n\n\n"
+    "text": "Lattice\n\nFields\n\ndim :: Int\ndimension of lattice\nsize :: Vector{Int}\nlength of lattice in each dimension\nnsitetypes :: Int\nthe number of sitetypes\nnbondtypes :: Int\nthe number of bondtypes\nsites :: Vector{Vector{Int}}\nlist of site indecies for each sitetype\nbonds :: Vector{Vector{Int}}\nlist of bond indecies for each sitetype\nnsites :: Int\nthe number of sites\nnbonds :: Int\nthe number of bonds\nsitetypes :: Vector{Int}\nsitetype of each site\nbondtypes :: Vector{Int}\nbondtype of each bond\ntransvector :: Matrix{Float64}\nlattice vector represented in Cartesian system\n@assert size(transvector) == (dim, dim)\nsite_coords :: Matrix{Float64}\ncoordinate of each site represented in lattice system\n@assert size(site_coords) == (dim, nsites)\nbond_dirs :: Matrix{Float64}\ndisplacement of each bond represented in lattice system\n@assert size(bond_dirs) == (dim, nbonds)\nneighborsites :: Vector{Vector{Int}}\nlist of indecies of neighbor sites of each site\nneighborbonds :: Vector{Vector{Int}}\nlist of indecies of neighbor bonds of each site\nsource :: Vector{Int}\nthe index of an end site of each bond index\ntarget :: Vector{Int}\nthe index of the other end site of each bond index\n\n\n\n\n\n"
 },
 
 {
@@ -518,22 +518,6 @@ var documenterSearchIndex = {"docs": [
     "title": "SpinMonteCarlo.numsites",
     "category": "method",
     "text": "numsites(lat::Lattice)\nnumsites(model::Model)\n\nReturns the number of all sites.\n\n\n\n\n\n"
-},
-
-{
-    "location": "lib/internals.html#SpinMonteCarlo.siteL2-Tuple{Lattice,Integer}",
-    "page": "Internals",
-    "title": "SpinMonteCarlo.siteL2",
-    "category": "method",
-    "text": "siteL2(lat::Lattice, site::Integer)\nsiteL2(model::Model, site::Integer)\n\nReturns (x+L/2, y+W/2, ...) site\n\n\n\n\n\n"
-},
-
-{
-    "location": "lib/internals.html#SpinMonteCarlo.siteL4-Tuple{Lattice,Integer}",
-    "page": "Internals",
-    "title": "SpinMonteCarlo.siteL4",
-    "category": "method",
-    "text": "siteL4(lat::Lattice, site::Integer)\nsiteL4(model::Model, site::Integer)\n\nReturns (x+L/4, y+W/4, ...) site\n\n\n\n\n\n"
 },
 
 {
