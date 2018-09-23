@@ -96,15 +96,21 @@ for op in unary_functions
 end
 
 binary_functions = (
-                    :+, :-, :*, :/, :\
+                    :+, :-, :*, :/, :\,
                    )
 
 for op in binary_functions
     @eval Base.$op(jk::Jackknife, rhs::Real) = Jackknife(jk, lhs->($op)(lhs,rhs))
     @eval Base.$op(lhs::Real, jk::Jackknife) = Jackknife(jk, rhs->($op)(lhs,rhs))
-    op_bw = Symbol("."*string(op))
-    @eval Base.$op(lhs::Jackknife, rhs::Jackknife) = Jackknife( ($op_bw)(lhs.xs, rhs.xs))
+    @eval Base.$op(lhs::Jackknife, rhs::Jackknife) = Jackknife(broadcast($op, lhs.xs, rhs.xs))
 end
+
+import Base.^
+^(lhs::Jackknife, rhs::Real) = Jackknife((lhs.xs).^rhs)
+^(lhs::Jackknife, rhs::Integer) = Jackknife((lhs.xs).^rhs)
+^(lhs::Real, rhs::Jackknife) = Jackknife(lhs.^(rhs.xs))
+^(lhs::Integer, rhs::Jackknife) = Jackknife(lhs.^(rhs.xs))
+^(lhs::Jackknife, rhs::Jackknife) = Jackknife((lhs.xs).^(rhs.xs))
 
 const JackknifeSet = MCObservableSet{Jackknife}
 
