@@ -14,9 +14,6 @@ const alpha = 0.001
                  "classical.jl",
                  "quantum.jl",
                 ]
-    if VERSION <= v"0.6.4"
-        push!(filenames, "checkpoint.jl")
-    end
     for filename in filenames
         t = @elapsed include(filename)
         println("$(filename): $t sec")

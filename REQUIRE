@@ -3,6 +3,5 @@ Compat
 DataStructures
 Distributions
 LsqFit
-JLD2
 MacroTools
 SpecialFunctions

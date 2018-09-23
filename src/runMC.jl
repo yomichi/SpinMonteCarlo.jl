@@ -1,5 +1,6 @@
-using JLD2
+# using JLD2
 
+#=
 @doc """
     runMC(param::Parameter)
     runMC(params::AbstractArray{Parameter}
@@ -34,13 +35,38 @@ If a checkpoint file named `"\$(param["Checkpoint Filename Prefix"])_\$(param["I
 - "Checkpoint Interval": Time interval between writing checkpoint file in seconds.
     - Default: `0.0`, this means that NO checkpoint file will be loaded and saved.
 """
+=#
+@doc """
+    runMC(param::Parameter)
+    runMC(params::AbstractArray{Parameter} ; parallel::Bool=false)
+
+Runs Monte Carlo simulation(s) and returns calculated observables.
+
+# Keyward aruguments
+- `parallel`: If true, runs simulations in parallel (uses `pmap` instead of `map`).
+
+# Required keys in `param`
+- "Model"
+- "Update Method"
+
+# Optional keys in `param`
+- "MCS": The number of Monte Carlo steps after thermalization
+    - Default: `8192`
+- "Thermalization": The number of Monte Carlo steps for thermalization
+    - Default: `MCS>>3`
+- "Seed": The initial seed of the random number generator, `MersenneTwister`
+    - Default: determined randomly (see `Random.srand`)
+"""
 function runMC(params::AbstractArray{T}; parallel::Bool=false, autoID::Bool=true) where T<:Dict
     map_fn = ifelse(parallel, pmap, map)
-    return map_fn(enumerate(params)) do idp
+    # return map_fn(enumerate(params)) do idp
+    return map_fn(params) do p
+        #=
         id,p = idp
         if autoID
             p["ID"] = id
         end
+        =#
         return runMC(p)
     end
 end
@@ -60,14 +86,12 @@ function runMC(model, param::Parameter)
     if verbose
         println("Start: ", param)
     end
+    #=
     cp_filename = @sprintf("%s_%d.jld2",
                            get(param, "Checkpoint Filename Prefix", "cp")::String,
                            get(param, "ID", 0)::Int)
     cp_interval = get(param, "Checkpoint Interval", 0.0) :: Float64
-    if VERSION > v"0.6.4" && cp_interval != 0.0
-        Compat.@info """"Checkpoint Interval" is set to 0.0 automatically since current JLD2.jl cannot save/load Random.MersenneTwister object properly in julia-0.7"""
-        cp_interval = 0.0
-    end
+    =#
     tm = time()
 
     MCS = get(param, "MCS", 8192) :: Int
@@ -79,6 +103,7 @@ function runMC(model, param::Parameter)
     makeMCObservable!(obs, "Time per MCS")
     makeMCObservable!(obs, "MCS per Second")
 
+    #=
     if cp_interval > 0.0 && ispath(cp_filename)
         jld = jldopen(cp_filename)
         model = jld["model"] :: MODEL
@@ -86,6 +111,7 @@ function runMC(model, param::Parameter)
         mcs = convert(Int, jld["mcs"]) :: Int
         close(jld)
     end
+    =#
 
     if "UpdateMethod" in keys(param)
         warn("\"UpdateMethod\" is deprecated. Use instead \"Update Method\".")
@@ -108,6 +134,7 @@ function runMC(model, param::Parameter)
             accumulateObservables!(model, obs, localobs)
         end
         mcs += 1
+        #=
         if cp_interval > 0.0 && time() - tm > cp_interval
             jld = jldopen(cp_filename, "w")
             jld["model"] = model
@@ -116,8 +143,10 @@ function runMC(model, param::Parameter)
             close(jld)
             tm += cp_interval
          end
+         =#
     end
 
+    #=
     if cp_interval > 0.0
         jld = jldopen(cp_filename, "w")
         jld["model"] = model
@@ -125,6 +154,7 @@ function runMC(model, param::Parameter)
         jld["mcs"] = mcs
         close(jld)
     end
+    =#
 
     jk = postproc(model, param, obs)
 
