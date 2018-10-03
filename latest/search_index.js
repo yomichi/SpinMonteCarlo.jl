@@ -149,7 +149,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Public",
     "title": "SpinMonteCarlo.runMC",
     "category": "function",
-    "text": "runMC(param::Parameter)\nrunMC(params::AbstractArray{Parameter} ; parallel::Bool=false)\n\nRuns Monte Carlo simulation(s) and returns calculated observables.\n\nKeyward aruguments\n\nparallel: If true, runs simulations in parallel (uses pmap instead of map).\n\nRequired keys in param\n\n\"Model\"\n\"Update Method\"\n\nOptional keys in param\n\n\"MCS\": The number of Monte Carlo steps after thermalization\nDefault: 8192\n\"Thermalization\": The number of Monte Carlo steps for thermalization\nDefault: MCS>>3\n\"Seed\": The initial seed of the random number generator, MersenneTwister\nDefault: determined randomly (see Random.srand)\n\n\n\n\n\n"
+    "text": "runMC(param::Parameter)\nrunMC(params::AbstractArray{Parameter} ; parallel::Bool=false)\n\nRuns Monte Carlo simulation(s) and returns calculated observables.\n\nKeyward aruguments\n\nparallel: If true, runs simulations in parallel (uses pmap instead of map).\n\nRequired keys in param\n\n\"Model\"\n\"Update Method\"\n\nOptional keys in param\n\n\"MCS\": The number of Monte Carlo steps after thermalization\nDefault: 8192\n\"Thermalization\": The number of Monte Carlo steps for thermalization\nDefault: MCS>>3\n\"Seed\": The initial seed of the random number generator, MersenneTwister\nDefault: determined randomly (see Random.seed!)\n\n\n\n\n\n"
 },
 
 {
