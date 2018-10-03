@@ -154,7 +154,7 @@ mutable struct QuantumXXZ <: QuantumLocalZ2Model
         end
         S2 = round(Int,2S)
         model = new()
-        model.rng = srand(Random.MersenneTwister(0))
+        model.rng = seed!(Random.MersenneTwister(0))
         model.lat = lat
         model.S2 = S2
         model.spins = rand(model.rng,[1,-1], numsites(lat)*S2)
@@ -167,7 +167,7 @@ mutable struct QuantumXXZ <: QuantumLocalZ2Model
         end
         S2 = round(Int,2S)
         model = new()
-        model.rng = srand(Random.MersenneTwister(0), seed)
+        model.rng = seed!(Random.MersenneTwister(0), seed)
         model.lat = lat
         model.S2 = S2
         model.spins = rand(model.rng,[1,-1], numsites(lat)*S2)

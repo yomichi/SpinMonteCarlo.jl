@@ -27,7 +27,7 @@ If a checkpoint file named `"\$(param["Checkpoint Filename Prefix"])_\$(param["I
 - "Thermalization": The number of Monte Carlo steps for thermalization
     - Default: `MCS>>3`
 - "Seed": The initial seed of the random number generator, `MersenneTwister`
-    - Default: determined randomly (see `Random.srand`)
+    - Default: determined randomly (see `Random.seed!`)
 - "Checkpoint Filename Prefix": See above document.
     - Default: `"cp"`
 - "ID": See above document.
@@ -55,7 +55,7 @@ Runs Monte Carlo simulation(s) and returns calculated observables.
 - "Thermalization": The number of Monte Carlo steps for thermalization
     - Default: `MCS>>3`
 - "Seed": The initial seed of the random number generator, `MersenneTwister`
-    - Default: determined randomly (see `Random.srand`)
+    - Default: determined randomly (see `Random.seed!`)
 """
 function runMC(params::AbstractArray{T}; parallel::Bool=false, autoID::Bool=true) where T<:Dict
     map_fn = ifelse(parallel, pmap, map)
@@ -74,7 +74,7 @@ end
 function runMC(param::Parameter)
     model = param["Model"](param)
     if "Seed" in keys(param)
-        srand(model, param["Seed"])
+        seed!(model, param["Seed"])
     end
     ret = runMC(model, param)
     return ret

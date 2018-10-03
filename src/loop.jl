@@ -1,4 +1,4 @@
-import Compat.Random: shuffle
+import Random: shuffle
 
 @generated function myshuffle(xs)
     canShuffleEmpty = try

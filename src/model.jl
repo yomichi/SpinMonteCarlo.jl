@@ -1,5 +1,6 @@
-srand(model::Model) = srand(model.rng)
-srand(model::Model, seed...) = srand(model.rng, seed...)
+import Random.seed!
+seed!(model::Model) = Random.seed!(model.rng)
+seed!(model::Model, seed...) = Random.seed!(model.rng, seed...)
 
 @doc doc"""
 Ising model with energy $E = -\sum_{ij} J_{ij} \sigma_i \sigma_j$,
@@ -13,14 +14,14 @@ mutable struct Ising <: Model
     function Ising(lat::Lattice)
         model = new()
         model.lat = lat
-        model.rng = srand(Random.MersenneTwister(0))
+        model.rng = Random.Random.seed!(Random.MersenneTwister(0))
         model.spins = rand(model.rng, [1,-1], numsites(lat))
         return model
     end
     function Ising(lat::Lattice, seed)
         model = new()
         model.lat = lat
-        model.rng = srand(Random.MersenneTwister(0), seed...)
+        model.rng = Random.seed!(Random.MersenneTwister(0), seed...)
         model.spins = rand(model.rng, [1,-1], numsites(lat))
         return model
     end
@@ -56,12 +57,12 @@ mutable struct Potts <: Model
     rng :: Random.MersenneTwister
 
     function Potts(lat::Lattice, Q::Integer)
-        rng = srand(Random.MersenneTwister(0))
+        rng = Random.seed!(Random.MersenneTwister(0))
         spins = rand(rng, 1:Q, numsites(lat))
         return new(lat, Q, spins, rng)
     end
     function Potts(lat::Lattice, Q::Integer, seed)
-        rng = srand(Random.MersenneTwister(0), seed)
+        rng = Random.seed!(Random.MersenneTwister(0), seed)
         spins = rand(rng, 1:Q, numsites(lat))
         return new(lat, Q, spins, rng)
     end
@@ -96,7 +97,7 @@ mutable struct Clock <: Model
     rng :: Random.MersenneTwister
 
     function Clock(lat::Lattice, Q::Integer)
-        rng = srand(Random.MersenneTwister(0))
+        rng = Random.seed!(Random.MersenneTwister(0))
         spins = rand(rng, 1:Q, numsites(lat))
         cosines = [cospi(2s/Q) for s in 1:Q]
         sines = [sinpi(2s/Q) for s in 1:Q]
@@ -104,7 +105,7 @@ mutable struct Clock <: Model
         return new(lat, Q, spins, cosines, sines, sines_sw, rng)
     end
     function Clock(lat::Lattice, Q::Integer, seed)
-        rng = srand(Random.MersenneTwister(0), seed)
+        rng = Random.seed!(Random.MersenneTwister(0), seed)
         spins = rand(rng, 1:Q, numsites(lat))
         cosines = [cospi(2s/Q) for s in 1:Q]
         sines = [sinpi(2s/Q) for s in 1:Q]
@@ -139,14 +140,14 @@ mutable struct XY <: Model
 
     function XY(lat::Lattice)
         model = new()
-        model.rng = srand(Random.MersenneTwister(0))
+        model.rng = Random.seed!(Random.MersenneTwister(0))
         model.lat = lat
         model.spins = rand(model.rng, numsites(lat))
         return model
     end
     function XY(lat::Lattice, seed)
         model = new()
-        model.rng = srand(Random.MersenneTwister(0), seed)
+        model.rng = Random.seed!(Random.MersenneTwister(0), seed)
         model.lat = lat
         model.spins = rand(model.rng, numsites(lat))
         return model
