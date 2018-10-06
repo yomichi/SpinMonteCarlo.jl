@@ -34,7 +34,7 @@ function simple_estimator(model::Ising, T::Real, Js::AbstractArray, _=nothing)
 
     M = mean(model.spins)
     E = 0.0
-    @inbounds for b in 1:nbonds
+    @inbounds for b in bonds(model)
         s1, s2 = source(model, b), target(model, b)
         E += ifelse(model.spins[s1] == model.spins[s2], -1.0, 1.0) * Js[bondtype(model,b)]
     end
@@ -61,7 +61,7 @@ function simple_estimator(model::Potts, T::Real, Js::AbstractArray, _=nothing)
     end
     M /= nsites
     E = 0.0
-    @inbounds for b in 1:nbonds
+    @inbounds for b in bonds(model)
         s1, s2 = source(model, b), target(model, b)
         E -= ifelse(model.spins[s1] == model.spins[s2], 1.0, 0.0) * Js[bondtype(model,b)]
     end
@@ -122,7 +122,7 @@ function simple_estimator(model::Clock, T::Real, Js::AbstractArray, _=nothing)
         M[2] += model.sines[model.spins[s]]
     end
 
-    @inbounds for b in 1:nbonds
+    @inbounds for b in bonds(model)
         i, j = source(model, b), target(model,b)
         dir = bonddirection(model, b)
         dt = mod1(model.spins[j] - model.spins[i], model.Q)
@@ -175,7 +175,7 @@ function simple_estimator(model::XY, T::Real, Js::AbstractArray, _=nothing)
         M[2] += sinpi(2model.spins[s])
     end
 
-    @inbounds for b in 1:nbonds
+    @inbounds for b in bonds(model)
         i, j = source(model, b), target(model,b)
         dir = bonddirection(model, b)
         dt = mod(model.spins[j] - model.spins[i] + 2.0, 1.0)

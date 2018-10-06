@@ -19,7 +19,8 @@ function local_update!(model::Ising, T::Real, Js::AbstractArray)
     @inbounds for site in 1:nsites
         center = model.spins[site]
         de = 0.0
-        for (n,b) in neighbors(model, site)
+        for n in neighborsites(model, site)
+            b = Edge(site,n)
             de += 2center * model.spins[n] * Js[bondtype(model,b)]
         end
         if rand(rng) < exp(mbeta*de)
@@ -40,7 +41,8 @@ function local_update!(model::Potts, T::Real, Js::AbstractArray)
         center = model.spins[site]
         new_center = mod1(center+rand(rng, 1:(model.Q-1)), model.Q)
         de = 0.0
-        for (n,b) in neighbors(model, site)
+        for n in neighborsites(model, site)
+            b = Edge(site,n)
             de += ifelse(center == model.spins[n], Js[bondtype(model, b)], 0.0)
             de -= ifelse(new_center == model.spins[n], Js[bondtype(model, b)], 0.0)
         end
@@ -63,7 +65,8 @@ function local_update!(model::Clock, T::Real, Js::AbstractArray)
         center = model.spins[site]
         new_center = mod1(center+rand(rng, 1:(model.Q-1)), model.Q)
         de = 0.0
-        for (n,b) in neighbors(model, site)
+        for n in neighborsites(model, site)
+            b = Edge(site,n)
             de += model.cosines[mod1(model.spins[n]-center, model.Q)] * Js[bondtype(model,b)]
             de -= model.cosines[mod1(model.spins[n]-new_center, model.Q)] * Js[bondtype(model,b)]
         end
@@ -85,7 +88,8 @@ function local_update!(model::XY, T::Real, Js::AbstractArray)
         center = model.spins[site]
         new_center = rand(rng)
         de = 0.0
-        for (n,b) in neighbors(model, site)
+        for n in neighborsites(model, site)
+            b = Edge(site,n)
             de += cospi(2(center - model.spins[n])) * Js[bondtype(model,b)]
             de -= cospi(2(new_center - model.spins[n])) * Js[bondtype(model,b)]
         end

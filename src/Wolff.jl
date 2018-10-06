@@ -23,7 +23,8 @@ function Wolff_update!(model::Ising, T::Real, Js::AbstractArray)
     @inbounds while !isempty(st)
         clustersize += 1
         s = pop!(st)
-        for (n,b) in neighbors(model, s)
+        for n in neighborsites(model, s)
+            b = Edge(s,n)
             bt = bondtype(model,b)
             if model.spins[n] == sp && rand(rng) < ps[bt]
                 model.spins[n] *= -1
@@ -50,7 +51,8 @@ function Wolff_update!(model::Potts, T::Real, Js::AbstractArray)
     @inbounds while !isempty(st)
         clustersize += 1
         s = pop!(st)
-        for (n,b) in neighbors(model, s)
+        for n in neighborsites(model, s)
+            b = Edge(s,n)
             bt = bondtype(model,b)
             if model.spins[n] == sp && rand(rng) < ps[bt]
                 model.spins[n] = newsp
@@ -79,7 +81,8 @@ function Wolff_update!(model::Clock, T::Real, Js::AbstractArray)
         clustersize += 1
         center = pop!(st)
         cr = mod1(model.spins[center]-m, model.Q)
-        for (n,b) in neighbors(model, center)
+        for n in neighborsites(model, center)
+            b = Edge(center,n)
             nr = mod1(model.spins[n]-m, model.Q)
             bt = bondtype(model,b)
             ## Note: center already flipped
@@ -112,7 +115,8 @@ function Wolff_update!(model::XY, T::Real, Js::AbstractArray)
         center = pop!(st)
         cp = cospi(2(model.spins[center]-m))
 
-        for (n,b) in neighbors(model, center)
+        for n in neighborsites(model, center)
+            b = Edge(center,n)
             np = cospi(2(model.spins[n]-m))
             bt = bondtype(model,b)
             ## Note: center already flipped
