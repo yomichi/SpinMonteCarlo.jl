@@ -27,11 +27,13 @@ size(model::Model) = size(model.lat)
 size(model::Model, dim::Integer) = size(model.lat,dim)
 
 @doc """
-    sites(lat::Lattice, sitetype::Integer)
-    sites(model::Model, sitetype::Integer)
+    sites(lat::Lattice, [sitetype::Integer])
+    sites(model::Model, [sitetype::Integer])
 
-Returns an iterator over sites with `sitetype`
+Returns an iterator over sites with `sitetype` (if omitted, over all sites)
 """
+sites(lat::Lattice) = vertices(lat)
+sites(model::Model) = sites(model.lat)
 sites(lat::Lattice, sitetype::Integer) = (site for site in vertices(lat) if get_prop(lat, site, :sitetype)==sitetype)
 sites(model::Model, sitetype::Integer) = sites(model.lat, sitetype)
 
@@ -54,11 +56,13 @@ numsites(lat::Lattice, sitetype::Integer) = get_prop(g, :nss)[sitetype]
 numsites(model::Model, sitetype::Integer) = numsites(model.lat, sitetype)
 
 @doc """
-    bonds(lat::Lattice, bondtype::Integer)
-    bonds(model::Model, bondtype::Integer)
+    bonds(lat::Lattice, [bondtype::Integer])
+    bonds(model::Model, [bondtype::Integer])
 
-Returns bonds with `bondtype`
+Returns an iterator over bonds with `bondtype` (if omitted, over all bonds)
 """
+bonds(lat::Lattice) = edges(lat)
+bonds(model::Model) = bonds(model.lat)
 bonds(lat::Lattice, bondtype::Integer) = (bond for bond in edges(lat) if get_prop(lat, bond, :bondtype)==bondtype)
 bonds(model::Model, bondtype::Integer) = bonds(model.lat, bondtype)
 

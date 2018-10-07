@@ -16,9 +16,8 @@ export Model, Ising, XY, Potts, Clock
 export QuantumLocalZ2Model, QuantumXXZ
 export local_update!, SW_update!, Wolff_update!, loop_update!
 export default_estimator, simple_estimator, improved_estimator
-export Lattice, dim, size, numsites, numbonds, neighbors, source, target, sitetype, bondtype
-export sitecoordinate, bonddirection
-export cellcoordinate, celldirection
+export Lattice, dim, size, sites, bonds, numsites, numbonds, neighbors, source, target, sitetype, bondtype
+export sitecoordinate, bonddirection, cellcoordinate
 export UnionFind, addnode!, unify!, clusterize!, clusterid
 export gen_snapshot!, gensave_snapshot!, load_snapshot
 export runMC, print_result
