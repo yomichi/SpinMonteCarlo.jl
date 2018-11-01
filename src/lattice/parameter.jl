@@ -6,7 +6,7 @@ mutable struct LatticeParameter
         for key in keys(p)
             val = p[key]
             if isa(val,AbstractArray)
-                if isa(first(val), P)
+                if length(val)>0 && isa(first(val), P)
                     setproperty!(ld, key, LatticeParameter.(val))
                 else
                     setproperty!(ld, key, val)
@@ -28,6 +28,8 @@ setproperty!(ld::LatticeParameter, name::Symbol, value) = getfield(ld, :dict)[na
 getindex(ld::LatticeParameter, name::Symbol) = ld.name
 setindex!(ld::LatticeParameter, name::Symbol, value) = ld.name = value
 propertynames(ld::LatticeParameter) = keys(getfield(ld,:dict))
+
+generator(ld::LatticeParameter) = get(getfield(ld, :dict), :generator, generatelattice_std)
 
 convert(::Type{LatticeParameter}, p::P) = LatticeParameter(p)
 

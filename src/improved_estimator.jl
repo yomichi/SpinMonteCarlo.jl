@@ -203,8 +203,7 @@ function improved_estimator(model::QuantumXXZ, T::Real, Jzs::AbstractArray, Jxys
     for op in model.ops
         if !op.isdiagonal
             if op.let_type == LET_Vertex || op.let_type == LET_Cross
-                subbond = op.space
-                b,_,_ = subbond2bond(subbond,S2)
+                b = op.space
                 bt = bondtype(model, b)
                 sgn *= ifelse(Jxys[bt] > 0.0, -1.0, 1.0)
             end

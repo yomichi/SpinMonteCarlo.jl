@@ -34,7 +34,7 @@ function SW_update!(model::Ising, T::Real, Js::AbstractArray)
     nbt = numbondtypes(model)
     activated_bonds = zeros(Int,nbt)
     uf = UnionFind(nsites)
-    @inbounds for bond in 1:nbonds
+    @inbounds for bond in bonds(model)
         s1,s2 = source(model, bond), target(model, bond)
         bt = bondtype(model,bond)
         if model.spins[s1] == model.spins[s2] && rand(rng) < ps[bt]
@@ -62,7 +62,7 @@ function SW_update!(model::Potts, T::Real, Js::AbstractArray)
     nbt = numbondtypes(model)
     activated_bonds = zeros(Int,nbt)
     uf = UnionFind(nsites)
-    @inbounds for bond in 1:nbonds
+    @inbounds for bond in bonds(model)
         s1,s2 = source(model, bond), target(model, bond)
         bt = bondtype(model,bond)
         if model.spins[s1] == model.spins[s2] && rand(rng) < ps[bt]
@@ -93,7 +93,7 @@ function SW_update!(model::Clock, T::Real, Js::AbstractArray)
         rspins[s] = mod1(model.spins[s]-m, model.Q)
     end
     uf = UnionFind(nsites)
-    @inbounds for bond in 1:nbonds
+    @inbounds for bond in bonds(model)
         s1,s2 = source(model, bond), target(model, bond)
         bt = bondtype(model,bond)
         if rand(rng) < -expm1(m2bJ[bt]*model.sines_sw[rspins[s1]]*model.sines_sw[rspins[s2]])
@@ -124,7 +124,7 @@ function SW_update!(model::XY, T::Real, Js::AbstractArray)
         pspins[s] = cospi(2(model.spins[s]-m))
     end
     uf = UnionFind(nsites)
-    @inbounds for bond in 1:nbonds
+    @inbounds for bond in bonds(model)
         s1,s2 = source(model, bond), target(model, bond)
         bt = bondtype(model,bond)
         if rand(rng) < -expm1(m2bJ[bt]*pspins[s1]*pspins[s2])

@@ -39,18 +39,25 @@ function coord2index(coord::AbstractArray, L::AbstractArray)
     return index
 end
 
-function generatelattice(param
-             ; 
-             bravaisdict::Dict{String,LatticeParameter}=stdbravais,
-             unitcelldict::Dict{String, LatticeParameter}=stdunitcells,
-             latticedict::Dict{String, LatticeParameter}=stdlattices
-            )
+function generatelattice(param)
+    latticedict = get(param, "LatticeDict", stdlattices)
+    lat = latticedict[param["Lattice"]]
+    return generator(lat)(param)
+end
+
+function generatelattice_std(param)
+    bravaisdict = get(param, "BravaisDict", stdbravais)
+    unitcelldict = get(param, "UnitcellDict", stdunitcells)
+    latticedict = get(param, "LatticeDict", stdlattices)
     lat = latticedict[param["Lattice"]]
     bra = bravaisdict[lat.bravais]
     ucell = unitcelldict[lat.unitcell]
     @assert lat.dimension == bra.dimension == ucell.dimension
     D = lat.dimension
     bparams = Dict(name => get(param,String(name),default) for (name, default) in bra.parameters)
+    for (name, default) in lat.parameters
+        bparams[name] = get(param,String(name),default)
+    end
 
     if isa(param["L"], Vector)
         L = param["L"]
@@ -133,6 +140,33 @@ function generatelattice(param
         dir = rem.(tgt .- src, latvec*L, RoundNearest)
         set_prop!(g, bond, :bonddirection, dir)
         set_prop!(g, bond, :weight, norm(dir))
+    end
+    return g
+end
+
+function generate_fully_connected_graph(param)
+    N = param["N"]
+    nb = div(N*(N-1),2)
+    g = MetaGraph(CompleteGraph(param["N"]))
+    set_prop!(g, :dim, 1)
+    set_prop!(g, :numsites, N)
+    set_prop!(g, :numbonds, nb)
+    set_prop!(g, :numsitetypes, 1)
+    set_prop!(g, :numbondtypes, 1)
+    set_prop!(g, :nss, [N])
+    set_prop!(g, :nbs, [nb])
+    for s in 1:N
+        set_prop!(g, s, :sitetype, 1)
+        set_prop!(g, s, :coord, [0.0])
+        set_prop!(g, s, :localsite, s)
+        set_prop!(g, s, :cellcoord, [0])
+        for t in (s+1):N
+            set_prop!(g, s, t, :bondtype, 1)
+            set_prop!(g, s, t, :source, s)
+            set_prop!(g, s, t, :target, t)
+            set_prop!(g, s, t, :weight, 1.0)
+            set_prop!(g, s, t, :bonddirection, [0.0])
+        end
     end
     return g
 end
