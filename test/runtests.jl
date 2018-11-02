@@ -9,7 +9,7 @@ const Therm = MCS
 const alpha = 0.001
 
 @testset begin
-    filenames = ["lattice.jl",
+    filenames = [
                  "classical.jl",
                  "quantum.jl",
                 ]

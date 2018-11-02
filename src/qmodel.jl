@@ -113,7 +113,8 @@ or matrix
       each other or not.
 - `time` : imaginary time ($\tau/\beta \in [0,1)$) which this perturbation acts on.
 - `space` : spin or bond which this perturbation acts on.
-            `Edge(s,s)` denotes a site `s`.
+            denotes `space` spin if space <= nspins
+                or  `space - nspins` bond otherwise.
 - `subspace` : subspin(s) index
 - `bottom_id` :: index of node of union find assigned to a loop
 - `top_id` :: index of node of union find assigned to the other loop
@@ -123,12 +124,12 @@ mutable struct LocalLoopOperator
     let_type :: LoopElementType
     isdiagonal :: Bool
     time :: Float64
-    space :: Edge{Int64}
+    space :: Int
     subspace :: Tuple{Int,Int}
     bottom_id :: Int
     top_id :: Int
 end
-function LocalLoopOperator(let_type::LoopElementType, time::Real, space::Edge, subspace::Tuple{Int,Int})
+function LocalLoopOperator(let_type::LoopElementType, time::Real, space::Int, subspace::Tuple{Int,Int})
     LocalLoopOperator(let_type, true, time, space, subspace, 0,0)
 end
 
@@ -197,7 +198,6 @@ function QuantumXXZ(param::Parameter)
 end
 
 @inline site2subspin(site::Integer, ss::Integer, S2::Integer) = (site-1)*S2+ss
-@inline site2subspin(site::Edge, ss::Integer, S2::Integer) = site2subspin(site.src, ss, S2)
 @inline function subspin2site(subspin::Integer, S2::Integer)
     return ceil(Int, subspin/S2), mod1(subspin,S2)
 end

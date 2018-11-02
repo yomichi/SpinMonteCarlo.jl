@@ -12,7 +12,7 @@ import LinearAlgebra.norm
 
 Returns the dimension of lattice.
 """
-@inline dim(lat::Lattice) = size(lat.latvec,1)
+@inline dim(lat::Lattice) = size(lat.latticevector,1)
 @inline dim(model::Model) = dim(model.lat)
 
 @doc """
@@ -103,73 +103,111 @@ Returns the number of bondtypes.
 @inline numbondtypes(model::Model) = numbondtypes(model.lat)
 
 @doc """
+    neighborsites(site::Site)
     neighborsites(lat::Lattice, site::Integer)
     neighborsites(model::Model, site::Integer)
 
-Returns the neighbor sites of `site`.
+Returns the indecies of neighbor sites of `site`.
 """
-@inline neighborsites(lat::Lattice, site::Integer) = neighbors(lat, site)
+@inline neighborsites(site::Site) = site.neighborsites
+@inline neighborsites(lat::Lattice, site::Integer) = neighborsites(lat.sites[site])
 @inline neighborsites(model::Model, site::Integer) = neighborsites(model.lat, site)
 
 @doc """
+    neighborbonds(site::Site)
+    neighborbonds(lat::Lattice, site::Integer)
+    neighborbonds(model::Model, site::Integer)
+
+Returns the indecies of neighbor bonds of `site`.
+"""
+@inline neighborbonds(site::Site) = site.neighborbonds
+@inline neighborbonds(lat::Lattice, site::Integer) = neighborbonds(lat.sites[site])
+@inline neighborbonds(model::Model, site::Integer) = neighborbonds(model.lat, site)
+
+@doc """
+    neighbors(site::Site)
+    neighbors(lat::Lattice, site::Integer)
+    neighbors(model::Model, site::Integer)
+
+Returns the index pairs of neighbor sites and bonds of `site`.
+"""
+@inline neighbors(site::Site) = zip(site.neighborsites, site.neighborbonds)
+@inline neighbors(lat::Lattice, site::Integer) = neighbors(lat.sites[site])
+@inline neighbors(model::Model, site::Integer) = neighbors(model.lat, site)
+
+@doc """
+    source(bond::Bond)
     source(lat::Lattice, bond::Integer)
     source(model::Model, bond::Integer)
 
-Returns the source site of `bond`.
+Returns the source site index of `bond`.
 """
-@inline source(lat::Lattice, bond::Integer) = lat.bonds[bond].source
+@inline source(bond::Bond) = bond.source
+@inline source(lat::Lattice, bond::Integer) = source(lat.bonds[bond])
 @inline source(model::Model, bond::Integer) = source(model.lat, bond)
 
 @doc """
+    target(bond::Bond)
     target(lat::Lattice, bond::Integer)
     target(model::Model, bond::Integer)
 
 Returns the target site of `bond`.
 """
-@inline target(lat::Lattice, bond::Integer) = lat.bonds[bond].target
+@inline target(bond::Bond) = bond.target
+@inline target(lat::Lattice, bond::Integer) = target(lat.bonds[bond])
 @inline target(model::Model, bond::Integer) = target(model.lat, bond)
 
 @doc """
+    sitecoordinate(site::Site)
     sitecoordinate(lat::Lattice, site::Integer)
     sitecoordinate(model::Model, site::Integer)
 
 Returns the coordinate of the `site` in the Cartesian system
 """
-@inline sitecoordinate(lat::Lattice, site::Integer) = lat.sites[site].coord
+@inline sitecoordinate(site::Site) = site.coord
+@inline sitecoordinate(lat::Lattice, site::Integer) = sitecoordinate(lat.sites[site])
 @inline sitecoordinate(model::Model, site::Integer) = sitecoordinate(model.lat, site)
 
 @doc """
+    cellcoordinate(site::Site)
     cellcoordinate(lat::Lattice, site::Integer)
     cellcoordinate(model::Model, site::Integer)
 
 Returns the coordinate of the `cell` including `site` in the Lattice system
 """
-@inline lattice_sitecoordinate(lat::Lattice, site::Integer) = lat.sites[site].cellcoord
+@inline lattice_sitecoordinate(site::Site) = site.cellcoord
+@inline lattice_sitecoordinate(lat::Lattice, site::Integer) = lattice_sitecoordinate(lat.sites[site])
 @inline lattice_sitecoordinate(model::Model, site::Integer) = lattice_sitecoordinate(model.lat, site)
 
 @doc """
+    sitetype(site::Site)
     sitetype(lat::Lattice, site::Integer)
     sitetype(model::Model, site::Integer)
 
 Returns the type of `site`
 """
-@inline sitetype(lat::Lattice, site::Integer) = lat.sites[site].sitetype
+@inline sitetype(site::Site) = site.sitetype
+@inline sitetype(lat::Lattice, site::Integer) = sitetype(lat.sites[site])
 @inline sitetype(model::Model, site::Integer) = sitetype(model.lat, site)
 
 @doc """
+    bondtype(bond::Bond)
     bondtype(lat::Lattice, bond::Integer)
     bondtype(model::Model, bond::Integer)
 
 Returns the type of `bond`.
 """
-@inline bondtype(lat::Lattice, bond::Integer) = lat.bonds[bond].bondtype
+@inline bondtype(bond::Bond) = bond.bondtype
+@inline bondtype(lat::Lattice, bond::Integer) = bondtype(lat.bonds[bond])
 @inline bondtype(model::Model, bond::Integer) = bondtype(model.lat, bond)
 
 @doc """
+    bonddirection(bond::Bond)
     bonddirection(lat::Lattice, bond::Integer)
     bonddirection(model::Model, bond::Integer)
 
 Returns the unnormalized direction of the `bond` as vector in the Cartesian system
 """
-bonddirection(lat::Lattice, bond::Integer) = lat.bonds[bond].direction
+bonddirection(bond::Bond) = bond.direction
+bonddirection(lat::Lattice, bond::Integer) = bonddirection(lat.bonds[bond])
 bonddirection(model::Model, bond::Integer) = bonddirection(model.lat, bond)

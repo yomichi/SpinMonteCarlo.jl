@@ -35,8 +35,8 @@ function simple_estimator(model::Ising, T::Real, Js::AbstractArray, _=nothing)
     M = mean(model.spins)
     E = 0.0
     @inbounds for b in bonds(model)
-        s1, s2 = source(model, b), target(model, b)
-        E += ifelse(model.spins[s1] == model.spins[s2], -1.0, 1.0) * Js[bondtype(model,b)]
+        s1, s2 = source(b), target(b)
+        E += ifelse(model.spins[s1] == model.spins[s2], -1.0, 1.0) * Js[bondtype(b)]
     end
     E /= nsites
 
@@ -62,8 +62,8 @@ function simple_estimator(model::Potts, T::Real, Js::AbstractArray, _=nothing)
     M /= nsites
     E = 0.0
     @inbounds for b in bonds(model)
-        s1, s2 = source(model, b), target(model, b)
-        E -= ifelse(model.spins[s1] == model.spins[s2], 1.0, 0.0) * Js[bondtype(model,b)]
+        s1, s2 = source(b), target(b)
+        E -= ifelse(model.spins[s1] == model.spins[s2], 1.0, 0.0) * Js[bondtype(b)]
     end
     E /= nsites
 
@@ -123,10 +123,10 @@ function simple_estimator(model::Clock, T::Real, Js::AbstractArray, _=nothing)
     end
 
     @inbounds for b in bonds(model)
-        i, j = source(model, b), target(model,b)
-        dir = bonddirection(model, b)
+        i, j = source(b), target(b)
+        dir = bonddirection(b)
         dt = mod1(model.spins[j] - model.spins[i], model.Q)
-        E -= model.cosines[dt] * Js[bondtype(model, b)]
+        E -= model.cosines[dt] * Js[bondtype(b)]
 
         for d in 1:D
             U1[d] += model.cosines[dt] * dir[d]^2
@@ -176,11 +176,11 @@ function simple_estimator(model::XY, T::Real, Js::AbstractArray, _=nothing)
     end
 
     @inbounds for b in bonds(model)
-        i, j = source(model, b), target(model,b)
-        dir = bonddirection(model, b)
+        i, j = source(b), target(b)
+        dir = bonddirection(b)
         dt = mod(model.spins[j] - model.spins[i] + 2.0, 1.0)
         dt = ifelse(0.5 <= dt, dt - 1.0, dt)
-        E -= cospi(2dt) * Js[bondtype(model,b)]
+        E -= cospi(2dt) * Js[bondtype(b)]
 
         for d in 1:D
             U1[d] += cospi(2dt) * dir[d]^2

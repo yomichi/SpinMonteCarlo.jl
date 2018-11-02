@@ -7,7 +7,7 @@ using JSON
         param = diagres["Parameter"]
         ref = diagres["Result"]
         param["Model"] = QuantumXXZ
-        param["Lattice"] = chain_lattice
+        param["Lattice"] = "chain lattice"
         param["Update Method"] = loop_update!
 
         mcres = runMC(param)

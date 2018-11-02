@@ -73,11 +73,11 @@ function generatelattice_std(param)
     latvec = interpolate!(bra.basis, bparams) |> eval
 
     usites = ucell.sites
-    numsites_in_cell = length(sites)
+    numsites_in_cell = length(usites)
     numsites = numcell * numsites_in_cell
 
     let x = Int[]
-        for site in sites
+        for site in usites
             push!(x, site.id)
         end
         sort!(x)
@@ -92,74 +92,49 @@ function generatelattice_std(param)
     nss = Int[]
     nbs = Int[]
 
-    sites = [Site() for i in 1:numsites]
+    sites = Site[]
+    bonds = Bond[]
+    ib = 0
 
     for icell in 0:(numcell-1)
         cellcoord = index2coord(icell, L)
         for site in usites
             id = numsites_in_cell * icell + site.id
             coord = latvec * (cellcoord .+ site.coord)
-            s = Site(id, site.sitetype, Int[], coord, site.id, cellcoord)
+            s = Site(id, site.sitetype, Int[], Int[], coord, site.id, cellcoord)
             push!(sites,s)
         end
         for bond in ubonds
+            ib += 1
             source = numsites_in_cell * coord2index(cellcoord .+ bond.source.offset, L) + bond.source.id
             target = numsites_in_cell * coord2index(cellcoord .+ bond.target.offset, L) + bond.target.id
-            add_edge!(g, source, target)
             numbonds += 1
-            set_prop!(g, source, target, :bondtype, bond.bondtype)
-            set_prop!(g, source, target, :source, source)
-            set_prop!(g, source, target, :target, target)
-            while bond.bondtype > numbondtypes
-                numbondtypes += 1
-                push!(nbs, 0)
-            end
-            nbs[bond.bondtype] += 1
+            b = Bond(ib, bond.bondtype, source, target, zeros(D))
+            push!(bonds, b)
         end
     end
 
-    set_prop!(g, :dim, D)
-    set_prop!(g, :numsites, numsites)
-    set_prop!(g, :numbonds, numbonds)
-    set_prop!(g, :size, L)
-    set_prop!(g, :numsitetypes, numsitetypes)
-    set_prop!(g, :numbondtypes, numbondtypes)
-    set_prop!(g, :nss, nss)
-    set_prop!(g, :nbs, nbs)
-
-    for bond in edges(g)
-        src = sitecoordinate(g, source(g, bond))
-        tgt = sitecoordinate(g, target(g, bond))
-        dir = rem.(tgt .- src, latvec*L, RoundNearest)
-        set_prop!(g, bond, :bonddirection, dir)
-        set_prop!(g, bond, :weight, norm(dir))
+    for bond in bonds
+        src = sitecoordinate(sites[source(bond)])
+        tgt = sitecoordinate(sites[target(bond)])
+        bond.direction .= rem.(tgt .- src, latvec*L, RoundNearest)
     end
-    return g
+    return Lattice(latvec, L, sites, bonds)
 end
 
 function generate_fully_connected_graph(param)
     N = param["N"]
     nb = div(N*(N-1),2)
-    g = MetaGraph(CompleteGraph(param["N"]))
-    set_prop!(g, :dim, 1)
-    set_prop!(g, :numsites, N)
-    set_prop!(g, :numbonds, nb)
-    set_prop!(g, :numsitetypes, 1)
-    set_prop!(g, :numbondtypes, 1)
-    set_prop!(g, :nss, [N])
-    set_prop!(g, :nbs, [nb])
+    sites = Site[]
+    bonds = Bond[]
+    ib = 0
     for s in 1:N
-        set_prop!(g, s, :sitetype, 1)
-        set_prop!(g, s, :coord, [0.0])
-        set_prop!(g, s, :localsite, s)
-        set_prop!(g, s, :cellcoord, [0])
+        push!(sites, Site(s, 1, Int[], Int[], [0.0], 1, [0]))
         for t in (s+1):N
-            set_prop!(g, s, t, :bondtype, 1)
-            set_prop!(g, s, t, :source, s)
-            set_prop!(g, s, t, :target, t)
-            set_prop!(g, s, t, :weight, 1.0)
-            set_prop!(g, s, t, :bonddirection, [0.0])
+            ib += 1
+            push!(bonds, Bond(ib, 1, s, t, [0.0]))
         end
     end
-    return g
+    latvec = zeros(1,1)
+    return Lattice(latvec, [N], sites, bonds)
 end

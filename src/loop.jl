@@ -53,8 +53,6 @@ function loop_update!(model::QuantumXXZ, T::Real,
     nbonds = numbonds(model)
     nst = numsitetypes(model)
     nbt = numbondtypes(model)
-    bss = [collect(bonds(model, bt)) for bt in 1:nbt]
-    sss = [collect(sites(model, st)) for st in 1:nst]
     weights = zeros(4*nbt+nst)
     for i in 1:nbt
         nb = numbonds(model,i)*S2*S2
@@ -94,14 +92,13 @@ function loop_update!(model::QuantumXXZ, T::Real,
                 bt = ceil(Int, ot/4)
                 ot = mod1(ot,4)
                 lo_type = lo_types[ot]
-                b = bss[bt][rand(rng, 1:numbonds(model,bt))]
-                s1 = source(model, b)
-                s2 = target(model, b)
+                b = bonds(model,bt)[rand(rng, 1:numbonds(model,bt))]
+                s1,s2 = source(b), target(b)
                 ss1, ss2 = rand(rng, 1:S2, 2)
                 if ifelse(spins[site2subspin(s1,ss1,S2)] == spins[site2subspin(s2,ss2,S2)],
                           lo_type == LET_FMLink || lo_type == LET_Cross,
                           lo_type == LET_AFLink || lo_type == LET_Vertex)
-                    push!(ops, LocalLoopOperator(lo_type, t, Edge(s1,s2), (ss1, ss2)))
+                    push!(ops, LocalLoopOperator(lo_type, t, nsites+b.id, (ss1, ss2)))
                     t += randexp(rng)*op_dt
                 else
                     t += randexp(rng)*op_dt
@@ -110,9 +107,9 @@ function loop_update!(model::QuantumXXZ, T::Real,
             else
                 ## Site
                 st = ot-4nbt
-                s = sss[st][rand(rng, 1:numsites(model,st))]
+                s = sites(model,st)[rand(rng, 1:numsites(model,st))]
                 ss = rand(rng, 1:S2)
-                push!(ops, LocalLoopOperator(LET_Cut, t, Edge(s,s), (ss,ss)))
+                push!(ops, LocalLoopOperator(LET_Cut, t, s, (ss,ss)))
                 t += randexp(rng)*op_dt
             end
         else 
@@ -126,7 +123,7 @@ function loop_update!(model::QuantumXXZ, T::Real,
             else
                 push!(ops, op)
                 op = ops[end]
-                b = op.space
+                b = op.space-nsites
                 ss1,ss2 = op.subspace
                 bt = bondtype(model,b)
                 otype = ifelse(rand(rng)*(weights[4bt-1]+weights[4bt])<weights[4bt-1], LET_Vertex, LET_Cross)
@@ -136,7 +133,7 @@ function loop_update!(model::QuantumXXZ, T::Real,
         
         op = ops[end]
         if op.let_type == LET_Cut
-            s = op.space.src
+            s = op.space
             ss = op.subspace[1]
             subspin = site2subspin(s,ss,S2)
             op.bottom_id = currents[subspin]
@@ -145,7 +142,7 @@ function loop_update!(model::QuantumXXZ, T::Real,
             op.top_id = c
             spins[subspin] *= ifelse(op.isdiagonal, 1, -1)
         else
-            b = op.space
+            b = op.space - nsites
             ss1,ss2 = op.subspace
             s1 = source(model, b)
             s2 = target(model, b)
