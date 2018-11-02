@@ -8,7 +8,7 @@ function latplot(lat::Lattice, ::Type{Val{1}})
     minx = Inf
     maxx = -Inf
     for site in sites(lat)
-        c = sitecoordinate(lat, site)[1]
+        c = sitecoordinate(site)[1]
         push!(points, Point2(c,0))
         minx = min(minx, c)
         maxx = max(maxx, c)
@@ -16,8 +16,8 @@ function latplot(lat::Lattice, ::Type{Val{1}})
     limits = FRect(minx-1.0, -1.0, maxx-minx+2.0, 2.0)
     segments = Pair{Point2f0, Point2f0}[]
     for bond in bonds(lat)
-        src = sitecoordinate(lat, source(lat,bond))[1]
-        tgt = bonddirection(lat, bond)[1] + src
+        src = sitecoordinate(lat, source(bond))[1]
+        tgt = bonddirection(bond)[1] + src
         push!(segments, Point2f0(src,0)=>Point2f0(tgt,0))
     end
     scene = scatter(points, limits=limits)
@@ -34,7 +34,7 @@ function latplot(lat::Lattice, ::Type{Val{2}})
     minx = miny = Inf
     maxx = maxy = -Inf
     for site in sites(lat)
-        c = sitecoordinate(lat, site)
+        c = sitecoordinate(site)
         push!(points, Point2f0(c))
         minx = min(minx, c[1])
         maxx = max(maxx, c[1])
@@ -44,8 +44,8 @@ function latplot(lat::Lattice, ::Type{Val{2}})
     limits = FRect(minx-1.0, miny-1.0, maxx-minx+2.0, maxy-miny+2.0)
     segments = Pair{Point2f0, Point2f0}[]
     for bond in bonds(lat)
-        src = sitecoordinate(lat, source(lat,bond))
-        tgt = bonddirection(lat, bond) .+ src
+        src = sitecoordinate(lat, source(bond))
+        tgt = bonddirection(bond) .+ src
         push!(segments, Point2f0(src)=>Point2f0(tgt))
     end
     scene = scatter(points, limits=limits)
@@ -62,7 +62,7 @@ function latplot(lat::Lattice, ::Type{Val{3}})
     minx = miny = minz = Inf
     maxx = maxy = maxz = -Inf
     for site in sites(lat)
-        c = sitecoordinate(lat, site)
+        c = sitecoordinate(site)
         push!(points, Point3f0(c))
         minx = min(minx, c[1])
         maxx = max(maxx, c[1])
@@ -73,8 +73,8 @@ function latplot(lat::Lattice, ::Type{Val{3}})
     end
     segments = Pair{Point3f0, Point3f0}[]
     for bond in bonds(lat)
-        src = sitecoordinate(lat, source(lat,bond))
-        tgt = bonddirection(lat, bond) .+ src
+        src = sitecoordinate(lat, source(bond))
+        tgt = bonddirection(bond) .+ src
         push!(segments, Point3f0(src)=>Point3f0(tgt))
     end
     scene = scatter(points)
