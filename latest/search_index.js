@@ -29,7 +29,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Home",
     "title": "Simple example",
     "category": "section",
-    "text": "The following simple example calculates and prints temperature dependence of specific heat for Ising model on a 16times16 square lattice by Swendsen-Wang algorithm.using SpinMonteCarlo\n\nconst model = Ising\nconst lat = square_lattice\nconst L = 16\nconst update! = SW_update!\n\nconst Tc = 2.0/log1p(sqrt(2))\nconst Ts = Tc*linspace(0.85, 1.15, 31)\nconst MCS = 8192\nconst Therm = MCS >> 3\n\nfor T in Ts\n    param = Parameter(\"Model\"=>model, \"Lattice\"=>lat,\n                      \"L\"=>L, \"T\"=>T, \"J\"=>1.0,\n                      \"Update Method\"=>update!,\n                      \"MCS\"=>MCS, \"Thermalization\"=>Therm,\n                     )\n    result = runMC(param)\n    println(@sprintf(\"%f %.15f %.15f\",\n                      T, mean(result[\"Specific Heat\"]), stderror(result[\"Specific Heat\"])))\nend"
+    "text": "The following simple example calculates and prints temperature dependence of specific heat for Ising model on a 16times16 square lattice by Swendsen-Wang algorithm.using SpinMonteCarlo\nusing Printf\n\nconst model = Ising\nconst lat = \"square lattice\"\nconst L = 16\nconst update! = SW_update!\n\nconst Tc = 2.0/log1p(sqrt(2))\nconst Ts = Tc*range(0.85, stop=1.15, length=31)\nconst MCS = 8192\nconst Therm = MCS >> 3\n\nfor T in Ts\n    param = Parameter(\"Model\"=>model, \"Lattice\"=>lat,\n                      \"L\"=>L, \"T\"=>T, \"J\"=>1.0,\n                      \"Update Method\"=>update!,\n                      \"MCS\"=>MCS, \"Thermalization\"=>Therm,\n                     )\n    result = runMC(param)\n    println(@sprintf(\"%f %.15f %.15f\",\n                      T, mean(result[\"Specific Heat\"]), stderror(result[\"Specific Heat\"])))\nend"
 },
 
 {
@@ -69,7 +69,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Develop Monte Carlo",
     "title": "Lattice",
     "category": "section",
-    "text": "You can define your own lattice as an instance of Lattice."
+    "text": "See src/lattice/standard.jl."
 },
 
 {
@@ -206,14 +206,6 @@ var documenterSearchIndex = {"docs": [
     "title": "Model",
     "category": "section",
     "text": "Ising\nPotts\nClock\nXY\nQuantumXXZ"
-},
-
-{
-    "location": "lib/public.html#Lattice-generator-1",
-    "page": "Public",
-    "title": "Lattice generator",
-    "category": "section",
-    "text": "dimer_lattice\nchain_lattice\nsquare_lattice\ntriangular_lattice\ncubic_lattice\nfully_connected_lattice"
 },
 
 {
