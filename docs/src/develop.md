@@ -1,7 +1,7 @@
 # Develop Monte Carlo
 
 ## Lattice
-You can define your own lattice as an instance of `Lattice`.
+See `src/lattice/standard.jl`.
 
 ## Model
 `Model` should contain following fields: `lat :: Lattice` and `rng :: Random.MersenneTwister`.

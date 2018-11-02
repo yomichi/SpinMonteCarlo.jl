@@ -22,17 +22,6 @@ XY
 QuantumXXZ
 ```
 
-## Lattice generator
-
-```@docs
-dimer_lattice
-chain_lattice
-square_lattice
-triangular_lattice
-cubic_lattice
-fully_connected_lattice
-```
-
 ## Update method
 
 An index of model parameter (e.g., `Js`) is corresponding to `sitetype` or `bondtype`.

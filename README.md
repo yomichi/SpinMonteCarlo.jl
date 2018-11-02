@@ -19,14 +19,15 @@ julia> Pkg.add("SpinMonteCarlo")
 
 ``` julia
 using SpinMonteCarlo
+using Printf
 
 const model = Ising
-const lat = square_lattice
+const lat = "square lattice"
 const L = 16
 const update = SW_update!
 
 const Tc = 2.0/log1p(sqrt(2))
-const Ts = Tc*linspace(0.85, 1.15, 31)
+const Ts = Tc*range(0.85, stop=1.15, length=31)
 const MCS = 8192
 const Therm = MCS >> 3
 
@@ -56,15 +57,17 @@ end
         - `\mathcal{H} = \sum_{ij} [ Jz_{ij} S_i^z S_j^z + \frac{Jxy_{ij}}{2} (S_i^+ S_j^- + S_i^-S_j^+) ] - \sum_i Gamma_i S_i^x`
 
 ## Lattice
-- `chain_lattice`
+- `chain lattice`
     - `L`
-- `square_lattice`
+- `bond-alternating chain lattice`
+    - `L`
+- `square lattice`
     - `L * W`
-- `triangular_lattice`
+- `triangular lattice`
     - `L * W`
-- `cubic_lattice`
+- `cubic lattice`
     - `L * W * H`
-- `fully_connected_lattice`
+- `fully connected graph`
     - `N`
 
 ## Update algorithm

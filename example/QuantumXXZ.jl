@@ -1,6 +1,5 @@
-include("../src/SpinMonteCarlo.jl")
-
 using SpinMonteCarlo
+using Printf
 
 const S = 0.5
 const J = 1.0
@@ -15,7 +14,7 @@ for L in Ls
     for T in Ts
         push!(params,
               Parameter("Model"=>QuantumXXZ,
-                        "Lattice"=>chain_lattice,
+                        "Lattice"=> "chain lattice",
                         "L"=>L, "T"=>T, "J"=>J, "S"=>S, "Gamma"=>Gamma,
                         "Update Method"=>loop_update!,
                         "MCS"=>MCS, "Therm"=>Therm,
@@ -43,11 +42,11 @@ const io = open("res-QuantumXXZ.dat", "w")
 i=1
 for pname in pnames
     println(io, "# \$$i : $pname")
-    i+=1
+    global i+=1
 end
 for oname in onames
     println(io, "# \$$i, $(i+1): $oname")
-    i+=2
+    global i+=2
 end
 
 for (p,o) in zip(params, obs)

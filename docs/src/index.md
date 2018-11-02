@@ -16,14 +16,15 @@ The following simple example calculates and prints temperature dependence of spe
 
 ```julia
 using SpinMonteCarlo
+using Printf
 
 const model = Ising
-const lat = square_lattice
+const lat = "square lattice"
 const L = 16
 const update! = SW_update!
 
 const Tc = 2.0/log1p(sqrt(2))
-const Ts = Tc*linspace(0.85, 1.15, 31)
+const Ts = Tc*range(0.85, stop=1.15, length=31)
 const MCS = 8192
 const Therm = MCS >> 3
 

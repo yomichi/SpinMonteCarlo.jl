@@ -1,6 +1,5 @@
-include("../src/SpinMonteCarlo.jl")
-
 using SpinMonteCarlo
+using Printf
 
 const ups = [0,1,2]
 const Qs = [2,3,4]
@@ -12,11 +11,11 @@ params = Dict{String, Any}[]
 for update in ups
     for Q in Qs
         const Tc = 1.0/log1p(sqrt(Q))
-        const Ts = Tc*linspace(0.85, 1.15, 11)
+        const Ts = Tc*range(0.85, stop=1.15, length=11)
         for L in Ls
             for T in Ts
                 push!(params,
-                  Parameter("Model"=>Potts, "Lattice"=>square_lattice,
+                  Parameter("Model"=>Potts, "Lattice"=>"square lattice",
                             "Q"=>Q, "L"=>L, "T"=>T, "J"=>1.0,
                             "MCS"=>MCS, "Thermalization"=>Therm,
                             "Update Method"=> (update==0 ? local_update! :
@@ -50,11 +49,11 @@ const io = open("res-potts.dat", "w")
 i=1
 for pname in pnames
     println(io, "# \$$i : $pname")
-    i+=1
+    global i+=1
 end
 for oname in onames
     println(io, "# \$$i, $(i+1): $oname")
-    i+=2
+    global i+=2
 end
 
 for (p,o) in zip(params, obs)
