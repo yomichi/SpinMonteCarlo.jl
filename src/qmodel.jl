@@ -112,7 +112,10 @@ or matrix
     - in other words, two states connecting this perturbation are equivalent to
       each other or not.
 - `time` : imaginary time ($\tau/\beta \in [0,1)$) which this perturbation acts on.
-- `space` : index of subspin or subbond which this perturbation acts on.
+- `space` : spin or bond which this perturbation acts on.
+            denotes `space` spin if space <= nspins
+                or  `space - nspins` bond otherwise.
+- `subspace` : subspin(s) index
 - `bottom_id` :: index of node of union find assigned to a loop
 - `top_id` :: index of node of union find assigned to the other loop
 
@@ -122,10 +125,13 @@ mutable struct LocalLoopOperator
     isdiagonal :: Bool
     time :: Float64
     space :: Int
+    subspace :: Tuple{Int,Int}
     bottom_id :: Int
     top_id :: Int
 end
-LocalLoopOperator(let_type::LoopElementType, time::Real, space::Int) = LocalLoopOperator(let_type, true, time, space, 0,0)
+function LocalLoopOperator(let_type::LoopElementType, time::Real, space::Int, subspace::Tuple{Int,Int})
+    LocalLoopOperator(let_type, true, time, space, subspace, 0,0)
+end
 
 abstract type QuantumLocalZ2Model <: Model end
 
@@ -178,11 +184,11 @@ end
 @doc doc"""
     QuantumXXZ(param)
 
-Generates `QuantumXXZ` using `param["Lattice"](param)`, `param["S"]` and `param["Seed"]` (if defined).
+Generates `QuantumXXZ` using `param["Lattice"]`, `param["S"]` and `param["Seed"]` (if defined).
 Each subspin will be initialized independently and randomly.
 """
 function QuantumXXZ(param::Parameter)
-    lat = param["Lattice"](param)
+    lat = generatelattice(param)
     S = param["S"]
     if "Seed" in keys(param)
         return QuantumXXZ(lat,S,param["Seed"])
@@ -191,13 +197,7 @@ function QuantumXXZ(param::Parameter)
     end
 end
 
-site2subspin(site::Integer, ss::Integer, S2::Integer) = (site-1)*S2+ss
-bond2subbond(bond::Integer, ss1::Integer, ss2::Integer, S2::Integer) = ((bond-1)*S2+(ss1-1))*S2+ss2
+@inline site2subspin(site::Integer, ss::Integer, S2::Integer) = (site-1)*S2+ss
 @inline function subspin2site(subspin::Integer, S2::Integer)
     return ceil(Int, subspin/S2), mod1(subspin,S2)
-end
-@inline function subbond2bond(subbond::Integer, S2::Integer)
-    ss2 = mod1(subbond,S2)
-    ss = ceil(Int, subbond/S2)
-    return ceil(Int, ss/S2), mod1(ss,S2), ss2
 end

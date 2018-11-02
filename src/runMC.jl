@@ -117,10 +117,6 @@ function runMC(model, param::Parameter)
     end
     =#
 
-    if "UpdateMethod" in keys(param)
-        warn("\"UpdateMethod\" is deprecated. Use instead \"Update Method\".")
-        param["Update Method"] = param["UpdateMethod"] :: Function
-    end
     update! = param["Update Method"] :: Function
     estimator = get(param, "Estimator", default_estimator(model, update!)) :: Function
     p = convert_parameter(model, param)

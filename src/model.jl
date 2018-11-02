@@ -29,11 +29,11 @@ end
 @doc doc"""
     Ising(param)
 
-Generates `Ising` using `param["Lattice"](param)` and `param["Seed"]` (if defined).
+Generates `Ising` using `param["Lattice"]` and `param["Seed"]` (if defined).
 Each spin will be initialized randomly and independently.
 """
 function Ising(param::Parameter)
-    lat = param["Lattice"](param)
+    lat = generatelattice(param)
     if "Seed" in keys(param)
         return Ising(lat, param["Seed"])
     else
@@ -70,11 +70,11 @@ end
 @doc doc"""
     Potts(param)
 
-Generates `Potts` using `param["Lattice"](param)`, `param["Q"]`, and `param["Seed"]` (if defined).
+Generates `Potts` using `param["Lattice"]`, `param["Q"]`, and `param["Seed"]` (if defined).
 Each spin will be initialized randomly and independently.
 """
 function Potts(param::Parameter)
-    lat = param["Lattice"](param)
+    lat = generatelattice(param)
     Q = param["Q"]
     if "Seed" in keys(param)
         return Potts(lat, Q, param["Seed"])
@@ -116,11 +116,11 @@ end
 @doc doc"""
     Clock(param)
 
-Generates `Clock` using `param["Lattice"](param)`, `param["Q"]`,  and `param["Seed"]` (if defined).
+Generates `Clock` using `param["Lattice"]`, `param["Q"]`,  and `param["Seed"]` (if defined).
 Each spin $\sigma_i$ will be initialized randomly and independently.
 """
 function Clock(param::Parameter)
-    lat = param["Lattice"](param)
+    lat = generatelattice(param)
     Q = param["Q"]
     if "Seed" in keys(param)
         return Clock(lat, Q, param["Seed"])
@@ -156,11 +156,11 @@ end
 @doc doc"""
    XY(param)
 
-Generates `XY` using `param["Lattice"](param)`,  and `param["Seed"]` (if defined).
+Generates `XY` using `param["Lattice"]`,  and `param["Seed"]` (if defined).
 Each spin $\sigma_i$ will be initialized randomly and independently.
 """
 function XY(param::Parameter)
-    lat = param["Lattice"](param)
+    lat = generatelattice(param)
     if "Seed" in keys(param)
         return XY(lat, param["Seed"])
     else

@@ -65,7 +65,7 @@ end
             Ts, exacts = loaddata(joinpath("ref", modelstr, filename),obsnames)
             nT = length(Ts)
             p["Model"] = model
-            p["Lattice"] = fully_connected_lattice
+            p["Lattice"] = "fully connected graph"
             p["J"] = p["J"] / p["N"]
             p["MCS"] = MCS
             p["Thermalization"] = Therm

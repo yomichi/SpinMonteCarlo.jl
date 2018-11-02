@@ -16,9 +16,8 @@ export Model, Ising, XY, Potts, Clock
 export QuantumLocalZ2Model, QuantumXXZ
 export local_update!, SW_update!, Wolff_update!, loop_update!
 export default_estimator, simple_estimator, improved_estimator
-export dimer_lattice, chain_lattice, square_lattice, triangular_lattice, cubic_lattice, fully_connected_lattice
-export Lattice, dim, size, numsites, numbonds, neighbors, source, target, sitetype, bondtype
-export sitecoordinate, bonddirection, lattice_sitecoordinate, lattice_bonddirection
+export Lattice, dim, size, sites, bonds, numsites, numbonds, neighbors, neighborsites, neighborbonds, source, target, sitetype, bondtype
+export sitecoordinate, bonddirection, cellcoordinate
 export UnionFind, addnode!, unify!, clusterize!, clusterid
 export gen_snapshot!, gensave_snapshot!, load_snapshot
 export runMC, print_result
@@ -32,8 +31,7 @@ const Parameter = Dict{String, Any}
 const Measurement = Dict{String, Any}
 
 include("union_find.jl")
-include("lattice.jl")
-include("gen_lattice.jl")
+include("lattice/Lattices.jl")
 include("model.jl")
 include("qmodel.jl")
 include("parameter.jl")

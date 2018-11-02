@@ -93,13 +93,12 @@ function loop_update!(model::QuantumXXZ, T::Real,
                 ot = mod1(ot,4)
                 lo_type = lo_types[ot]
                 b = bonds(model,bt)[rand(rng, 1:numbonds(model,bt))]
-                s1 = source(model, b)
-                s2 = target(model, b)
+                s1,s2 = source(b), target(b)
                 ss1, ss2 = rand(rng, 1:S2, 2)
                 if ifelse(spins[site2subspin(s1,ss1,S2)] == spins[site2subspin(s2,ss2,S2)],
                           lo_type == LET_FMLink || lo_type == LET_Cross,
                           lo_type == LET_AFLink || lo_type == LET_Vertex)
-                    push!(ops, LocalLoopOperator(lo_type, t, bond2subbond(b,ss1,ss2,S2)))
+                    push!(ops, LocalLoopOperator(lo_type, t, nsites+b.id, (ss1, ss2)))
                     t += randexp(rng)*op_dt
                 else
                     t += randexp(rng)*op_dt
@@ -110,7 +109,7 @@ function loop_update!(model::QuantumXXZ, T::Real,
                 st = ot-4nbt
                 s = sites(model,st)[rand(rng, 1:numsites(model,st))]
                 ss = rand(rng, 1:S2)
-                push!(ops, LocalLoopOperator(LET_Cut, t, site2subspin(s,ss,S2)))
+                push!(ops, LocalLoopOperator(LET_Cut, t, s, (ss,ss)))
                 t += randexp(rng)*op_dt
             end
         else 
@@ -124,8 +123,8 @@ function loop_update!(model::QuantumXXZ, T::Real,
             else
                 push!(ops, op)
                 op = ops[end]
-                subbond = op.space
-                b,ss1,ss2 = subbond2bond(subbond,S2)
+                b = op.space-nsites
+                ss1,ss2 = op.subspace
                 bt = bondtype(model,b)
                 otype = ifelse(rand(rng)*(weights[4bt-1]+weights[4bt])<weights[4bt-1], LET_Vertex, LET_Cross)
                 op.let_type = otype
@@ -134,16 +133,17 @@ function loop_update!(model::QuantumXXZ, T::Real,
         
         op = ops[end]
         if op.let_type == LET_Cut
-            subspin = op.space
-            s,ss = subspin2site(subspin,S2)
+            s = op.space
+            ss = op.subspace[1]
+            subspin = site2subspin(s,ss,S2)
             op.bottom_id = currents[subspin]
             c = addnode!(uf)
             currents[subspin] = c
             op.top_id = c
             spins[subspin] *= ifelse(op.isdiagonal, 1, -1)
         else
-            subbond = op.space
-            b,ss1,ss2 = subbond2bond(subbond,S2)
+            b = op.space - nsites
+            ss1,ss2 = op.subspace
             s1 = source(model, b)
             s2 = target(model, b)
             subspin1 = site2subspin(s1,ss1,S2)

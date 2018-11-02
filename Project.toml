@@ -1,7 +1,7 @@
 name = "SpinMonteCarlo"
 uuid = "71c4a2d3-ecf8-5cd9-ab6a-09a504837b4f"
 author = ["Yuichi Motoyama yomichi314@gmail.com"]
-version = "0.2.0"
+version = "0.3.0"
 
 [deps]
 DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
