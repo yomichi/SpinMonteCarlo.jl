@@ -36,6 +36,10 @@ If a checkpoint file named `"\$(param["Checkpoint Filename Prefix"])_\$(param["I
     - Default: `0.0`, this means that NO checkpoint file will be loaded and saved.
 """
 =#
+
+using Distributed
+import Distributed.pmap
+
 @doc """
     runMC(param::Parameter)
     runMC(params::AbstractArray{Parameter} ; parallel::Bool=false)
