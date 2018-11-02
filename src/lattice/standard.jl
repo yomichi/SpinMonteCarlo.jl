@@ -95,6 +95,28 @@ stdunitcells["triangular cell"] = P(:name => "triangular cell",
                                                  :source=>P(:id=>1, :offset=>[0,0]),
                                                  :target=>P(:id=>1, :offset=>[1,1]),),
                                               ])
+stdunitcells["honeycomb cell"] = P(:name => "honeycomb cell",
+                                   :dimension => 2,
+                                   :sites => [P(:id=>1,
+                                                :sitetype=>1,
+                                                :coord=>[0.0, 0.0],
+                                               ),
+                                              P(:id=>2,
+                                                :sitetype=>2,
+                                                :coord=> (2//3).*[0.5, 1.0],
+                                               )],
+                                   :bonds => [P(:bondtype=>1,
+                                                :source=>P(:id=>1, :offset=>[0,0]),
+                                                :target=>P(:id=>2, :offset=>[0,0]),),
+                                              P(:bondtype=>2,
+                                                :source=>P(:id=>2, :offset=>[0,0]),
+                                                :target=>P(:id=>1, :offset=>[1,1]),),
+                                              P(:bondtype=>3,
+                                                :source=>P(:id=>2, :offset=>[0,0]),
+                                                :target=>P(:id=>1, :offset=>[0,1]),),
+                                             ])
+
+
 
 ## 3D unitcells
 stdunitcells["simple3d"] = P(:name => "simple3d",
@@ -143,6 +165,12 @@ stdlattices["triangular lattice"] = P(:name => "triangular lattice",
                                       :unitcell => "triangular cell",
                                       :parameters => [],
                                      )
+stdlattices["honeycomb lattice"] = P(:name => "honeycomb lattice",
+                                     :dimension => 2,
+                                     :bravais => "hexagonal2d",
+                                     :unitcell => "honeycomb cell",
+                                     :parameters => [(:a, sqrt(3.0))],
+                                    )
 
 ## 3D lattices
 stdlattices["cubic lattice"] = P(:name => "cubic lattice",
