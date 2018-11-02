@@ -72,7 +72,7 @@ function generatelattice_std(param)
 
     latvec = interpolate!(bra.basis, bparams) |> eval
 
-    sites = ucell.sites
+    usites = ucell.sites
     numsites_in_cell = length(sites)
     numsites = numcell * numsites_in_cell
 
@@ -84,9 +84,7 @@ function generatelattice_std(param)
         @assert x == collect(1:numsites_in_cell)
     end
 
-    bonds = ucell.bonds
-
-    g = MetaGraph(numsites)
+    ubonds = ucell.bonds
 
     numbonds = 0
     numsitetypes = 0
@@ -94,34 +92,29 @@ function generatelattice_std(param)
     nss = Int[]
     nbs = Int[]
 
+    sites = [Site() for i in 1:numsites]
+
     for icell in 0:(numcell-1)
         cellcoord = index2coord(icell, L)
-        for site in sites
+        for site in usites
             id = numsites_in_cell * icell + site.id
-            set_prop!(g, id, :sitetype, site.sitetype)
-            while site.sitetype > numsitetypes
-                numsitetypes += 1
-                push!(nss, 0)
-            end
-            nss[site.sitetype] += 1
             coord = latvec * (cellcoord .+ site.coord)
-            set_prop!(g, id, :coord, coord)
-            set_prop!(g, id, :localsite, site.id)
-            set_prop!(g, id, :cellcoord, cellcoord)
-            for bond in bonds
-                source = numsites_in_cell * coord2index(cellcoord .+ bond.source.offset, L) + bond.source.id
-                target = numsites_in_cell * coord2index(cellcoord .+ bond.target.offset, L) + bond.target.id
-                add_edge!(g, source, target)
-                numbonds += 1
-                set_prop!(g, source, target, :bondtype, bond.bondtype)
-                set_prop!(g, source, target, :source, source)
-                set_prop!(g, source, target, :target, target)
-                while bond.bondtype > numbondtypes
-                    numbondtypes += 1
-                    push!(nbs, 0)
-                end
-                nbs[bond.bondtype] += 1
+            s = Site(id, site.sitetype, Int[], coord, site.id, cellcoord)
+            push!(sites,s)
+        end
+        for bond in ubonds
+            source = numsites_in_cell * coord2index(cellcoord .+ bond.source.offset, L) + bond.source.id
+            target = numsites_in_cell * coord2index(cellcoord .+ bond.target.offset, L) + bond.target.id
+            add_edge!(g, source, target)
+            numbonds += 1
+            set_prop!(g, source, target, :bondtype, bond.bondtype)
+            set_prop!(g, source, target, :source, source)
+            set_prop!(g, source, target, :target, target)
+            while bond.bondtype > numbondtypes
+                numbondtypes += 1
+                push!(nbs, 0)
             end
+            nbs[bond.bondtype] += 1
         end
     end
 
