@@ -59,6 +59,8 @@ function generatelattice_std(param)
         bparams[name] = get(param,String(name),default)
     end
 
+    bc = lat.periodic
+
     if isa(param["L"], Vector)
         L = param["L"]
     else
@@ -105,20 +107,23 @@ function generatelattice_std(param)
             push!(sites,s)
         end
         for bond in ubonds
-            ib += 1
+            for d in 1:D
+                if !(bc[d] || bond.source.offset[d] == bond.source.offset[d])
+                    if !(0 <= cellcoord[d] + (bond.target.offset[d] - bond.source.offset[d]) < L[d] )
+                        continue
+                    end
+                end
+            end
             source = numsites_in_cell * coord2index(cellcoord .+ bond.source.offset, L) + bond.source.id
             target = numsites_in_cell * coord2index(cellcoord .+ bond.target.offset, L) + bond.target.id
-            numbonds += 1
-            b = Bond(ib, bond.bondtype, source, target, zeros(D))
+            dir = latvec * ((bond.target.offset .+ usites[bond.target.id].coord ) 
+                            .- (bond.source.offset .+ usites[bond.source.id].coord ))
+            ib += 1
+            b = Bond(ib, bond.bondtype, source, target, dir) 
             push!(bonds, b)
         end
     end
 
-    for bond in bonds
-        src = sitecoordinate(sites[source(bond)])
-        tgt = sitecoordinate(sites[target(bond)])
-        bond.direction .= rem.(tgt .- src, latvec*L, RoundNearest)
-    end
     return Lattice(latvec, L, sites, bonds)
 end
 

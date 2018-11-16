@@ -175,9 +175,9 @@ Returns the coordinate of the `site` in the Cartesian system
 
 Returns the coordinate of the `cell` including `site` in the Lattice system
 """
-@inline lattice_sitecoordinate(site::Site) = site.cellcoord
-@inline lattice_sitecoordinate(lat::Lattice, site::Integer) = lattice_sitecoordinate(lat.sites[site])
-@inline lattice_sitecoordinate(model::Model, site::Integer) = lattice_sitecoordinate(model.lat, site)
+@inline cellcoordinate(site::Site) = site.cellcoord
+@inline cellcoordinate(lat::Lattice, site::Integer) = cellcoordinate(lat.sites[site])
+@inline cellcoordinate(model::Model, site::Integer) = cellcoordinate(model.lat, site)
 
 @doc """
     sitetype(site::Site)

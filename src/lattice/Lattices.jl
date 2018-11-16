@@ -31,36 +31,32 @@ mutable struct Lattice
     function Lattice(latvec,L,sites,bonds)
         nsitetypes = 0
         swt = Vector{Int}[]
-        for (i,s) in enumerate(sites)
-            s.id = i
+        for s in sites
             st = s.sitetype
             while st > nsitetypes
                 push!(swt, Int[])
                 nsitetypes += 1
             end
-            push!(swt[st], i)
+            push!(swt[st], s.id)
         end
         siteswithtype = [view(sites, swt[st]) for st in 1:nsitetypes]
 
         nbondtypes = 0
         bwt = Vector{Int}[]
-        for (i,b) in enumerate(bonds)
-            b.id = i
+        for b in bonds
             bt = b.bondtype
             while bt > nbondtypes
                 push!(bwt, Int[])
                 nbondtypes += 1
             end
-            push!(bwt[bt], i)
-        end
-        bondswithtype = [view(bonds, bwt[bt]) for bt in 1:nbondtypes]
+            push!(bwt[bt], b.id)
 
-        for b in bonds
             push!(sites[source(b)].neighborsites, target(b))
             push!(sites[source(b)].neighborbonds, b.id)
             push!(sites[target(b)].neighborsites, source(b))
             push!(sites[target(b)].neighborbonds, b.id)
         end
+        bondswithtype = [view(bonds, bwt[bt]) for bt in 1:nbondtypes]
 
         return new(latvec, L,
                    sites, siteswithtype,

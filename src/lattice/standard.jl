@@ -142,6 +142,7 @@ stdlattices["chain lattice"] = P(:name => "chain lattice",
                                  :bravais => "chain",
                                  :unitcell => "simple1d",
                                  :parameters => [],
+                                 :periodic => [true],
                                 )
 
 stdlattices["bond-alternating chain lattice"] = P(:name => "bond-alternating chain lattice",
@@ -149,6 +150,7 @@ stdlattices["bond-alternating chain lattice"] = P(:name => "bond-alternating cha
                                  :bravais => "chain",
                                  :unitcell => "bond-alternating simple1d",
                                  :parameters => [(:a, 2.0)],
+                                 :periodic => [true],
                                 )
 
 
@@ -158,25 +160,36 @@ stdlattices["square lattice"] = P(:name => "square lattice",
                                   :bravais => "orthorhombic2d",
                                   :unitcell => "simple2d",
                                   :parameters => [],
+                                  :periodic => [true, true],
                                  )
 stdlattices["triangular lattice"] = P(:name => "triangular lattice",
                                       :dimension => 2,
                                       :bravais => "hexagonal2d",
                                       :unitcell => "triangular cell",
                                       :parameters => [],
+                                      :periodic => [true, true],
                                      )
 stdlattices["honeycomb lattice"] = P(:name => "honeycomb lattice",
                                      :dimension => 2,
                                      :bravais => "hexagonal2d",
                                      :unitcell => "honeycomb cell",
                                      :parameters => [(:a, sqrt(3.0))],
+                                     :periodic => [true, true],
                                     )
+stdlattices["ladder"] = P(:name => "ladder",
+                          :dimension => 2,
+                          :bravais => "orthorhombic2d",
+                          :unitcell => "simple2d",
+                          :parameters => [],
+                          :periodic => [true, false],
+                         )
 
 ## 3D lattices
 stdlattices["cubic lattice"] = P(:name => "cubic lattice",
                                  :dimension => 3,
                                  :bravais => "orthorhombic3d",
                                  :unitcell => "simple3d",
+                                 :periodic => [true, true, true],
                                 )
 
 ## special lattices
