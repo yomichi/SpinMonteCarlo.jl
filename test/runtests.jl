@@ -12,6 +12,7 @@ const alpha = 0.001
     filenames = [
                  "classical.jl",
                  "quantum.jl",
+                 "checkpoint.jl",
                 ]
     for filename in filenames
         t = @elapsed include(filename)
