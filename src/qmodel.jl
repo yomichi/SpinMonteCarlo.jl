@@ -153,6 +153,7 @@ mutable struct QuantumXXZ <: QuantumLocalZ2Model
     spins :: Vector{Int}
     ops :: Vector{LocalLoopOperator}
     rng :: Random.MersenneTwister
+    parameter :: Parameter
 
     function QuantumXXZ(lat::Lattice, S::Real)
         if round(2S) != 2S
@@ -165,6 +166,7 @@ mutable struct QuantumXXZ <: QuantumLocalZ2Model
         model.S2 = S2
         model.spins = rand(model.rng,[1,-1], numsites(lat)*S2)
         model.ops = LocalLoopOperator[]
+        model.parameter = Parameter()
         return model
     end
     function QuantumXXZ(lat::Lattice, S::Real, seed)
@@ -178,6 +180,7 @@ mutable struct QuantumXXZ <: QuantumLocalZ2Model
         model.S2 = S2
         model.spins = rand(model.rng,[1,-1], numsites(lat)*S2)
         model.ops = LocalLoopOperator[]
+        model.parameter = Parameter()
         return model
     end
 end
@@ -187,15 +190,17 @@ end
 Generates `QuantumXXZ` using `param["Lattice"]`, `param["S"]` and `param["Seed"]` (if defined).
 Each subspin will be initialized independently and randomly.
 """
-function QuantumXXZ(param::Parameter)
-    lat = generatelattice(param)
+function QuantumXXZ(param::Parameter, lat::Lattice)
     S = param["S"]
     if "Seed" in keys(param)
-        return QuantumXXZ(lat,S,param["Seed"])
+        model = QuantumXXZ(lat,S,param["Seed"])
     else
-        return QuantumXXZ(lat,S)
+        model = QuantumXXZ(lat,S)
     end
+    merge!(model.parameter, param)
+    return model
 end
+QuantumXXZ(param::Parameter) = QuantumXXZ(param, generatelattice(param))
 
 @inline site2subspin(site::Integer, ss::Integer, S2::Integer) = (site-1)*S2+ss
 @inline function subspin2site(subspin::Integer, S2::Integer)
