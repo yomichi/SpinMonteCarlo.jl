@@ -41,7 +41,7 @@ NOTE: Restart will fail if the version or the system image of julia change (see 
 """
 function runMC(params::AbstractArray{T}; parallel::Bool=false, autoID::Bool=true) where T<:Dict
     map_fn = ifelse(parallel, pmap, map)
-    return map_fn(enumerate(params)) do id,p
+    return map_fn(enumerate(params)) do (id,p)
         if autoID
             p["ID"] = id
         end
