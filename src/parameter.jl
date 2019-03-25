@@ -41,8 +41,9 @@ end
 """
 macro gen_convert_parameter(model_typename, args...)
     body = Expr(:block)
+    str_model = sprint(Base.show_unquoted,model_typename)
 
-    document = "    convert_parameter(model::$(model_typename), param::Parameter)\n\n"
+    document = "    convert_parameter(model::$(str_model), param::Parameter)\n\n"
     document *= "# Keynames:\n"
 
     syms = Symbol[]
@@ -76,8 +77,9 @@ macro gen_convert_parameter(model_typename, args...)
           esc(:(return tuple($(syms...))  )) 
          )
 
-    res_fn = :(function $(esc(:convert_parameter))($(esc(:(model::$model_typename))),
-                                                   $(esc(:(param::Parameter)))
+    # res_fn = :(function $(esc(:convert_parameter))($(esc(:(model::$model_typename))),
+    res_fn = :(function $(esc(:convert_parameter))($(esc(:model))::$(esc(model_typename)),
+                                                   $(esc(:param))::$(esc(:Parameter))
                                                   )
                    $body
                end)
