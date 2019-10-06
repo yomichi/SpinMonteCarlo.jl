@@ -4,21 +4,21 @@ where $\sigma_i$ takes value of 1 (up spin) or -1 (down spin).
 """
 mutable struct Ising <: Model
     lat :: Lattice
-    spins :: Vector{Int}
+    spins :: Matrix{Int}
     rng :: Random.MersenneTwister
 
     function Ising(lat::Lattice)
         model = new()
         model.lat = lat
         model.rng = Random.Random.seed!(Random.MersenneTwister(0))
-        model.spins = rand(model.rng, [1,-1], numsites(lat))
+        model.spins = rand(model.rng, [1,-1], 1, numsites(lat))
         return model
     end
     function Ising(lat::Lattice, seed)
         model = new()
         model.lat = lat
         model.rng = Random.seed!(Random.MersenneTwister(0), seed...)
-        model.spins = rand(model.rng, [1,-1], numsites(lat))
+        model.spins = rand(model.rng, [1,-1], 1, numsites(lat))
         return model
     end
 end

@@ -10,17 +10,17 @@ where $N$ is the number of sites and $N_1$ is the number of $\sigma=1$ spins.
 mutable struct Potts <: Model
     lat :: Lattice
     Q :: Int
-    spins :: Vector{Int}
+    spins :: Matrix{Int}
     rng :: Random.MersenneTwister
 
     function Potts(lat::Lattice, Q::Integer)
         rng = Random.seed!(Random.MersenneTwister(0))
-        spins = rand(rng, 1:Q, numsites(lat))
+        spins = rand(rng, 1:Q, 1, numsites(lat))
         return new(lat, Q, spins, rng)
     end
     function Potts(lat::Lattice, Q::Integer, seed)
         rng = Random.seed!(Random.MersenneTwister(0), seed)
-        spins = rand(rng, 1:Q, numsites(lat))
+        spins = rand(rng, 1:Q, 1, numsites(lat))
         return new(lat, Q, spins, rng)
     end
 end

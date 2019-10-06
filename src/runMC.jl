@@ -1,3 +1,5 @@
+export runMC, print_result
+
 # using JLD2
 
 #=

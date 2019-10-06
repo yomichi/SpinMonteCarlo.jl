@@ -1,5 +1,8 @@
 import Base.convert
 
+export Lattice, dim, size, sites, bonds, numsites, numbonds, neighbors, neighborsites, neighborbonds, source, target, sitetype, bondtype
+export sitecoordinate, bonddirection, cellcoordinate
+
 mutable struct Site
     id :: Int
     sitetype :: Int

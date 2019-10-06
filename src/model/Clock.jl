@@ -5,7 +5,7 @@ where $\theta_i = 2\pi \sigma_i/Q$ and $\sigma_i$ takes an integer value from $1
 mutable struct Clock <: Model
     lat :: Lattice
     Q :: Int
-    spins :: Vector{Int}
+    spins :: Matrix{Int}
     cosines :: Vector{Float64}
     sines :: Vector{Float64}
     sines_sw :: Vector{Float64}
@@ -13,7 +13,7 @@ mutable struct Clock <: Model
 
     function Clock(lat::Lattice, Q::Integer)
         rng = Random.seed!(Random.MersenneTwister(0))
-        spins = rand(rng, 1:Q, numsites(lat))
+        spins = rand(rng, 1:Q, 1, numsites(lat))
         cosines = [cospi(2s/Q) for s in 1:Q]
         sines = [sinpi(2s/Q) for s in 1:Q]
         sines_sw = [sinpi(2(s-0.5)/Q) for s in 1:Q]
@@ -21,7 +21,7 @@ mutable struct Clock <: Model
     end
     function Clock(lat::Lattice, Q::Integer, seed)
         rng = Random.seed!(Random.MersenneTwister(0), seed)
-        spins = rand(rng, 1:Q, numsites(lat))
+        spins = rand(rng, 1:Q, 1, numsites(lat))
         cosines = [cospi(2s/Q) for s in 1:Q]
         sines = [sinpi(2s/Q) for s in 1:Q]
         sines_sw = [sinpi(2(s-0.5)/Q) for s in 1:Q]

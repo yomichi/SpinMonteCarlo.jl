@@ -1,3 +1,5 @@
+export UnionFind, addnode!, unify!, clusterize!, clusterid
+
 @doc doc"""
 Union-find algorithm.
 """

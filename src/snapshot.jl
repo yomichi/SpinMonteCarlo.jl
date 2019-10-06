@@ -1,3 +1,5 @@
+export gen_snapshot!, gensave_snapshot!, load_snapshot
+
 @doc """
     gen_snapshot!(model, T, [N=1])
 

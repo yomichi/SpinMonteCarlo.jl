@@ -1,5 +1,8 @@
 using MacroTools
 
+export Parameter
+export @gen_convert_parameter, convert_parameter
+
 @doc doc"""
     @gen_convert_parameter(model_typename, (keyname, size_fn, default)...)
 

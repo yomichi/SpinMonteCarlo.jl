@@ -150,7 +150,7 @@ A local spin with length $S$ is represented by a symmetrical summation of $2S$ s
 mutable struct QuantumXXZ <: QuantumLocalZ2Model
     lat :: Lattice
     S2 :: Int
-    spins :: Vector{Int}
+    spins :: Matrix{Int}
     ops :: Vector{LocalLoopOperator}
     rng :: Random.MersenneTwister
 
@@ -163,7 +163,7 @@ mutable struct QuantumXXZ <: QuantumLocalZ2Model
         model.rng = seed!(Random.MersenneTwister(0))
         model.lat = lat
         model.S2 = S2
-        model.spins = rand(model.rng,[1,-1], numsites(lat)*S2)
+        model.spins = rand(model.rng,[1,-1], 1, numsites(lat)*S2)
         model.ops = LocalLoopOperator[]
         return model
     end
@@ -176,7 +176,7 @@ mutable struct QuantumXXZ <: QuantumLocalZ2Model
         model.rng = seed!(Random.MersenneTwister(0), seed)
         model.lat = lat
         model.S2 = S2
-        model.spins = rand(model.rng,[1,-1], numsites(lat)*S2)
+        model.spins = rand(model.rng,[1,-1], 1, numsites(lat)*S2)
         model.ops = LocalLoopOperator[]
         return model
     end
