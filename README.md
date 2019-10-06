@@ -152,8 +152,6 @@ end
         - magnetic field
     - Quantum model
         - SU(N) model
-- `Lattice`
-    - open boundary condition
 - `UpdateMethod`
     - worm algorithm
 - Others
