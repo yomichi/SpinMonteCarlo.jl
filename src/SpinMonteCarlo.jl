@@ -22,8 +22,6 @@ export UnionFind, addnode!, unify!, clusterize!, clusterid
 export gen_snapshot!, gensave_snapshot!, load_snapshot
 export runMC, print_result
 
-abstract type Model end
-
 @doc doc"""
 Input parameter of simulation
 """
@@ -32,8 +30,7 @@ const Measurement = Dict{String, Any}
 
 include("union_find.jl")
 include("lattice/Lattices.jl")
-include("model.jl")
-include("qmodel.jl")
+include("model/model.jl")
 include("parameter.jl")
 include("local_update.jl")
 include("SW.jl")
