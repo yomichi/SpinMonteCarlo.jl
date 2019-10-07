@@ -1,7 +1,7 @@
 using Documenter
 using SpinMonteCarlo
 
-makedocs( format=:html,
+makedocs( format=Documenter.HTML(),
           sitename="SpinMonteCarlo.jl",
           modules=[SpinMonteCarlo],
           pages = [
@@ -17,9 +17,7 @@ makedocs( format=:html,
                   ]
         )
 
-deploydocs( repo = "github.com/yomichi/SpinMonteCarlo.jl.git",
-            julia="0.7",
-            target="build",
-            deps = nothing,
-            make = nothing,
+deploydocs(
+           repo = "github.com/yomichi/SpinMonteCarlo.jl.git",
+           target = "build"
           )
