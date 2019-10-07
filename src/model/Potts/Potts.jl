@@ -13,17 +13,18 @@ mutable struct Potts <: Model
     spins :: Matrix{Int}
     rng :: Random.MersenneTwister
 
-    function Potts(lat::Lattice, Q::Integer)
-        rng = Random.seed!(Random.MersenneTwister(0))
-        spins = rand(rng, 1:Q, 1, numsites(lat))
-        return new(lat, Q, spins, rng)
-    end
-    function Potts(lat::Lattice, Q::Integer, seed)
-        rng = Random.seed!(Random.MersenneTwister(0), seed)
+    function Potts(lat::Lattice, Q::Integer, rng::Random.AbstractRNG)
+        if Q < 2
+            error("Q should be 2 or more: Q = $Q")
+        end
         spins = rand(rng, 1:Q, 1, numsites(lat))
         return new(lat, Q, spins, rng)
     end
 end
+
+Potts(lat::Lattice, Q::Integer) = Potts(lat, Q, Random.seed!(Random.MersenneTwister(0)))
+Potts(lat::Lattice, Q::Integer, seed) = Potts(lat, Q, Random.seed!(Random.MersenneTwister(0), seed...))
+
 @doc doc"""
     Potts(param)
 
@@ -39,3 +40,6 @@ function Potts(param::Parameter)
         return Potts(lat, Q)
     end
 end
+
+include("update.jl")
+include("estimator.jl")

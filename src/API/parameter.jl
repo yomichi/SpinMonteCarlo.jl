@@ -122,12 +122,3 @@ julia> model.spins
 ```
 """
 function convert_parameter end
-
-@gen_convert_parameter(Union{Ising, Potts, Clock, XY}, ("T", 1, 1.0),
-                                                       ("J", numbondtypes, 1.0),
-                                                      )
-@gen_convert_parameter(QuantumXXZ, ("T", 1, 1.0),
-                                   ("Jz", numbondtypes, 1.0),
-                                   ("Jxy", numbondtypes, 1.0),
-                                   ("Gamma", numsitetypes, 0.0),
-                                  )

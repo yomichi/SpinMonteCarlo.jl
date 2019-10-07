@@ -208,3 +208,9 @@ function loop_update!(model::QuantumXXZ, T::Real,
 
     return uf
 end
+
+@gen_convert_parameter(QuantumXXZ, ("T", 1, 1.0),
+                                   ("Jz", numbondtypes, 1.0),
+                                   ("Jxy", numbondtypes, 1.0),
+                                   ("Gamma", numsitetypes, 0.0),
+                                  )

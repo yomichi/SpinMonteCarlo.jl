@@ -7,21 +7,15 @@ mutable struct XY <: Model
     spins :: Matrix{Float64}
     rng :: Random.MersenneTwister
 
-    function XY(lat::Lattice)
-        model = new()
-        model.rng = Random.seed!(Random.MersenneTwister(0))
-        model.lat = lat
-        model.spins = rand(model.rng, 1, numsites(lat))
-        return model
-    end
-    function XY(lat::Lattice, seed)
-        model = new()
-        model.rng = Random.seed!(Random.MersenneTwister(0), seed)
-        model.lat = lat
-        model.spins = rand(model.rng, 1, numsites(lat))
-        return model
+    function XY(lat::Lattice, rng::Random.AbstractRNG)
+        spins = rand(rng, 1, numsites(lat))
+        return new(lat, spins, rng)
     end
 end
+
+XY(lat::Lattice) = XY(lat, Random.seed!(Random.MersenneTwister(0)))
+XY(lat::Lattice, seed) = XY(lat, Random.seed!(Random.MersenneTwister(0), seed...))
+
 @doc doc"""
    XY(param)
 
@@ -36,3 +30,6 @@ function XY(param::Parameter)
         return XY(lat)
     end
 end
+
+include("update.jl")
+include("estimator.jl")

@@ -7,21 +7,18 @@ mutable struct Ising <: Model
     spins :: Matrix{Int}
     rng :: Random.MersenneTwister
 
-    function Ising(lat::Lattice)
+    function Ising(lat::Lattice, rng::Random.AbstractRNG)
         model = new()
         model.lat = lat
-        model.rng = Random.Random.seed!(Random.MersenneTwister(0))
-        model.spins = rand(model.rng, [1,-1], 1, numsites(lat))
-        return model
-    end
-    function Ising(lat::Lattice, seed)
-        model = new()
-        model.lat = lat
-        model.rng = Random.seed!(Random.MersenneTwister(0), seed...)
+        model.rng = rng
         model.spins = rand(model.rng, [1,-1], 1, numsites(lat))
         return model
     end
 end
+
+Ising(lat::Lattice) = Ising(lat, Random.seed!(Random.MersenneTwister(0)))
+Ising(lat::Lattice, seed) = Ising(lat, Random.seed!(Random.MersenneTwister(0), seed...))
+
 @doc doc"""
     Ising(param)
 
@@ -36,3 +33,6 @@ function Ising(param::Parameter)
         return Ising(lat)
     end
 end
+
+include("update.jl")
+include("estimator.jl")

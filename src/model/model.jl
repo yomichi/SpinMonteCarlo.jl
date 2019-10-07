@@ -3,10 +3,17 @@ seed!(model::Model) = Random.seed!(model.rng)
 seed!(model::Model, seed...) = Random.seed!(model.rng, seed...)
 
 export Model, Ising, XY, Potts, Clock
-export QuantumLocalZ2Model, QuantumXXZ
+export QuantumXXZ
 
-include("Ising.jl")
-include("Potts.jl")
-include("Clock.jl")
-include("XY.jl")
-include("qmodel.jl")
+include("common/union_find.jl")
+
+## Classical
+include("Ising/Ising.jl")
+include("Potts/Potts.jl")
+include("Clock/Clock.jl")
+include("XY/XY.jl")
+
+
+## Quantum
+include("common/LoopOperator.jl")
+include("QuantumXXZ/QuantumXXZ.jl")

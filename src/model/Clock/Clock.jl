@@ -11,16 +11,10 @@ mutable struct Clock <: Model
     sines_sw :: Vector{Float64}
     rng :: Random.MersenneTwister
 
-    function Clock(lat::Lattice, Q::Integer)
-        rng = Random.seed!(Random.MersenneTwister(0))
-        spins = rand(rng, 1:Q, 1, numsites(lat))
-        cosines = [cospi(2s/Q) for s in 1:Q]
-        sines = [sinpi(2s/Q) for s in 1:Q]
-        sines_sw = [sinpi(2(s-0.5)/Q) for s in 1:Q]
-        return new(lat, Q, spins, cosines, sines, sines_sw, rng)
-    end
-    function Clock(lat::Lattice, Q::Integer, seed)
-        rng = Random.seed!(Random.MersenneTwister(0), seed)
+    function Clock(lat::Lattice, Q::Integer, rng::Random.AbstractRNG)
+        if Q < 2
+            error("Q should be 2 or more: Q = $Q")
+        end
         spins = rand(rng, 1:Q, 1, numsites(lat))
         cosines = [cospi(2s/Q) for s in 1:Q]
         sines = [sinpi(2s/Q) for s in 1:Q]
@@ -28,6 +22,10 @@ mutable struct Clock <: Model
         return new(lat, Q, spins, cosines, sines, sines_sw, rng)
     end
 end
+Clock(lat::Lattice, Q::Integer) = Clock(lat, Q, Random.seed!(Random.MersenneTwister(0)))
+Clock(lat::Lattice, Q::Integer, seed) = Clock(lat, Q, Random.seed!(Random.MersenneTwister(0), seed...))
+
+
 @doc doc"""
     Clock(param)
 
@@ -43,3 +41,6 @@ function Clock(param::Parameter)
         return Clock(lat, Q)
     end
 end
+
+include("update.jl")
+include("estimator.jl")

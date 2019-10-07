@@ -10,21 +10,10 @@ using LinearAlgebra
 
 using DataStructures
 
-@doc doc"""
-Input parameter of simulation
-"""
-const Measurement = Dict{String, Any}
-
-include("types.jl")
-
-include("lattice/Lattices.jl")
+include("API/api.jl")
 include("model/model.jl")
-include("union_find.jl")
-include("update/update.jl")
-include("estimator/estimator.jl")
-include("snapshot.jl")
+include("lattice/Lattices.jl")
 include("observables/MCObservables.jl")
-include("parameter.jl")
 include("runMC.jl")
-include("print.jl")
+include("snapshot.jl")
 end # of module
