@@ -1,8 +1,9 @@
-export runMC, print_result
+using Serialization
+using Distributed
+import Distributed.pmap
 
-# using JLD2
+export runMC
 
-#=
 @doc """
     runMC(param::Parameter)
     runMC(params::AbstractArray{Parameter}
@@ -12,8 +13,11 @@ export runMC, print_result
 
 Runs Monte Carlo simulation(s) and returns calculated observables.
 
-If a checkpoint file named `"\$(param["Checkpoint Filename Prefix"])_\$(param["ID"]).jld2"` exists and
+# Restart
+
+If a checkpoint file named `"\$(param["Checkpoint Filename Prefix"])_\$(param["ID"]).dat"` exists and
 `param["Checkpoint Interval"] > 0.0`, `runMC` loads this file and restarts the pending simulation.
+NOTE: Restart will fail if the version or the system image of julia change (see the doc of `Serialization.serialize` ).
 
 # Keyward aruguments
 - `autoID`: If true, `"ID"`s will be set (overwritten) as `params[i]["ID"] = i`.
@@ -29,50 +33,20 @@ If a checkpoint file named `"\$(param["Checkpoint Filename Prefix"])_\$(param["I
 - "Thermalization": The number of Monte Carlo steps for thermalization
     - Default: `MCS>>3`
 - "Seed": The initial seed of the random number generator, `MersenneTwister`
-    - Default: determined randomly (see `Random.seed!`)
-- "Checkpoint Filename Prefix": See above document.
+    - Default: determined randomly (see the doc of `Random.seed!`)
+- "Checkpoint Filename Prefix": See the "Restart" section.
     - Default: `"cp"`
-- "ID": See above document.
+- "ID": See the "Restart" section.
     - Default: `0`
 - "Checkpoint Interval": Time interval between writing checkpoint file in seconds.
     - Default: `0.0`, this means that NO checkpoint file will be loaded and saved.
 """
-=#
-
-using Distributed
-import Distributed.pmap
-
-@doc """
-    runMC(param::Parameter)
-    runMC(params::AbstractArray{Parameter} ; parallel::Bool=false)
-
-Runs Monte Carlo simulation(s) and returns calculated observables.
-
-# Keyward aruguments
-- `parallel`: If true, runs simulations in parallel (uses `pmap` instead of `map`).
-
-# Required keys in `param`
-- "Model"
-- "Update Method"
-
-# Optional keys in `param`
-- "MCS": The number of Monte Carlo steps after thermalization
-    - Default: `8192`
-- "Thermalization": The number of Monte Carlo steps for thermalization
-    - Default: `MCS>>3`
-- "Seed": The initial seed of the random number generator, `MersenneTwister`
-    - Default: determined randomly (see `Random.seed!`)
-"""
 function runMC(params::AbstractArray{T}; parallel::Bool=false, autoID::Bool=true) where T<:Dict
     map_fn = ifelse(parallel, pmap, map)
-    # return map_fn(enumerate(params)) do idp
-    return map_fn(params) do p
-        #=
-        id,p = idp
+    return map_fn(enumerate(params)) do (id,p)
         if autoID
             p["ID"] = id
         end
-        =#
         return runMC(p)
     end
 end
@@ -92,12 +66,10 @@ function runMC(model, param::Parameter)
     if verbose
         println("Start: ", param)
     end
-    #=
-    cp_filename = @sprintf("%s_%d.jld2",
+    cp_filename = @sprintf("%s_%d.dat",
                            get(param, "Checkpoint Filename Prefix", "cp")::String,
                            get(param, "ID", 0)::Int)
     cp_interval = get(param, "Checkpoint Interval", 0.0) :: Float64
-    =#
     tm = time()
 
     MCS = get(param, "MCS", 8192) :: Int
@@ -109,15 +81,13 @@ function runMC(model, param::Parameter)
     makeMCObservable!(obs, "Time per MCS")
     makeMCObservable!(obs, "MCS per Second")
 
-    #=
     if cp_interval > 0.0 && ispath(cp_filename)
-        jld = jldopen(cp_filename)
-        model = jld["model"] :: MODEL
-        obs = jld["obs"] :: BinningObservableSet
-        mcs = convert(Int, jld["mcs"]) :: Int
-        close(jld)
+        open(cp_filename) do io
+            model = deserialize(io)
+            obs = deserialize(io)
+            mcs = deserialize(io)
+        end
     end
-    =#
 
     update! = param["Update Method"] :: Function
     estimator = get(param, "Estimator", default_estimator(model, update!)) :: Function
@@ -136,27 +106,23 @@ function runMC(model, param::Parameter)
             accumulateObservables!(model, obs, localobs)
         end
         mcs += 1
-        #=
         if cp_interval > 0.0 && time() - tm > cp_interval
-            jld = jldopen(cp_filename, "w")
-            jld["model"] = model
-            jld["obs"] = obs
-            jld["mcs"] = mcs
-            close(jld)
+            open(cp_filename, "w") do io
+                serialize(io, model)
+                serialize(io, obs)
+                serialize(io, mcs)
+            end
             tm += cp_interval
          end
-         =#
     end
 
-    #=
     if cp_interval > 0.0
-        jld = jldopen(cp_filename, "w")
-        jld["model"] = model
-        jld["obs"] = obs
-        jld["mcs"] = mcs
-        close(jld)
+        open(cp_filename, "w") do io
+            serialize(io, model)
+            serialize(io, obs)
+            serialize(io, mcs)
+        end
     end
-    =#
 
     jk = postproc(model, param, obs)
 

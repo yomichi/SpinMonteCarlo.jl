@@ -59,7 +59,7 @@ function generatelattice_std(param)
         bparams[name] = get(param,String(name),default)
     end
 
-    bc = lat.periodic
+    bc = get(param, "Periodic Boudary Condition", lat.periodic)
 
     if isa(param["L"], Vector)
         L = param["L"]
@@ -98,12 +98,15 @@ function generatelattice_std(param)
     bonds = Bond[]
     ib = 0
 
+    use_index_as_sitetype = get(param, "Use Indecies as Site Types", false)
+    use_index_as_bondtype = get(param, "Use Indecies as Bond Types", false)
+
     for icell in 0:(numcell-1)
         cellcoord = index2coord(icell, L)
         for site in usites
             id = numsites_in_cell * icell + site.id
             coord = latvec * (cellcoord .+ site.coord)
-            s = Site(id, site.sitetype, Int[], Int[], coord, site.id, cellcoord)
+            s = Site(id, ifelse(use_index_as_sitetype, id, site.sitetype), Int[], Int[], coord, site.id, cellcoord)
             push!(sites,s)
         end
         for bond in ubonds
@@ -119,7 +122,7 @@ function generatelattice_std(param)
             dir = latvec * ((bond.target.offset .+ usites[bond.target.id].coord ) 
                             .- (bond.source.offset .+ usites[bond.source.id].coord ))
             ib += 1
-            b = Bond(ib, bond.bondtype, source, target, dir) 
+            b = Bond(ib, ifelse(use_index_as_bondtype, ib, bond.bondtype), source, target, dir) 
             push!(bonds, b)
         end
     end
