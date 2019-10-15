@@ -36,7 +36,7 @@ function convert_parameter(model::A, param::Parameter)
 
     ## otherwise,
     ## result is a scalar.
-    b = get(param, "B", 1) :: Int
+    b = convert(Int, get(param, "B", 1))
 
     return as, b
 end
@@ -69,7 +69,7 @@ macro gen_convert_parameter(model_typename, args...)
             document *= "- \"$name\": a vector with `$(sz)(model)` elements (default: $default).\n"
         else
             push!(body.args,
-                  esc(:( $(sym) = get(param, $name, $default) :: $eltyp ))
+                  esc(:( $(sym) = convert($eltyp, get(param, $name, $default))))
                  )
             push!(syms, sym)
             document *= "- \"$name\": a scalar (default: $default).\n"

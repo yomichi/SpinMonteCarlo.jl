@@ -175,7 +175,7 @@ In the following, $m$ is total magnetization per site and $\epsilon$ is total en
 """
 function postproc(model::Union{Ising, Potts}, param::Parameter, obs::MCObservableSet)
     nsites = numsites(model)
-    T = param["T"] :: Float64
+    T = convert(Float64, param["T"])
     beta = 1.0/T
 
     jk = jackknife(obs)
@@ -215,7 +215,7 @@ In the following, $m$ is total magnetization per site and $\epsilon$ is total en
 """
 function postproc(model::Union{Clock, XY}, param::Parameter, obs::MCObservableSet)
     nsites = numsites(model)
-    T = param["T"]
+    T = convert(Float64, param["T"])
     beta = 1.0/T
 
     jk = jackknife(obs)
@@ -262,7 +262,7 @@ and $\epsilon$ is total energy per site.
 """
 function postproc(model::QuantumXXZ, param::Parameter, obs::MCObservableSet)
     nsites = numsites(model)
-    T = param["T"]
+    T = convert(Float64, param["T"])
     beta = 1.0/T
 
     jk = jackknife(obs)
