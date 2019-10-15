@@ -1,18 +1,21 @@
 @doc """
     simple_estimator(model::Ising, T::Real, Js::AbstractArray)
-    simple_estimator(model::Potts, T::Real, Js::AbstractArray)
 
 Returns the following observables as `Dict{String, Any}`
 
 # Observables
 - `"Energy"`
-    - Energy per spin (site)
+    - energy density
 - `"Energy^2"`
+    - square of energy density
 - `"Magnetization"`
-    - Total magnetization per spin (order paremeter)
+    - magnetization density
 - `"|Magnetization|"`
+    - absolute value of magnetization density
 - `"Magnetization^2"`
+    - square of magnetization density
 - `"Magnetization^4"`
+    - quadruple of magnetization density
 """
 function simple_estimator(model::Ising, T::Real, Js::AbstractArray, _=nothing)
     nsites = numsites(model)
@@ -36,20 +39,30 @@ function simple_estimator(model::Ising, T::Real, Js::AbstractArray, _=nothing)
     return res
 end
 
-@doc """
+@doc raw"""
     improved_estimator(model::Ising, T::Real, Js::AbstractArray, sw::SWInfo)
 
 Returns the following observables as `Dict{String, Any}` using cluster information `sw`
 
 # Observables
 - `"Energy"`
-    - Energy per spin (site)
+    - energy density
 - `"Energy^2"`
+    - square of energy density
 - `"Magnetization"`
-    - Total magnetization per spin (site)
+    - magnetization density
 - `"|Magnetization|"`
-- `"|Magnetization|^2"`
-- `"|Magnetization|^4"`
+    - absolute value of magnetization density
+- `"Magnetization^2"`
+    - square of magnetization density
+- `"Magnetization^4"`
+    - quadruple of magnetization density
+- `"Clustersize^2"`
+    - ``\sum_c r_c^2 ``, where ``r_c`` is the size density of ``c``-th cluster
+- `"Clustersize^4"`
+    - ``\sum_c r_c^4 ``
+- `"Clustersize^2 Clustersize^2"`
+    - ``\sum_{c\ne c'} r_c^2 r_{c'}^2``
 """
 function improved_estimator(model::Ising, T::Real, Js::AbstractArray, sw::SWInfo)
     nsites = numsites(model)
@@ -59,14 +72,18 @@ function improved_estimator(model::Ising, T::Real, Js::AbstractArray, sw::SWInfo
 
     ## magnetization
     M = 0.0
-    M2 = 0.0
-    M4 = 0.0
+    N2 = 0.0
+    N2N2 = 0.0
+    N4 = 0.0
     for (m,s) in zip(sw.clustersize, sw.clusterspin)
         M += m*invV*s
         m2 = (m*invV)^2
-        M4 += m2*m2 + 6M2*m2
-        M2 += m2
+        N4 += m2*m2
+        N2N2 += N2*m2
+        N2 += m2
     end
+    M4 = N4 + 6*N2N2
+    M2 = N2
 
     # energy
     aJ = 2.0*abs.(Js)
@@ -99,6 +116,9 @@ function improved_estimator(model::Ising, T::Real, Js::AbstractArray, sw::SWInfo
     res["Magnetization^4"] = M4
     res["Energy"] = E
     res["Energy^2"] = E2
+    res["Clustersize^2"] = N2
+    res["Clustersize^4"] = N4
+    res["Clustersize^2 Clustersize^2"] = 2*N2N2
 
     return res
 end

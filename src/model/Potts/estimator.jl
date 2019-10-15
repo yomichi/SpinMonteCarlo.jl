@@ -25,18 +25,30 @@ function simple_estimator(model::Potts, T::Real, Js::AbstractArray, _=nothing)
     return res
 end
 
-@doc """
+@doc raw"""
     improved_estimator(model::Potts, T::Real, Js::AbstractArray, sw::SWInfo)
 
 Returns the following observables as `Dict{String, Any}` using cluster information `sw`
 
 # Observables
 - `"Energy"`
+    - energy density
 - `"Energy^2"`
+    - square of energy density
 - `"Magnetization"`
+    - magnetization density
 - `"|Magnetization|"`
+    - absolute value of magnetization density
 - `"|Magnetization|^2"`
+    - square of magnetization density
 - `"|Magnetization|^4"`
+    - quadruple of magnetization density
+- `"Clustersize^2"`
+    - ``\sum_c r_c^2 ``, where ``r_c`` is the size density of ``c``-th cluster
+- `"Clustersize^4"`
+    - ``\sum_c r_c^4 ``
+- `"Clustersize^2 Clustersize^2"`
+    - ``\sum_{c\ne c'} r_c^2 r_{c'}^2``
 """
 function improved_estimator(model::Potts, T::Real, Js::AbstractArray, sw::SWInfo)
     nsites = numsites(model)
@@ -52,12 +64,19 @@ function improved_estimator(model::Potts, T::Real, Js::AbstractArray, sw::SWInfo
     M4 = 0.0
     s2 = -1.0/Q
     s1 = 1.0+s2
+
+    N4 = 0.0
+    N2N2 = 0.0
+    N2 = 0.0
     for (m,s) in zip(sw.clustersize, sw.clusterspin)
         M += (m*invV) * ifelse(s==1, s1, s2)
         m2 = (m*invV)^2
-        M4 += I4*m2*m2 + 6*I2*M2*m2
-        M2 += I2*m2
+        N4 += m2*m2
+        N2N2 += N2*m2
+        N2 += m2
     end
+    M4 = I4*N4 + 6*I2*I2*N2N2
+    M2 = I2*N2
 
     # energy
     aJ = abs.(Js)
@@ -84,6 +103,9 @@ function improved_estimator(model::Potts, T::Real, Js::AbstractArray, sw::SWInfo
     res["Magnetization^4"] = M4
     res["Energy"] = E
     res["Energy^2"] = E2
+    res["Clustersize^2"] = N2
+    res["Clustersize^4"] = N4
+    res["Clustersize^2 Clustersize^2"] = 2*N2N2
 
     return res
 end
