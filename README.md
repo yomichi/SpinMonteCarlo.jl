@@ -15,7 +15,7 @@ julia> ]add SpinMonteCarlo
 
 # Simple example
 
-[The following program](example/ising.jl) calculates temperature v.s. specific heat of the ferromagnetic Ising model on a 16x16 square lattice by Swendsen-Wang algorithm.
+[The following program](example/simple.jl) calculates temperature v.s. specific heat of the ferromagnetic Ising model on a 16x16 square lattice by Swendsen-Wang algorithm.
 
 ``` julia
 using SpinMonteCarlo
