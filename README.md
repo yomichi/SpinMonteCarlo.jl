@@ -10,7 +10,7 @@ Markov chain Monte Carlo solver for finite temperature problem of lattie spin sy
 # Install
 
 ``` julia
-julia> Pkg.add("SpinMonteCarlo")
+julia> ]add SpinMonteCarlo
 ```
 
 # Simple example
@@ -38,8 +38,8 @@ for T in Ts
                               "MCS"=>MCS, "Thermalization"=>Therm,
                              )
     result = runMC(params)
-    println(@sprintf("%f %.15f %.15f",
-                      T, mean(result["Specific Heat"]), stderror(result["Specific Heat"])))
+    @sprintf("%f %.15f %.15f",
+             T, mean(result["Specific Heat"]), stderror(result["Specific Heat"]))
 end
 ```
 

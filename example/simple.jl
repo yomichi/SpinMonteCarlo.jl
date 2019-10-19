@@ -18,6 +18,6 @@ for T in Ts
                       "MCS"=>MCS, "Thermalization"=>Therm,
                      )
     result = runMC(param)
-    println(@sprintf("%f %.15f %.15f",
-                      T, mean(result["Specific Heat"]), stderror(result["Specific Heat"])))
+    @sprintf("%f %.15f %.15f",
+              T, mean(result["Specific Heat"]), stderror(result["Specific Heat"]))
 end
