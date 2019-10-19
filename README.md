@@ -52,6 +52,7 @@ end
         - order parameter defined as `M = (Q-1)/Q * n_1 - (1-n_1)/Q`, where `n_1` is the number density of `q=1` spins.
     - `XY` model
     - `Q` state `Clock` model
+    - `AshkinTeller` model
 - Quantum spin model
     - spin-`S` `QuantumXXZ` model
         - `\mathcal{H} = \sum_{ij} [ Jz_{ij} S_i^z S_j^z + \frac{Jxy_{ij}}{2} (S_i^+ S_j^- + S_i^-S_j^+) ] - \sum_i Gamma_i S_i^x`
@@ -152,7 +153,7 @@ end
         - magnetic field
     - Quantum model
         - SU(N) model
-- `UpdateMethod`
+- `Update Method`
     - worm algorithm
 - Others
     - random number parallelization
