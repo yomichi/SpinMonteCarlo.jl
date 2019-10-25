@@ -5,11 +5,7 @@ import Distributions: TDist, cdf
 
 import Base: show, <<, push!, count, isempty, merge, merge!, zero, zeros, sum
 
-if VERSION < v"0.7.0-beta.85"
-    import Base: mean, var
-else
-    import Statistics: mean, var
-end
+import Statistics: mean, var
 
 export MCObservable, ScalarObservable, VectorObservable
 export mean, var, stderror, confidence_interval
