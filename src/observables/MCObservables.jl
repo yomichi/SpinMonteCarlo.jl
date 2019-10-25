@@ -17,8 +17,6 @@ export p_value
 export show, dump_plot
 export merge, merge!
 
-export confidence_interval
-
 abstract type MCObservable end
 abstract type ScalarObservable <: MCObservable end
 abstract type VectorObservable <: MCObservable end

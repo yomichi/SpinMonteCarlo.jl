@@ -6,8 +6,10 @@ Moreover, you can define your own model, lattice, and algorithm and combine with
 
 ## Installation
 
+`SpinMonteCarlo.jl` is registered in the `General` registry.
+
 ```julia-repl
-julia> Pkg.add("SpinMonteCarlo")
+pkg> add SpinMonteCarlo
 ```
 
 ## Simple example
@@ -35,7 +37,7 @@ for T in Ts
                       "MCS"=>MCS, "Thermalization"=>Therm,
                      )
     result = runMC(param)
-    println(@sprintf("%f %.15f %.15f",
-                      T, mean(result["Specific Heat"]), stderror(result["Specific Heat"])))
+    @printf("%f %.15f %.15f\n",
+            T, mean(result["Specific Heat"]), stderror(result["Specific Heat"])))
 end
 ```

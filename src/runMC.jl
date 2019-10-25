@@ -19,12 +19,13 @@ If a checkpoint file named `"\$(param["Checkpoint Filename Prefix"])_\$(param["I
 `param["Checkpoint Interval"] > 0.0`, `runMC` loads this file and restarts the pending simulation.
 NOTE: Restart will fail if the version or the system image of julia change (see the doc of `Serialization.serialize` ).
 
-# Keyward aruguments
+# Keyward arguments
 - `autoID`: If true, `"ID"`s will be set (overwritten) as `params[i]["ID"] = i`.
 - `parallel`: If true, runs simulations in parallel (uses `pmap` instead of `map`).
 
 # Required keys in `param`
 - "Model"
+- "Lattice"
 - "Update Method"
 
 # Optional keys in `param`

@@ -8,6 +8,7 @@ makedocs( format=Documenter.HTML(),
                    "Home" => "index.md",
                    "Manual" => Any[
                                    "Run Monte Carlo" => "runmc.md",
+                                   "Generate lattice" => "lattice.md",
                                    "Develop Monte Carlo" => "develop.md",
                                   ],
                    "Library" => Any[

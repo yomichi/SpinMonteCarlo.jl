@@ -1,3 +1,5 @@
+export generatelattice
+
 function interpolate!(ex,env)
     if isa(ex,Symbol)
         if haskey(env, ex)
@@ -39,6 +41,11 @@ function coord2index(coord::AbstractArray, L::AbstractArray)
     return index
 end
 
+@doc """
+    generatelattice(param::Parameter)
+
+generates `Lattice` from `Parameter`.
+"""
 function generatelattice(param)
     latticedict = get(param, "LatticeDict", stdlattices)
     lat = latticedict[param["Lattice"]]

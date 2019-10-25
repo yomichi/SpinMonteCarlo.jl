@@ -12,7 +12,10 @@ CurrentModule = SpinMonteCarlo
 accumulateObservables!
 postproc
 postproc(::Ising,::Parameter,::MCObservableSet)
+postproc(::Potts,::Parameter,::MCObservableSet)
 postproc(::Clock,::Parameter,::MCObservableSet)
+postproc(::XY,::Parameter,::MCObservableSet)
+postproc(::AshkinTeller,::Parameter,::MCObservableSet)
 postproc(::QuantumXXZ,::Parameter,::MCObservableSet)
 ```
 
