@@ -10,7 +10,7 @@ Markov chain Monte Carlo solver for finite temperature problem of lattie spin sy
 # Install
 
 ``` julia
-julia> ]add SpinMonteCarlo
+Pkg> add SpinMonteCarlo
 ```
 
 # Simple example
