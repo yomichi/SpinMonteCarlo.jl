@@ -9,6 +9,7 @@ using JSON
         param["Model"] = QuantumXXZ
         param["Lattice"] = "chain lattice"
         param["Update Method"] = loop_update!
+        param["Seed"] = SEED
 
         mcres = runMC(param)
         @testset "$name" for name in keys(ref)
