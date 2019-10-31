@@ -9,6 +9,7 @@ using Statistics
 using LinearAlgebra
 
 using DataStructures
+using JLD2
 
 include("observables/MCObservables.jl")
 include("API/api.jl")

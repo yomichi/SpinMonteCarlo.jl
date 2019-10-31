@@ -66,6 +66,10 @@ function learnEE(model::Model, param::Parameter)
         α *= 0.5
         istage += 1
     end
+
+    save_dos("dos.jld", dos)
+
+    return dos
 end
 
 function measureEE(model::Model, dos::DoS, param::Parameter)

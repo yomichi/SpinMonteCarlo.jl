@@ -122,3 +122,31 @@ function renormalize!(dos::DoS)
     return dos
 end
 
+
+function save_dos(filename, dos::DoS)
+    jldopen(filename, "w") do file
+        file["log g"] = dos.log_g
+        file["hist"] = dos.hist
+        file["lower bounds"] = dos.lower_bounds
+        file["upper bounds"] = dos.upper_bounds
+        file["nbin"] = dos.nbin
+        file["delta"] = dos.delta
+    end
+end
+
+function load_dos(filename)
+    return jldopen(filename) do file
+        log_g = file["log g"]
+        hist = file["hist"]
+        lb = file["lower bounds"]
+        ub = file["upper bounds"]
+        nbin = file["nbin"]
+        d = file["delta"]
+        typ = promote_type(typeof(lb), typeof(ub), typeof(d))
+        dos = DoS{typ}(promote(lb, ub, d)...)
+        dos.log_g .= log_g
+        dos.hist .= hist
+        return dos
+    end
+end
+
