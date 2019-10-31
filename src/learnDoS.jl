@@ -1,4 +1,6 @@
-export learnDoS
+export DoS
+export learnEE
+export measureEE
 
 mutable struct DoS{T<:Real}
     log_g :: Vector{Float64}
@@ -92,17 +94,20 @@ function check_flat(dos::DoS, α; criteria::Real = 0.8, nonzero_ratio::Real = 0.
     flatness = hmin / hmax
     if hnum < nonzero_ratio * dos.nbin
         if verbose
-            @printf("Too small region is explored (%.3f < %.3f) [hmax = %d@%d, hmin = %d@%d, α = %g] \n", hnum/dos.nbin, nonzero_ratio, hmax, imax, hmin, imin, α)
+            @printf("Too small region is explored (%.3f < %.3f) [hmax = %d@%d, hmin = %d@%d, α = %g] \n",
+                    hnum/dos.nbin, nonzero_ratio, hmax, imax, hmin, imin, α)
         end
         return false
     else
         if flatness < criteria
             if verbose
-                @printf("Not flat (%.3f < %.3f)  [hmax = %d@%d, hmin = %d@%d, α = %g] \n", flatness, criteria, hmax, imax, hmin, imin, α)
+                @printf("Not flat (%.3f < %.3f)  [hmax = %d@%d, hmin = %d@%d, α = %g] \n",
+                        flatness, criteria, hmax, imax, hmin, imin, α)
             end
             return false
         else
-            @printf("Flat     (%.3f >= %.3f) [hmax = %d@%d, hmin = %d@%d, α = %g] \n", flatness, criteria, hmax, imax, hmin, imin, α)
+            @printf("Flat     (%.3f >= %.3f) [hmax = %d@%d, hmin = %d@%d, α = %g] \n",
+                    flatness, criteria, hmax, imax, hmin, imin, α)
             return true
         end
     end
@@ -110,18 +115,31 @@ end
 
 function reset_hist!(dos::DoS)
     dos.hist .= zero(UInt128)
+    return dos
 end
 
-function renormalize_logg!(dos::DoS)
+function renormalize!(dos::DoS)
     dos.log_g .-= median(dos.log_g)
+    return dos
 end
 
-function learnDoS(param::Parameter)
+function updateEE!(model::Model, present, dos::DoS, dosobsname, p)
+    action = nextaction(model)
+    diff = localchange(model, action, p...)[dosobsname]
+    if rand() < exp(log_g(dos, present) - log_g(dos, present+diff))
+        present += diff
+        accept!(model, action)
+    end
+    return present
+end
+
+
+function learnEE(param::Parameter)
     model = param["Model"](param)
-    return learnDoS(model, param)
+    return learnEE(model, param)
 end
 
-function learnDoS(model::Model, param::Parameter)
+function learnEE(model::Model, param::Parameter)
     dos = init_extended_ensemble(model, param)
     dosobsname = param["Observable for Extended Ensemble"]
 
@@ -138,16 +156,12 @@ function learnDoS(model::Model, param::Parameter)
     istage = 1
 
     while α >= α_last
+        reset_hist!(dos)
         iter = 0
         present = simple_estimator(model, p..., nothing)[dosobsname]
         while true
             for i in 1:numsites(model)
-                action = nextaction(model)
-                diff = localchange(model, action, p...)[dosobsname]
-                if rand() < exp(log_g(dos, present) - log_g(dos, present+diff))
-                    present += diff
-                    accept!(model, action)
-                end
+                present = updateEE!(model, present, dos, dosobsname, p)
                 visit!(dos, present, α)
             end
             if check_flat(dos, α, criteria = criteria, nonzero_ratio = nonzero_ratio, verbose=true)
@@ -159,7 +173,7 @@ function learnDoS(model::Model, param::Parameter)
                 iter = 0
             end
         end
-        renormalize_logg!(dos)
+        renormalize!(dos)
         open("dos_$(istage).dat", "w") do io
             if valuetype(dos) <: Integer
                 for (i, (g, h)) in enumerate(zip(dos.log_g, dos.hist))
@@ -172,8 +186,72 @@ function learnDoS(model::Model, param::Parameter)
                 end
             end
         end
-        reset_hist!(dos)
         α *= 0.5
         istage += 1
     end
+end
+
+function measureEE(model::Model, dos::DoS, param::Parameter)
+    MCS = get(param, "MCS", 65536)
+    Thermalization = get(param, "Thermalization", MCS >> 3)
+
+    dosobsname = param["Observable for Extended Ensemble"]
+    p = convert_parameter(model, param)
+    present = simple_estimator(model, p..., nothing)[dosobsname]
+
+    for mcs in 1:Thermalization
+        for i in 1:numsites(model)
+            present = updateEE!(model, present, dos, dosobsname, p)
+        end
+        present = simple_estimator(model, p..., nothing)[dosobsname]
+    end
+
+    obs = BinningObservableSet()
+
+    for mcs in 1:MCS
+        for i in 1:numsites(model)
+            present = updateEE!(model, present, dos, dosobsname, p)
+        end
+        lobs = simple_estimator(model, p..., nothing)
+        lobs["Identity"] = 1.0
+        present = lobs[dosobsname]
+        accumulateObservablesEE!(model, log_g(dos, present), obs, lobs)
+    end
+    
+    jk = jackknife(obs)
+    for key in keys(jk)
+        if ! startswith(key, "Wg ")
+            continue
+        end
+        obsname = string(key[4:end])
+        jk[obsname] = jk[key] / jk["Wg Identity"]
+    end
+
+    jk = postproc(model, param, jk)
+
+    return jk
+end
+
+@doc """
+    accumulateObservablesEE!(model, logg, obs::MCObservableSet, localobs::Dict)
+
+Accumulates `localobs` into `obs`. For example, `obs["Energy"] << localobs["Energy"]`.
+"""
+function accumulateObservablesEE!(::Model, logg, obs::MCObservableSet, localobs::Measurement)
+    if length(obs) < 3
+        @inbounds for key in keys(localobs)
+            obsname = "Wg " * key
+            makeMCObservable!(obs, obsname)
+            v = localobs[key]
+            v *= exp(localobs["Log Boltzmann Weight"] + logg)
+            obs[obsname] << v
+        end
+    else
+        @inbounds for key in keys(localobs)
+            v = localobs[key]
+            v *= exp(localobs["Log Boltzmann Weight"] + logg)
+            obs["Wg " * key] << v
+        end
+    end
+    return obs
 end

@@ -29,6 +29,7 @@ function Jackknife(b::BinningObservable)
         return Jackknife(zeros(0))
     end
 end
+Jackknife(jk::Jackknife) = Jackknife(jk.xs[:])
 
 count(jk::Jackknife) = length(jk.xs)
 

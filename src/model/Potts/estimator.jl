@@ -15,13 +15,14 @@ function simple_estimator(model::Potts, T::Real, Js::AbstractArray, _=nothing)
         E -= ifelse(model.spins[s1] == model.spins[s2], 1.0, 0.0) * Js[bondtype(b)]
         npara += ifelse(model.spins[s1] == model.spins[s2], 1, 0)
     end
-    E /= nsites
 
     res = Measurement()
     res["Magnetization"] = M
     res["|Magnetization|"] = abs(M)
     res["Magnetization^2"] = M^2
     res["Magnetization^4"] = M^4
+    res["Log Boltzmann Weight"] = -E/T
+    E /= nsites
     res["Energy"] = E
     res["Energy^2"] = E^2
     res["Number of Parallel Bonds"] = npara
