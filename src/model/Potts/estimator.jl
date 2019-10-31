@@ -9,9 +9,11 @@ function simple_estimator(model::Potts, T::Real, Js::AbstractArray, _=nothing)
     end
     M /= nsites
     E = 0.0
+    npara = 0
     @inbounds for b in bonds(model)
         s1, s2 = source(b), target(b)
         E -= ifelse(model.spins[s1] == model.spins[s2], 1.0, 0.0) * Js[bondtype(b)]
+        npara += ifelse(model.spins[s1] == model.spins[s2], 1, 0)
     end
     E /= nsites
 
@@ -22,6 +24,7 @@ function simple_estimator(model::Potts, T::Real, Js::AbstractArray, _=nothing)
     res["Magnetization^4"] = M^4
     res["Energy"] = E
     res["Energy^2"] = E^2
+    res["Number of Parallel Bonds"] = npara
     return res
 end
 

@@ -1,3 +1,41 @@
+function nextaction(model::Potts, site::Integer)
+    state = mod1(model.spins[1,site] + rand(model.rng, 1:(model.Q-1)), model.Q)
+    return site, state
+end
+
+function nextaction(model::Potts)
+    site = rand(model.rng, 1:numsites(model))
+    return nextaction(model, site)
+end
+
+function accept!(model::Potts, action)
+    site, state = action
+    model.spins[1,site] = state
+    return model
+end
+
+function localchange(model::Potts, action, T, Js)
+    site, new_state = action
+    state = model.spins[1,site]
+    npara = 0
+    ene = 0.0
+    nspins1 = ifelse(state == 1, 0, -1)
+    nspins1 += ifelse(new_state == 1, 1, 0)
+    for (n,b) in neighbors(model, site)
+        npara -= ifelse(state == model.spins[1,n], 1, 0)
+        ene += ifelse(state == model.spins[1,n], Js[bondtype(model, b)], 0.0)
+        npara += ifelse(new_state == model.spins[1,n], 1, 0)
+        ene -= ifelse(new_state == model.spins[1,n], Js[bondtype(model, b)], 0.0)
+    end
+
+    res = Dict{String, Any}(
+                            "Number of Parallel Bonds" => npara,
+                            "Energy" => ene / numsites(model),
+                            "Magnetization" => nspins1 / numsites(model),
+                           )
+    return res
+end
+
 function local_update!(model::Potts, T::Real, Js::AbstractArray)
     rng = model.rng
     nsites = numsites(model)

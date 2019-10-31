@@ -15,5 +15,6 @@ include("API/api.jl")
 include("model/model.jl")
 include("lattice/Lattices.jl")
 include("runMC.jl")
+include("learnDoS.jl")
 include("snapshot.jl")
 end # of module
