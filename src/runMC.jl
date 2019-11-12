@@ -91,7 +91,12 @@ function runMC(model, param::Parameter)
     end
 
     update! = param["Update Method"] :: Function
-    estimator = get(param, "Estimator", default_estimator(model, update!)) :: Function
+    if haskey(param, "Estimator")
+        estimator = param["Estimator"] :: Function
+    else
+        estimator = default_estimator(model, update!)
+    end
+    pp = get(param, "Post Process", postproc) :: Function
     p = convert_parameter(model, param)
 
     while mcs < MCS
@@ -125,7 +130,7 @@ function runMC(model, param::Parameter)
         end
     end
 
-    jk = postproc(model, param, obs)
+    jk = pp(model, param, obs)
 
     if verbose
         println("Finish: ", param)
