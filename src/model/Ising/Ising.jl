@@ -37,3 +37,4 @@ end
 include("update.jl")
 include("estimator.jl")
 include("postproc.jl")
+include("extended_ensemble.jl")

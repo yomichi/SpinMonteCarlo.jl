@@ -1,3 +1,37 @@
+function nextaction(model::Ising, site::Integer)
+    state = -model.spins[1,site]
+    return site, state
+end
+
+function nextaction(model::Ising)
+    site = rand(model.rng, 1:numsites(model))
+    return nextaction(model, site)
+end
+
+function accept!(model::Ising, action)
+    site, state = action
+    model.spins[1,site] = state
+    return model
+end
+
+function localchange(model::Ising, action, T, Js)
+    site, new_state = action
+    state = model.spins[1,site]
+    npara = 0
+    ene = 0.0
+    for (n,b) in neighbors(model, site)
+        npara += ifelse(state == model.spins[1,n], 1, -1)
+        ene -= ifelse(state == model.spins[1,n], 2, -2) * Js[bondtype(model, b)]
+    end
+
+    res = Dict{String, Any}(
+                            "Number of Parallel Bonds" => npara,
+                            "Energy" => ene / numsites(model),
+                            "Magnetization" => nspins1 / numsites(model),
+                           )
+    return res
+end
+
 function local_update!(model::Ising, T::Real, Js::AbstractArray)
     rng = model.rng
     nsites = numsites(model)
