@@ -16,8 +16,17 @@ function learnEE(param::Parameter)
     return learnEE(model, param)
 end
 
+function learnEE(param::Parameter, dos::DoS)
+    model = param["Model"](param)
+    return learnEE(model, param, dos)
+end
+
 function learnEE(model::Model, param::Parameter)
     dos = init_extended_ensemble(model, param)
+    return learnEE(model, param, dos)
+end
+
+function learnEE(model::Model, param::Parameter, dos::DoS)
     dosobsname = param["Observable for Extended Ensemble"]
 
     p = convert_parameter(model, param)
@@ -51,18 +60,7 @@ function learnEE(model::Model, param::Parameter)
             end
         end
         renormalize!(dos)
-        open("dos_$(istage).dat", "w") do io
-            if valuetype(dos) <: Integer
-                for (i, (g, h)) in enumerate(zip(dos.log_g, dos.hist))
-                    v = index2value(dos, i)
-                    @printf(io, "%d %.15f %d\n", v, g, h)
-                end
-            else
-                for (i, (g, h)) in enumerate(zip(dos.log_g, dos.hist))
-                    @printf(io, "%.15f %.15f %d\n", v, g, h)
-                end
-            end
-        end
+        dump_dos("dos_$(istage).dat", dos)
         α *= 0.5
         istage += 1
     end

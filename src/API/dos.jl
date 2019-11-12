@@ -1,5 +1,6 @@
 export DoS
 export visit!, logg, hist, logg_hist, reset_hist!, renormalize!
+export copy_bins!
 
 mutable struct DoS{T<:Real}
     log_g :: Vector{Float64}
@@ -50,6 +51,12 @@ end
 function index2value(dos::DoS{T}, index::Integer) where {T<:Integer}
     return dos.lower_bounds + (index-1)*dos.delta
 end
+
+function value2ratio(dos::DoS, value)
+    return (value - dos.lower_bounds) / (dos.upper_bounds - dos.lower_bounds)
+end
+
+index2ratio(dos::DoS, index) = value2ratio(dos, index2value(dos, index))
 
 function visit!(dos::DoS, value::Real, α::Real=0.0; check_range::Bool = true)
     index = value2index(dos, value, check_range=check_range)
@@ -122,6 +129,26 @@ function renormalize!(dos::DoS)
     return dos
 end
 
+function dump_dos(filename, dos::DoS; skip_empty::Bool=true)
+    open(filename, "w") do io
+        if SpinMonteCarlo.valuetype(dos) <: Integer
+            for (i, (g, h)) in enumerate(zip(dos.log_g, dos.hist))
+                if skip_empty && h > 0
+                    v = SpinMonteCarlo.index2value(dos, i)
+                    @printf(io, "%d %.15f %d\n", v, g, h)
+                end
+            end
+        else
+            for (i, (g, h)) in enumerate(zip(dos.log_g, dos.hist))
+                if skip_empty && h > 0
+                    v = SpinMonteCarlo.index2value(dos, i)
+                    @printf(io, "%.15f %.15f %d\n", v, g, h)
+                end
+            end
+        end
+    end
+end
+
 
 function save_dos(filename, dos::DoS)
     jldopen(filename, "w") do file
@@ -142,11 +169,32 @@ function load_dos(filename)
         ub = file["upper bounds"]
         nbin = file["nbin"]
         d = file["delta"]
-        typ = promote_type(typeof(lb), typeof(ub), typeof(d))
-        dos = DoS{typ}(promote(lb, ub, d)...)
+        dos = DoS(promote(lb, ub, d)...)
         dos.log_g .= log_g
         dos.hist .= hist
         return dos
     end
 end
 
+function copy_dos!(dst::DoS, src::DoS)
+    for idst in 1:dst.nbin
+        r = (idst-1) / (dst.nbin-1)
+        isrc_re = r * (src.nbin-1) + 1.0
+        if floor(isrc_re) == isrc_re
+            isrc_re = ifelse(isrc_re > 1.0, prevfloat(isrc_re), nextfloat(isrc_re))
+        end
+        isrc_floor = floor(Int, isrc_re)
+        isrc = isrc_floor
+        while isrc_floor >= 1 && src.hist[isrc_floor] == 0
+            isrc_floor -= 1
+        end
+        isrc_ceil = ceil(Int, isrc_re)
+        while isrc_ceil <= src.nbin && src.hist[isrc_ceil] == 0
+            isrc_ceil += 1
+        end
+
+        dst.log_g[idst] = src.log_g[isrc_floor] + (isrc_re - isrc_floor) * (src.log_g[isrc_ceil] - src.log_g[isrc_floor]) / (isrc_ceil - isrc_floor)
+        dst.hist[idst] = floor(UInt128, src.hist[isrc_floor] + (isrc_re - isrc_floor) * (src.hist[isrc_ceil] - src.hist[isrc_floor]) / (isrc_ceil - isrc_floor))
+    end
+    return dst
+end
