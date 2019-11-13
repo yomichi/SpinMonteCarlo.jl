@@ -20,14 +20,14 @@ function localchange(model::Ising, action, T, Js)
     npara = 0
     ene = 0.0
     for (n,b) in neighbors(model, site)
-        npara += ifelse(state == model.spins[1,n], 1, -1)
-        ene -= ifelse(state == model.spins[1,n], 2, -2) * Js[bondtype(model, b)]
+        npara += ifelse(new_state == model.spins[1,n], 1, -1)
+        ene -= ifelse(new_state == model.spins[1,n], 2, -2) * Js[bondtype(model, b)]
     end
 
     res = Dict{String, Any}(
                             "Number of Parallel Bonds" => npara,
                             "Energy" => ene / numsites(model),
-                            "Magnetization" => nspins1 / numsites(model),
+                            "Magnetization" => 2state / numsites(model),
                            )
     return res
 end

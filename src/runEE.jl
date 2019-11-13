@@ -34,7 +34,7 @@ function learnEE(model::Model, param::Parameter, dos::DoS)
     α = get(param, "WL Start Refinement Factor", 1.0)
     α_last = get(param, "WL Minimum Refinement Factor", 1e-4)
 
-    criteria = get(param, "WL Criteria for Flat", 0.8)
+    criteria = get(param, "WL Criteria for Flat", 0.7)
     nonzero_ratio = get(param, "WL Nonzero Ratio", 0.4)
 
     interval_calc_full_state = 100

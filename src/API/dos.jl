@@ -11,8 +11,9 @@ mutable struct DoS{T<:Real}
     delta :: T
 end
 function DoS(lower_bounds::T, upper_bounds::T, delta::T) where {T<:Real}
-    nbin = (upper_bounds - lower_bounds) / delta
-    return DoS{T}(zeros(nbin), zeros(UInt128), lower_bounds, upper_bounds, nbin, delta)
+    nbin_re = (upper_bounds - lower_bounds) / delta
+    nbin = ceil(UInt64, nbin_re)
+    return DoS{T}(zeros(nbin), zeros(UInt128, nbin), lower_bounds, upper_bounds, nbin, delta)
 end
 function DoS(lower_bounds::T, upper_bounds::T, delta::T) where {T<:Integer}
     nbin = (upper_bounds - lower_bounds) ÷ delta + 1
@@ -24,7 +25,11 @@ valuetype(dos::DoS{T}) where {T<:Real} = T
 function value2index(dos::DoS, value::Real; check_range::Bool = true)
     if check_range
         if ! ( dos.lower_bounds <= value <= dos.upper_bounds )
-            error()
+            if ! (dos.lower_bounds ≈ value || dos.upper_bounds ≈ value)
+                @show dos.lower_bounds, value, dos.upper_bounds
+                error()
+            end
+            value = clamp(value, dos.lower_bounds, dos.upper_bounds)
         end
     else
         value = clamp(value, dos.lower_bounds, dos.upper_bounds)

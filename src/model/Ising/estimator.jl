@@ -27,13 +27,14 @@ function simple_estimator(model::Ising, T::Real, Js::AbstractArray, _=nothing)
         s1, s2 = source(b), target(b)
         E += ifelse(model.spins[s1] == model.spins[s2], -1.0, 1.0) * Js[bondtype(b)]
     end
-    E /= nsites
 
     res = Measurement()
     res["Magnetization"] = M
     res["|Magnetization|"] = abs(M)
     res["Magnetization^2"] = M^2
     res["Magnetization^4"] = M^4
+    res["Log Boltzmann Weight"] = -E/T
+    E /= nsites
     res["Energy"] = E
     res["Energy^2"] = E^2
     return res
