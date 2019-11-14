@@ -27,6 +27,7 @@ function learnEE(model::Model, param::Parameter)
 end
 
 function learnEE(model::Model, param::Parameter, dos::DoS)
+    dosfilename = get(param, "DoS Filename", "dos")
     dosobsname = param["Observable for Extended Ensemble"]
 
     p = convert_parameter(model, param)
@@ -60,14 +61,20 @@ function learnEE(model::Model, param::Parameter, dos::DoS)
             end
         end
         renormalize!(dos)
-        dump_dos("dos_$(istage).dat", dos)
+        dump_dos("$(dosfilename)_$(istage).dat", dos)
         α *= 0.5
         istage += 1
     end
 
-    save_dos("dos.jld", dos)
+    save_dos("$(dosfilename).jld", dos)
 
     return dos
+end
+
+function measureEE(model::Model, param::Parameter)
+    dosfilename = get(param, "DoS Filename", "dos")
+    dos = load_dos("$(dosfilename).jld")
+    return measureEE(model, dos, param)
 end
 
 function measureEE(model::Model, dos::DoS, param::Parameter)
