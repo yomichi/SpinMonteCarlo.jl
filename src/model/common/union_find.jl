@@ -18,12 +18,25 @@ numclusters(u::UnionFind) = u.nclusters
 isroot(u::UnionFind, n::Integer) = u.parents[n] == n
 
 @doc doc"""
-    root!(u::UnionFind, n::Integer)
+    root_path_halving!(u::UnionFind, n::Integer)
 
 Returns the root node of the cluster where `n` belongs.
 This may changes graph connection by "Path halving" method.
 """
-function root!(u::UnionFind, n::Integer)
+function root_path_halving!(u::UnionFind, n::Integer)
+    @inbounds while !isroot(u,n)
+        n = u.parents[n] = u.parents[u.parents[n]]
+    end
+    return n
+end
+
+@doc doc"""
+    root_path_splitting!(u::UnionFind, n::Integer)
+
+Returns the root node of the cluster where `n` belongs.
+This may changes graph connection by "Path splitting" method.
+"""
+function root_path_splitting!(u::UnionFind, n::Integer)
     @inbounds while !isroot(u,n)
         p = u.parents[n]
         u.parents[n] = u.parents[p]
@@ -31,6 +44,14 @@ function root!(u::UnionFind, n::Integer)
     end
     return n
 end
+
+@doc doc"""
+    root!(u::UnionFind, n::Integer)
+
+Returns the root node of the cluster where `n` belongs.
+This may changes graph connection by "Path halving" method.
+"""
+const root! = root_path_halving!
 
 @doc doc"""
     unify!(u, n1, n2)
