@@ -1,11 +1,7 @@
 # SpinMonteCarlo.jl
-<!--[![Docs (stable)](https://img.shields.io/badge/docs-stable-blue.svg)](https://yomichi.github.io/SpinMonteCarlo.jl/stable)-->
-
-[![Docs (latest)](https://img.shields.io/badge/docs-latest-blue.svg)](https://yomichi.github.io/SpinMonteCarlo.jl/latest)
-[![Build status (macos/Linux)](https://travis-ci.org/yomichi/SpinMonteCarlo.jl.svg)](https://travis-ci.org/yomichi/SpinMonteCarlo.jl)
-[![Build status (win)](https://ci.appveyor.com/api/projects/status/ooxw9wusg26bklq3?svg=true)](https://ci.appveyor.com/project/yomichi/spinmontecarlo-jl)
-
 Markov chain Monte Carlo solver for finite temperature problem of lattie spin system implemented by [Julia](https://julialang.org) language.
+
+[Online manual](https://yomichi.github.io/SpinMonteCarlo.jl/latest)
 
 # Install
 
@@ -15,7 +11,7 @@ Pkg> add SpinMonteCarlo
 
 # Simple example
 
-[The following program](example/simple.jl) calculates temperature v.s. specific heat of the ferromagnetic Ising model on a 16x16 square lattice by Swendsen-Wang algorithm.
+[The following program](example/simple.jl) calculates temperature v.s. specific heat of the ferromagnetic Ising model on a $16\times 16$ square lattice by Swendsen-Wang algorithm.
 
 ``` julia
 using SpinMonteCarlo
@@ -49,13 +45,13 @@ end
 - Classical spin model
     - `Ising` model
     - `Q` state `Potts` model
-        - order parameter defined as `M = (Q-1)/Q * n_1 - (1-n_1)/Q`, where `n_1` is the number density of `q=1` spins.
+        - order parameter defined as $M = n_1(Q-1)/Q  - (1-n_1)/Q$, where $n_1$ is the number density of $q=1$ spins.
     - `XY` model
     - `Q` state `Clock` model
     - `AshkinTeller` model
 - Quantum spin model
     - spin-`S` `QuantumXXZ` model
-        - `\mathcal{H} = \sum_{ij} [ Jz_{ij} S_i^z S_j^z + \frac{Jxy_{ij}}{2} (S_i^+ S_j^- + S_i^-S_j^+) ] - \sum_i Gamma_i S_i^x`
+        - $\mathcal{H} = \sum_{ij} [ Jz_{ij} S_i^z S_j^z + \frac{Jxy_{ij}}{2} (S_i^+ S_j^- + S_i^-S_j^+) ] - \sum_i \Gamma_i S_i^x$
 
 ## Lattice
 - `chain lattice`
@@ -82,25 +78,25 @@ end
 ## Physical quantities
 - `Ising`, `Potts`
     - `Magnetization`
-        - `:= < M_total/N_site >`
+        - $\braket{m} := \braket{ M_\text{total}/N_\text{site} }$
     - `|Magnetization|`
-        - `:= < |M_total/N_site| >`
+        - $\braket{|m|} := \braket{|M_\text{total}/N_\text{site}|}$ 
     - `Magnetization^2`
-        - `:= < (M_total/N_site)^2 >`
+        - $\braket{m^2} := \braket{(M_\text{total}/N_\text{site})^2}$
     - `Magnetization^4`
-        - `:= < (M_total/N_site)^4 >`
+        - $\braket{m^4} := \braket{(M_\text{total}/N_\text{site})^4 }$
     - `Binder Ratio`
-        - `:= "Magnetization^4")/"Magnetization^2"^2`
+        - $U_{4,2} := \braket{m^4}/\braket{m^2}^2$
     - `Susceptibility`
-        - `:= \partial_h "Magnetization" = (N/T) * ("Magnetization^2" - "Magnetization"^2)`
+        - $\chi := \partial_h \braket{m} = (N/T)(\braket{m^2} - \braket{m}^2)$
     - `Connected Susceptibility`
-        - `:= (N_site/T) * ("Magnetization^2"- "|Magnetization|"^2)`
+        - $\chi := (N/T)(\braket{m^2} - \braket{|m|}^2)$
     - `Energy`
-        - `:= < E_total/N_site >`
+        - $ E := \braket{\mathcal{H}} =  \braket{E_\text{total}/N_\text{site} }$
     - `Energy^2`
-        - `:= < (E_total/N_site)^2 >`
+        - $E^2 := \braket{\mathcal{H}^2}$
     - `Specific Heat`
-        - `:= \partial_beta "Energy" = (N/T^2)*("Energy^2" - "Energy"^2)`
+        - $C := \partial_\beta \braket{\mathcal{H}} = (N/T^2)(\braket{\mathcal{H}^2} - \braket{\mathcal{H}}^2)$
 - `XY`, `Clock`
     - `|Magnetization|`
     - `|Magnetization|^2`
@@ -129,21 +125,21 @@ end
     - `Specific Heat`
 - `QuantumXXZ`
     - `Magnetization`
-        - `:= < \sum_i S_i^z > / Nsite`
+        - $\braket{m} := \braket{\sum_i S_i^z } / N_\text{site}$
     - `Magnetization^2`
-        - `:= < (\sum_i S_i^z)^2 > / Nsite^2`
+        - $\braket{m^2}:= \braket{(\sum_i S_i^z)^2 } / N_\text{site}^2$
     - `Magnetization^4`
-        - `:= < (\sum_i S_i^z)^4 > / Nsite^4`
+        - $\braket{m^4}:= \braket{(\sum_i S_i^z)^4 } / N_\text{site}^4$
     - `Binder Ratio`
-        - `:= "Magnetization^4")/"Magnetization^2"^2`
+        - $U_{4,2} := \braket{m^4}/\braket{m^2}^2$
     - `Susceptibility`
-        - `:= \partial_h "Magnetization" = (N/T) * ("Magnetization^2" - "Magnetization"^2)`
+        - $\chi := \partial_h \braket{m} = (N/T)(\braket{m^2} - \braket{m}^2)$
     - `Energy`
-        - `:= < \mathcal{H} > / Nsite`
+        - $ E := \braket{\mathcal{H}} =  \braket{E_\text{total}/N_\text{site} }$
     - `Energy^2`
-        - `:= < \mathcal{H}^2 > / Nsite^2`
+        - $E^2 := \braket{\mathcal{H}^2}$
     - `Specific Heat`
-        - `:= \partial_beta "Energy" = (N/T^2)*("Energy^2" - "Energy"^2)`
+        - $C := \partial_\beta \braket{\mathcal{H}} = (N/T^2)(\braket{\mathcal{H}^2} - \braket{\mathcal{H}}^2)$
 
 # Future work
 - `Model`
@@ -164,4 +160,4 @@ end
 # Author
 [Yuichi Motoyama](https://github.com/yomichi), the University of Tokyo, 2016-
 
-This package distributed under the MIT license.
+This package is distributed under the MIT license.
