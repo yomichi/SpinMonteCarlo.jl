@@ -61,8 +61,16 @@ simple_estimator
 improved_estimator
 ```
 
+## Snapshots
+```@docs
+gen_snapshot!
+gensave_snapshot!
+load_snapshot
+```
+
 ## Utility
 ```@docs
+Parameter
 convert_parameter
 convert_parameter(::Ising, ::Parameter)
 convert_parameter(::Potts, ::Parameter)

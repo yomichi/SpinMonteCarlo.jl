@@ -21,9 +21,10 @@ postproc(::QuantumXXZ,::Parameter,::MCObservableSet)
 
 ## Lattice
 
-```@autodocs
-Modules = [SpinMonteCarlo]
-Pages = ["src/lattice.jl"]
+```@docs
+generatelattice
+numsitetypes
+numbondtypes
 ```
 
 ## Model
@@ -42,9 +43,13 @@ LocalLoopOperator
 ```@docs
 default_estimator
 @gen_convert_parameter
+SWInfo
 UnionFind
 addnode!
 unify!
 clusterize!
 clusterid
+root!
+root_path_halving!
+root_path_splitting!
 ```
