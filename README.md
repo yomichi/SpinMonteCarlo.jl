@@ -60,6 +60,8 @@ end
     - `L`
 - `square lattice`
     - `L * W`
+- `J1J2 square lattice`
+    - `L * W`
 - `triangular lattice`
     - `L * W`
 - `cubic lattice`
@@ -92,7 +94,7 @@ end
     - `Connected Susceptibility`
         - $\chi := (N/T)(\braket{m^2} - \braket{|m|}^2)$
     - `Energy`
-        - $ E := \braket{\mathcal{H}} =  \braket{E_\text{total}/N_\text{site} }$
+        - $ E := \braket{\mathcal{H}} = \braket{E_\text{total}}/N_\text{site}$
     - `Energy^2`
         - $E^2 := \braket{\mathcal{H}^2}$
     - `Specific Heat`
@@ -135,7 +137,7 @@ end
     - `Susceptibility`
         - $\chi := \partial_h \braket{m} = (N/T)(\braket{m^2} - \braket{m}^2)$
     - `Energy`
-        - $ E := \braket{\mathcal{H}} =  \braket{E_\text{total}/N_\text{site} }$
+        - $ E := \braket{\mathcal{H}}$
     - `Energy^2`
         - $E^2 := \braket{\mathcal{H}^2}$
     - `Specific Heat`
