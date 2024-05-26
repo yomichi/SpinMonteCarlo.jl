@@ -21,7 +21,7 @@ mutable struct BinningObservable <: ScalarObservable
         bins = zeros(0)
         sum = zeros(1)
         sum2 = zeros(1)
-        entries = zeros(Int,1)
+        entries = zeros(Int, 1)
         binsize = 1
         lastbin = 0
         maxlevel = 1
