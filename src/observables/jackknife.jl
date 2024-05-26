@@ -7,7 +7,7 @@ end
 
 Jackknife(jk::Jackknife, f::Function) = Jackknife(map(f,jk.xs))
 
-function jk_helper(xs)
+function jk_helper(xs::Vector{Float64})
     s = sum(xs)
     n = length(xs)-1
     ret = similar(xs)
@@ -33,30 +33,32 @@ end
 count(jk::Jackknife) = length(jk.xs)
 
 mean(jk::Jackknife) = mean(jk.xs)
-function stderror(jk::Jackknife)
-    n = count(jk)
-    if n < 2
-        return NaN
-    else
-        m2 = sum(abs2, jk.xs)
-        m2 /= n
-        m = mean(jk)
-        sigma2 = m2 - m*m
-        sigma2 *= n-1
-        sigma2 = maxzero(sigma2)
-        return sqrt(sigma2)
-    end
-end
+# function stderror(jk::Jackknife)
+#     n = count(jk)
+#     if n < 2
+#         return NaN
+#     else
+#         m2 = sum(abs2, jk.xs)
+#         m2 /= n
+#         m = mean(jk)
+#         sigma2 = m2 - m*m
+#         sigma2 *= n-1
+#         sigma2 = maxzero(sigma2)
+#         return sqrt(sigma2)
+#     end
+# end
 function var(jk::Jackknife)
     n = count(jk)
     if n < 2
         return NaN
     else
         m = mean(jk)
-        return sum(abs2, jk.xs.-m)*(n-1)
+
+        return mean(abs2, jk.xs.-m)*(n-1)
     end
 end
 stddev(jk::Jackknife) = sqrt(var(jk))
+stderror(jk::Jackknife) = stddev(jk)
 
 function confidence_interval(jk::Jackknife, confidence_rate::Real)
     q = 0.5+0.5*confidence_rate
@@ -115,6 +117,7 @@ import Base.^
 const JackknifeSet = MCObservableSet{Jackknife}
 
 jackknife(obs::ScalarObservable) = Jackknife(obs)
+jackknife(obs::ScalarObservable, binsize::Int) = Jackknife(binning(obs, binsize))
 function jackknife(obsset :: MCObservableSet)
     JK = JackknifeSet()
     for (k,v) in obsset
@@ -122,4 +125,10 @@ function jackknife(obsset :: MCObservableSet)
     end
     return JK
 end
-
+function jackknife(obsset :: MCObservableSet, binsize::Int)
+    JK = JackknifeSet()
+    for (k,v) in obsset
+        JK[k] = jackknife(v, binsize)
+    end
+    return JK
+end

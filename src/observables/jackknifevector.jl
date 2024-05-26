@@ -4,12 +4,27 @@ mutable struct JackknifeVector <: VectorObservable
     xs :: Vector{Vector{Float64}}
 end
 
+function jk_helper(xs::Vector{Vector{Float64}})
+    ndata = length(xs)
+    nobs = length(xs[1])
+    ret = Vector{Float64}[zeros(nobs) for i in 1:ndata]
+
+    s = sum(xs)
+    coeff = 1.0 / (ndata - 1)
+    n = length(xs)-1
+    ret = similar(xs)
+    for i in 1:n+1
+        ret[i] = coeff .* (s.-xs[i])
+    end
+    return ret
+end
+
 JackknifeVector() = JackknifeVector(Vector{Float64}[])
 
 function JackknifeVector(jk::JackknifeVector, f::Function) 
     xs = similar(jk.xs)
     for i in 1:length(jk.xs)
-        xs[i] = f(jk.xs[i])
+        xs[i] = broadcast(f, jk.xs[i])
     end
     JackknifeVector(xs)
 end
@@ -38,36 +53,46 @@ count(jk::JackknifeVector) = length(jk.xs)
 
 function mean(jk::JackknifeVector)
     if isempty(jk) 
-        return NaN
+        return [NaN]
     else
-        return mean.(jk.xs)
+        res = zeros(length(jk.xs[1]))
+        for data in jk.xs
+            res .+= data
+        end
+        return res .* (1.0 / length(jk.xs))
     end
 end
 function var(jk::JackknifeVector)
     n = count(jk)
     if n < 2
-        return NaN
+        return [NaN]
     else
         m = mean(jk)
-        return sum(abs2, jk.xs.-m)*(n-1)
+        s = similar(m)
+        for data in jk.xs
+            s .+= (data .- m) .^ 2
+        end
+        s .*= (n-1.0)/n
+        return s
     end
 end
 stddev(jk::JackknifeVector) = sqrt.(var(jk))
 function stderror(jk::JackknifeVector)
-    n = count(jk)
-    if n == 0
-        return NaN
-    elseif n == 1
-        return Inf
-    else
-        m2 = sum(abs2, jk.xs)
-        m2 /= n
-        m = mean(jk)
-        sigma2 = m2 - m.*m
-        sigma2 *= n-1
-        map!(maxzero, sigma2)
-        return sqrt(sigma2)
-    end
+    # n = count(jk)
+    # if n == 0
+    #     return NaN
+    # elseif n == 1
+    #     return Inf
+    # else
+    #     m2 = sum(abs2, jk.xs)
+    #     m2 /= n
+    #     m = mean(jk)
+    #     sigma2 = m2 - m.*m
+    #     sigma2 *= n-1
+    #     map!(maxzero, sigma2)
+    #     return sqrt(sigma2)
+    # end
+    return stddev(jk)
 end
 
 
@@ -132,14 +157,24 @@ for op in ( :*, :/, :\)
     end
 end
 
-const JackknifeSet = MCObservableSet{Jackknife}
+const JackknifeVectorSet = MCObservableSet{JackknifeVector}
 
 jackknife(obs::VectorObservable) = JackknifeVector(obs)
+jackknife(obs::VectorObservable, binsize::Int) = JackknifeVector(binning(obs, binsize))
 function jackknife(obsset :: MCObservableSet{Obs}) where (Obs<: VectorObservable)
     JK = JackknifeSet()
     for (k,v) in obsset
-        JK[k] = JackknifeVector(v)
+        JK[k] = jackknife(v)
     end
     return JK
 end
+
+function jackknife(obsset :: MCObservableSet{Obs}, binsize::Int) where (Obs<: VectorObservable)
+    JK = JackknifeSet()
+    for (k,v) in obsset
+        JK[k] = jackknife(v, binsize)
+    end
+    return JK
+end
+
 

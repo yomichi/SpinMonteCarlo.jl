@@ -13,11 +13,22 @@ mutable struct BinningObservable <: ScalarObservable
     lastbin :: Int
     minbinnum :: Int
     maxlevel :: Int
+
+    function BinningObservable(minbinnum::Int = 128) 
+        Base.depwarn("BinningObservable is deprecated. Use obs=SimpleObservable() and binning(obs) instead.", nothing, force=true)
+
+        raw_ts = zeros(0)
+        bins = zeros(0)
+        sum = zeros(1)
+        sum2 = zeros(1)
+        entries = zeros(Int,1)
+        binsize = 1
+        lastbin = 0
+        maxlevel = 1
+        new(raw_ts, bins, sum, sum2, entries, binsize, lastbin, minbinnum, maxlevel)
+    end
 end
 
-function BinningObservable(minbinnum::Int = 128) 
-    BinningObservable( zeros(0), zeros(0), zeros(1), zeros(1), zeros(Int,1), 1, 0, minbinnum, 1)
-end
 
 function reset!(b::BinningObservable)
     b.raw_ts = zeros(0)

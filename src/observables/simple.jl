@@ -1,4 +1,4 @@
-export SimpleObservable, stddev
+export SimpleObservable, stddev, binning
 
 mutable struct SimpleObservable <: ScalarObservable
     bins :: Vector{Float64}
@@ -8,6 +8,43 @@ mutable struct SimpleObservable <: ScalarObservable
 end
 
 SimpleObservable() = SimpleObservable(zeros(0), 0, 0.0, 0.0)
+
+"""
+    binning(obs::SimpleObservable; binsize::Int = 0, numbins::Int = 0)
+    binning(obs::SimpleVectorObservable; binsize::Int = 0, numbins::Int = 0)
+
+    Binning the observable `obs`.
+    Either `binsize` or `numbins` can be given. If both are given, `ArgumentError` is thrown.
+    If both are not given, `binsize` is set to `floor(sqrt(count(obs)))`.
+"""
+function binning(obs::SimpleObservable; binsize::Int = 0, numbins::Int = 0)
+    nobs = count(obs)
+
+    if binsize > 0 && numbins > 0
+        throw(ArgumentError("Only one of binsize or numbins should be given."))
+    end
+    if binsize <= 0 && numbins <= 0
+        binsize = floor(Int, sqrt(nobs))
+    end
+    if binsize > nobs
+        binsize = nobs
+    end
+
+    if binsize > 0
+        numbins = floor(Int, nobs/binsize)
+    else
+        binsize = floor(Int, nobs/numbins)
+    end
+
+    bins = zeros(numbins)
+    offset = 1
+    for i in 1:numbins
+        bins[i] = sum(obs.bins[offset:offset+binsize-1]) / binsize
+        offset += binsize
+    end
+    newobs = SimpleObservable(bins, numbins, sum(bins), sum(abs2, bins))
+    return newobs
+end
 
 function reset!(obs :: SimpleObservable)
     obs.bins = zeros(0)
@@ -91,3 +128,11 @@ function merge!(obs::SimpleObservableSet, other::SimpleObservableSet)
     return obs
 end
 merge(lhs::SimpleObservableSet, rhs::SimpleObservableSet) = merge!(deepcopy(lhs), rhs)
+
+function binning(obsset::SimpleObservableSet; binsize::Int = 0, numbins::Int = 0)
+    newobsset = SimpleObservableSet()
+    for (name, obs) in obsset
+        newobsset[name] = binning(obs, binsize=binsize, numbins=numbins)
+    end
+    return newobsset
+end

@@ -10,6 +10,7 @@ const alpha = 0.001
 
 @testset begin
     filenames = [
+                 "observable.jl",
                  "classical.jl",
                  "quantum.jl",
                  "checkpoint.jl",
