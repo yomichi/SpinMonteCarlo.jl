@@ -117,18 +117,10 @@ import Base.^
 const JackknifeSet = MCObservableSet{Jackknife}
 
 jackknife(obs::ScalarObservable) = Jackknife(obs)
-jackknife(obs::ScalarObservable, binsize::Int) = Jackknife(binning(obs, binsize))
 function jackknife(obsset :: MCObservableSet)
     JK = JackknifeSet()
     for (k,v) in obsset
         JK[k] = Jackknife(v)
-    end
-    return JK
-end
-function jackknife(obsset :: MCObservableSet, binsize::Int)
-    JK = JackknifeSet()
-    for (k,v) in obsset
-        JK[k] = jackknife(v, binsize)
     end
     return JK
 end

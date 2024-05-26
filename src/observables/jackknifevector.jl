@@ -160,7 +160,6 @@ end
 const JackknifeVectorSet = MCObservableSet{JackknifeVector}
 
 jackknife(obs::VectorObservable) = JackknifeVector(obs)
-jackknife(obs::VectorObservable, binsize::Int) = JackknifeVector(binning(obs, binsize))
 function jackknife(obsset :: MCObservableSet{Obs}) where (Obs<: VectorObservable)
     JK = JackknifeSet()
     for (k,v) in obsset
@@ -168,13 +167,3 @@ function jackknife(obsset :: MCObservableSet{Obs}) where (Obs<: VectorObservable
     end
     return JK
 end
-
-function jackknife(obsset :: MCObservableSet{Obs}, binsize::Int) where (Obs<: VectorObservable)
-    JK = JackknifeSet()
-    for (k,v) in obsset
-        JK[k] = jackknife(v, binsize)
-    end
-    return JK
-end
-
-
