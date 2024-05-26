@@ -86,6 +86,8 @@ function test_jackknife(scalartype, vectortype)
     @test means_scalar ≈ means_vector
     # @test vars_scalar ≈ vars_vector
 
+    jk_scalar_x[1] + jk_vector_x
+    jk_scalar_x[1] * jk_vector_x
 end
 
 @testset "Simple" begin

@@ -21,13 +21,45 @@ end
 
 JackknifeVector() = JackknifeVector(Vector{Float64}[])
 
-function JackknifeVector(jk::JackknifeVector, f::Function) 
-    xs = similar(jk.xs)
-    for i in 1:length(jk.xs)
-        xs[i] = broadcast(f, jk.xs[i])
+function JackknifeVector(f::Function, jks::JackknifeVector...)
+    if isempty(jks)
+        return JackknifeVector()
+    end
+    xs = similar(jks[1].xs)
+    for i in 1:length(jks[1].xs)
+        arg = [jk.xs[i] for jk in jks]
+        xs[i] = broadcast(f, arg...)
     end
     JackknifeVector(xs)
 end
+
+function JackknifeVector(jk::JackknifeVector, f::Function) 
+    Base.depwarn("JackknifeVector(jk::JackknifeVector, f::Function) is deprecated. Use JackknifeVector(f, jk) instead.", :JackknifeVector)
+    return JackknifeVector(f, jk)
+end
+
+function JackknifeVector(f::Function, lhs::JackknifeVector, rhs::Jackknife)
+    nbins = count(lhs)
+    nobs = length(lhs.xs[1])
+    xs = [zeros(nobs) for _ in lhs.xs]
+    for i in 1:nbins
+        arg = [lhs.xs[i], rhs.xs[i]]
+        xs[i] .= broadcast(f, arg...)
+    end
+    return JackknifeVector(xs)
+end
+
+function JackknifeVector(f::Function, lhs::Jackknife, rhs::JackknifeVector)
+    nbins = count(lhs)
+    nobs = length(rhs.xs[1])
+    xs = [zeros(nobs) for _ in rhs.xs]
+    for i in 1:nbins
+        arg = [lhs.xs[i], rhs.xs[i]]
+        xs[i] .= broadcast(f, arg...)
+    end
+    return JackknifeVector(xs)
+end
+
 
 function JackknifeVector(o::VectorObservable)
     if isempty(o)
@@ -119,7 +151,7 @@ unary_functions = (
                   )
 
 for op in unary_functions
-    @eval Base.$op(jk::JackknifeVector) = JackknifeVector(jk, $op)
+    @eval Base.$op(jk::JackknifeVector) = JackknifeVector($op, jk)
 end
 
 binary_functions = (
@@ -128,33 +160,35 @@ binary_functions = (
 
 import Base.broadcast
 for op in ( :+, :- )
-    @eval Base.$op(jk::JackknifeVector, rhs::Real) = JackknifeVector(jk, lhs->($op)(lhs,rhs))
-    @eval Base.$op(jk::JackknifeVector, rhs::Vector) = JackknifeVector(jk, lhs->($op)(lhs,rhs))
-    @eval Base.$op(lhs::Real, jk::JackknifeVector) = JackknifeVector(jk, rhs->($op)(lhs,rhs))
-    @eval Base.$op(lhs::Vector, jk::JackknifeVector) = JackknifeVector(jk, rhs->($op)(lhs,rhs))
-    @eval Base.$op(lhs::JackknifeVector, rhs::JackknifeVector) = JackknifeVector( ($op)(lhs.xs, rhs.xs))
-    @eval broadcast(::typeof($op), jk::JackknifeVector, rhs::Real) = JackknifeVector(jk, lhs->($op)(lhs,rhs))
-    @eval broadcast(::typeof($op), jk::JackknifeVector, rhs::Vector) = JackknifeVector(jk, lhs->($op)(lhs,rhs))
-    @eval broadcast(::typeof($op), lhs::Real, jk::JackknifeVector) = JackknifeVector(jk, rhs->($op)(lhs,rhs))
-    @eval broadcast(::typeof($op), lhs::Vector, jk::JackknifeVector) = JackknifeVector(jk, rhs->($op)(lhs,rhs))
-    @eval broadcast(::typeof($op), lhs::JackknifeVector, rhs::JackknifeVector) = JackknifeVector( ($op)(lhs.xs, rhs.xs))
+    @eval Base.$op(jk::JackknifeVector, rhs::Real) = JackknifeVector(lhs->($op)(lhs,rhs), jk)
+    @eval Base.$op(jk::JackknifeVector, rhs::Vector) = JackknifeVector(lhs->($op)(lhs,rhs), jk)
+    @eval Base.$op(lhs::Real, jk::JackknifeVector) = JackknifeVector(rhs->($op)(lhs,rhs), jk)
+    @eval Base.$op(lhs::Vector, jk::JackknifeVector) = JackknifeVector(rhs->($op)(lhs,rhs), jk)
+    @eval Base.$op(lhs::Jackknife, rhs::JackknifeVector) = JackknifeVector($op, lhs, rhs)
+    @eval Base.$op(lhs::JackknifeVector, rhs::Jackknife) = JackknifeVector($op, lhs, rhs)
+    @eval Base.$op(lhs::JackknifeVector, rhs::JackknifeVector) = JackknifeVector($op, lhs, rhs)
+    @eval broadcast(::typeof($op), jk::JackknifeVector, rhs::Real) = JackknifeVector(lhs->($op)(lhs,rhs), jk)
+    @eval broadcast(::typeof($op), jk::JackknifeVector, rhs::Vector) = JackknifeVector(lhs->($op)(lhs,rhs), jk)
+    @eval broadcast(::typeof($op), lhs::Real, jk::JackknifeVector) = JackknifeVector(rhs->($op)(lhs,rhs), jk)
+    @eval broadcast(::typeof($op), lhs::Vector, jk::JackknifeVector) = JackknifeVector(rhs->($op)(lhs,rhs), jk)
+    @eval broadcast(::typeof($op), lhs::Jackknife, rhs::JackknifeVector) = JackknifeVector($op, lhs, rhs)
+    @eval broadcast(::typeof($op), lhs::JackknifeVector, rhs::Jackknife) = JackknifeVector($op, lhs, rhs)
+    @eval broadcast(::typeof($op), lhs::JackknifeVector, rhs::JackknifeVector) = JackknifeVector($op, lhs, rhs)
 end
 for op in ( :*, :/, :\)
-    @eval Base.$op(lhs::Real, jk::JackknifeVector) = JackknifeVector(jk, rhs->($op)(lhs,rhs))
-    @eval Base.$op(jk::JackknifeVector, rhs::Real) = JackknifeVector(jk, lhs->($op)(lhs,rhs))
+    @eval Base.$op(lhs::Real, jk::JackknifeVector) = JackknifeVector(rhs->($op)(lhs,rhs), jk)
+    @eval Base.$op(jk::JackknifeVector, rhs::Real) = JackknifeVector(lhs->($op)(lhs,rhs), jk)
+    @eval Base.$op(lhs::JackknifeVector, rhs::Jackknife) = JackknifeVector($op, lhs, rhs)
+    @eval Base.$op(lhs::Jackknife, rhs::JackknifeVector) = JackknifeVector($op, lhs, rhs)
 end
 for op in ( :*, :/, :\)
-    @eval broadcast(::typeof($op), lhs::Real, jk::JackknifeVector) = JackknifeVector(jk, rhs->($op)(lhs,rhs))
-    @eval broadcast(::typeof($op), lhs::Vector, jk::JackknifeVector) = JackknifeVector(jk, rhs->($op)(lhs,rhs))
-    @eval broadcast(::typeof($op), jk::JackknifeVector, rhs::Real) = JackknifeVector(jk, lhs->($op)(lhs,rhs))
+    @eval broadcast(::typeof($op), lhs::Real, jk::JackknifeVector) = JackknifeVector(rhs->($op)(lhs,rhs), jk)
+    @eval broadcast(::typeof($op), lhs::Vector, jk::JackknifeVector) = JackknifeVector(rhs->($op)(lhs,rhs), jk)
+    @eval broadcast(::typeof($op), jk::JackknifeVector, rhs::Real) = JackknifeVector(lhs->($op)(lhs,rhs))
     @eval broadcast(::typeof($op), jk::JackknifeVector, rhs::Vector) = JackknifeVector(jk, lhs->($op)(lhs,rhs))
-    @eval broadcast(::typeof($op), lhs::JackknifeVector, rhs::JackknifeVector) = begin
-        xs = similar(lhs.xs)
-        for i in 1:length(lhs.xs)
-            xs[i] = ($op)(lhs.xs[i], rhs.xs[i])
-        end
-        return JackknifeVector(xs)
-    end
+    @eval broadcast(::typeof($op), lhs::Jackknife, rhs::JackknifeVector) = JackknifeVector($op, lhs, rhs)
+    @eval broadcast(::typeof($op), lhs::JackknifeVector, rhs::Jackknife) = JackknifeVector($op, lhs, rhs)
+    @eval broadcast(::typeof($op), lhs::JackknifeVector, rhs::JackknifeVector) = JackknifeVector($op, lhs, rhs)
 end
 
 const JackknifeVectorSet = MCObservableSet{JackknifeVector}

@@ -5,7 +5,23 @@ mutable struct Jackknife <: ScalarObservable
     xs :: Vector{Float64}
 end
 
-Jackknife(jk::Jackknife, f::Function) = Jackknife(map(f,jk.xs))
+function Jackknife(f::Function, jks::Jackknife...)
+    if isempty(jks)
+        return Jackknife(zeros(0))
+    end
+    nbins = count(jks[1])
+    xs = zeros(nbins)
+    for i in 1:nbins
+        arg = [jk.xs[i] for jk in jks]
+        xs[i] = f(arg...)
+    end
+    return Jackknife(xs)
+end
+
+function Jackknife(jk::Jackknife, f::Function)
+    Base.depwarn("Jackknife(jk::Jackknife, f::Function) is deprecated. Use Jackknife(f, jk) instead.", :Jackknife)
+    return Jackknife(f, jk)
+end
 
 function jk_helper(xs::Vector{Float64})
     s = sum(xs)
@@ -94,7 +110,7 @@ unary_functions = (
                   )
 
 for op in unary_functions
-    @eval Base.$op(jk::Jackknife) = Jackknife(jk, $op)
+    @eval Base.$op(jk::Jackknife) = Jackknife($op, jk)
 end
 
 binary_functions = (
@@ -102,9 +118,9 @@ binary_functions = (
                    )
 
 for op in binary_functions
-    @eval Base.$op(jk::Jackknife, rhs::Real) = Jackknife(jk, lhs->($op)(lhs,rhs))
-    @eval Base.$op(lhs::Real, jk::Jackknife) = Jackknife(jk, rhs->($op)(lhs,rhs))
-    @eval Base.$op(lhs::Jackknife, rhs::Jackknife) = Jackknife(broadcast($op, lhs.xs, rhs.xs))
+    @eval Base.$op(jk::Jackknife, rhs::Real) = Jackknife(lhs->($op)(lhs,rhs), jk)
+    @eval Base.$op(lhs::Real, jk::Jackknife) = Jackknife(rhs->($op)(lhs,rhs), jk)
+    @eval Base.$op(lhs::Jackknife, rhs::Jackknife) = Jackknife($op, lhs, rhs)
 end
 
 import Base.^
