@@ -23,7 +23,7 @@ end
 
 function parse_filename(filename, ::Union{Type{Ising},Type{XY}})
     m = match(r"^J_([\d.-]*)__N_([\d.-]*).dat$", filename)
-    if m == nothing
+    if m === nothing
         return nothing
     end
     p = Parameter()
@@ -34,7 +34,7 @@ end
 
 function parse_filename(filename, ::Union{Type{Potts},Type{Clock}})
     m = match(r"^Q_(\d*)__J_([\d.-]*)__N_(\d*).dat$", filename)
-    if m == nothing
+    if m === nothing
         return nothing
     end
     p = Parameter()
@@ -52,7 +52,7 @@ end
     model = eval(Symbol(modelstr))
     for filename in readdir(joinpath("ref", modelstr))
         p = parse_filename(filename, model)
-        if p == nothing
+        if p === nothing
             continue
         end
         testname = ""

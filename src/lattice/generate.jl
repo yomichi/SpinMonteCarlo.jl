@@ -106,8 +106,8 @@ function generatelattice_std(param)
     bonds = Bond[]
     ib = 0
 
-    use_index_as_sitetype = get(param, "Use Indecies as Site Types", false)
-    use_index_as_bondtype = get(param, "Use Indecies as Bond Types", false)
+    use_index_as_sitetype = get(param, "Use Indicies as Site Types", false)
+    use_index_as_bondtype = get(param, "Use Indicies as Bond Types", false)
 
     for icell in 0:(numcell - 1)
         cellcoord = index2coord(icell, L)

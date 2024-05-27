@@ -9,7 +9,8 @@ const Therm = MCS
 const alpha = 0.001
 
 @testset begin
-    filenames = ["classical.jl",
+    filenames = ["observable.jl",
+                 "classical.jl",
                  "quantum.jl",
                  "checkpoint.jl"]
     for filename in filenames

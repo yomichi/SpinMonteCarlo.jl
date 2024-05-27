@@ -4,21 +4,30 @@ export BinningVectorObservableSet
 
 mutable struct BinningVectorObservable <: VectorObservable
     ## index of these vectors denotes the level of bins (each bin stores the mean of 2^(i-1) values)
-    raw_ts::Vector{Vector{Float64}}        ## Time series of raw data
-    bins::Vector{Vector{Float64}}          ## Time series of bins
-    sum::Vector{Vector{Float64}}           ## Summation of stored values
-    sum2::Vector{Vector{Float64}}          ## Summation of square of bin's mean
-    entries::Vector{Int}           ## Number of bins
+    raw_ts::Vector{Vector{Float64}} ## Time series of raw data
+    bins::Vector{Vector{Float64}}   ## Time series of bins
+    sum::Vector{Vector{Float64}}    ## Summation of stored values
+    sum2::Vector{Vector{Float64}}   ## Summation of square of bin's mean
+    entries::Vector{Int}            ## Number of bins
     binsize::Int
     lastbin::Int
     minbinnum::Int
     maxlevel::Int
-end
 
-function BinningVectorObservable(minbinnum::Int=128)
-    return BinningVectorObservable(Vector{Float64}[], Vector{Float64}[], Vector{Float64}[],
-                                   Vector{Float64}[],
-                                   zeros(Int, 1), 1, 0, minbinnum, 1)
+    function BinningVectorObservable(minbinnum::Int=128)
+        Base.depwarn("BinningVectorObservable is deprecated. Use obs=SimpleVectorObservable() and binning(obs) instead.",
+                     nothing; force=true)
+
+        raw_ts = Vector{Float64}[]
+        bins = Vector{Float64}[]
+        sum = Vector{Float64}[]
+        sum2 = Vector{Float64}[]
+        entries = zeros(Int, 1)
+        binsize = 1
+        lastbin = 0
+        maxlevel = 1
+        return new(raw_ts, bins, sum, sum2, entries, binsize, lastbin, minbinnum, maxlevel)
+    end
 end
 
 function reset!(b::BinningVectorObservable)

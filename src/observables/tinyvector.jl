@@ -48,7 +48,7 @@ end
 function var(obs::TinyVectorObservable)
     if obs.num > 1
         v = (obs.sum2 .- (obs.sum .^ 2) ./ obs.num) ./ (obs.num - 1)
-        return map!(maxzero, v)
+        return map(maxzero, v)
     else
         return fill(NaN, length(obs.sum))
     end

@@ -1,5 +1,10 @@
 export SimpleVectorObservable, stddev
 
+"""
+    SimpleVectorObservable
+
+    A simple observable which stores all the data in memory.   
+"""
 mutable struct SimpleVectorObservable <: VectorObservable
     bins::Vector{Vector{Float64}}
     num::Int64
@@ -9,6 +14,46 @@ end
 
 function SimpleVectorObservable()
     return SimpleVectorObservable(Vector{Float64}[], 0, Float64[], Float64[])
+end
+
+function binning(obs::SimpleVectorObservable; binsize::Int=0, numbins::Int=0)
+    nobs = count(obs)
+    if nobs == 0
+        return SimpleVectorObservable()
+    end
+    ndim = length(obs.bins[1])
+    if binsize > 0 && numbins > 0
+        throw(ArgumentError("Only one of binsize or numbins should be given."))
+    end
+    if binsize <= 0 && numbins <= 0
+        binsize = floor(Int, sqrt(nobs))
+    end
+    if binsize > nobs
+        binsize = nobs
+    end
+
+    if binsize > 0
+        numbins = floor(Int, nobs / binsize)
+    else
+        binsize = floor(Int, nobs / numbins)
+    end
+    bins = Vector{Float64}[zeros(length(obs.bins[1])) for i in 1:numbins]
+    offset = 1
+    for i in 1:numbins
+        for j in 1:length(obs.bins[1])
+            bins[i][j] = sum([obs.bins[k][j] for k in offset:(offset + binsize - 1)]) /
+                         binsize
+        end
+        offset += binsize
+    end
+    sums = zeros(ndim)
+    sum2s = zeros(ndim)
+    for data in bins
+        sums .+= data
+        sum2s .+= data .^ 2
+    end
+    newobs = SimpleVectorObservable(bins, numbins, sums, sum2s)
+    return newobs
 end
 
 function reset!(obs::SimpleVectorObservable)
@@ -49,7 +94,7 @@ end
 function var(obs::SimpleVectorObservable)
     if obs.num > 1
         v = (obs.sum2 .- (obs.sum .^ 2) ./ obs.num) ./ (obs.num - 1)
-        return map!(maxzero, v)
+        return map(maxzero, v)
     else
         return fill(NaN, length(obs.sum))
     end
@@ -86,6 +131,11 @@ end
 merge(lhs::SimpleVectorObservable, rhs::SimpleVectorObservable) = merge!(deepcopy(lhs), rhs)
 
 export SimpleVectorObservableSet
+"""
+    SimpleObservableSet
+
+    Alias of `MCObservableSet{SimpleVectorObservable}`.
+"""
 const SimpleVectorObservableSet = MCObservableSet{SimpleVectorObservable}
 
 function merge!(obs::SimpleVectorObservableSet, other::SimpleVectorObservableSet)
@@ -108,4 +158,12 @@ function merge!(obs::SimpleVectorObservableSet, other::SimpleVectorObservableSet
 end
 function merge(lhs::SimpleVectorObservableSet, rhs::SimpleVectorObservableSet)
     return merge!(deepcopy(lhs), rhs)
+end
+
+function binning(obsset::SimpleVectorObservableSet; binsize::Int=0, numbins::Int=0)
+    newobsset = SimpleVectorObservableSet()
+    for (name, obs) in obsset
+        newobsset[name] = binning(obs; binsize=binsize, numbins=numbins)
+    end
+    return newobsset
 end

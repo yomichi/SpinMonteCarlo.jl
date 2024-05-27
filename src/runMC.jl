@@ -33,6 +33,11 @@ NOTE: Restart will fail if the version or the system image of julia change (see 
     - Default: `8192`
 - "Thermalization": The number of Monte Carlo steps for thermalization
     - Default: `MCS>>3`
+- "Binning Size": The size of binning
+    - Default: `0`
+- "Number of Bins": The number of bins
+    - Default: `0`
+    - If both "Binning Size" and "Number of Bins" are not given, "Binning Size" is set to `floor(sqrt(MCS))`.
 - "Seed": The initial seed of the random number generator, `MersenneTwister`
     - Default: determined randomly (see the doc of `Random.seed!`)
 - "Checkpoint Filename Prefix": See the "Restart" section.
@@ -79,7 +84,8 @@ function runMC(model, param::Parameter)
 
     mcs = 0
     MCS += Therm
-    obs = BinningObservableSet()
+    # obs = BinningObservableSet()
+    obs = SimpleObservableSet()
     makeMCObservable!(obs, "Time per MCS")
     makeMCObservable!(obs, "MCS per Second")
 
@@ -131,7 +137,11 @@ function runMC(model, param::Parameter)
         end
     end
 
-    jk = pp(model, param, obs)
+    binsize = get(param, "Binning Size", 0)::Int
+    numbins = get(param, "Number of Bins", 0)::Int
+    binned = binning(obs; binsize=binsize, numbins=numbins)
+
+    jk = pp(model, param, binned)
 
     if verbose
         println("Finish: ", param)

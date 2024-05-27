@@ -61,6 +61,25 @@ simple_estimator
 improved_estimator
 ```
 
+## Observables
+```@docs
+MCObservable
+ScalarObservable
+VectorObservable
+MCObservableSet
+makeMCObservable!
+SimpleObservable
+SimpleVectorObservable
+SimpleObservableSet
+SimpleVectorObservableSet
+binning
+Jackknife
+JackknifeVector
+JackknifeSet
+JackknifeVectorSet
+jackknife
+```
+
 ## Snapshots
 ```@docs
 gen_snapshot!

@@ -13,8 +13,25 @@ export p_value
 export show, dump_plot
 export merge, merge!
 
+@doc """
+    MCObservable
+
+    abstract type representing observable in Monte Carlo calculation.
+"""
 abstract type MCObservable end
+
+"""
+    ScalarObservable <: MCObservable
+
+    abstract type representing scalar-type observable in Monte Carlo calculation.
+"""
 abstract type ScalarObservable <: MCObservable end
+
+"""
+    VectorObservable <: MCObservable
+
+    abstract type representing vector-type observable in Monte Carlo calculation.
+"""
 abstract type VectorObservable <: MCObservable end
 
 function p_value(X::MCObservable, y::Real; verbose::Bool=false)

@@ -1,13 +1,41 @@
 export Jackknife, JackknifeSet
 export jackknife
 
+"""
+    Jackknife <: ScalarObservable
+
+    Jackknife resampling observable.
+"""
 mutable struct Jackknife <: ScalarObservable
     xs::Vector{Float64}
 end
 
-Jackknife(jk::Jackknife, f::Function) = Jackknife(map(f, jk.xs))
+"""
+    Jackknife(f::Function, jks::Jackknife...)
 
-function jk_helper(xs)
+    Construct a Jackknife observable by applying `f` to `jks`.
+    For example, `Jackknife(mean, jk1, jk2, jk3)` returns a Jackknife observable of the means of `jk1`, `jk2`, and `jk3`.
+"""
+function Jackknife(f::Function, jks::Jackknife...)
+    if isempty(jks)
+        return Jackknife(zeros(0))
+    end
+    nbins = count(jks[1])
+    xs = zeros(nbins)
+    for i in 1:nbins
+        arg = [jk.xs[i] for jk in jks]
+        xs[i] = f(arg...)
+    end
+    return Jackknife(xs)
+end
+
+function Jackknife(jk::Jackknife, f::Function)
+    Base.depwarn("Jackknife(jk::Jackknife, f::Function) is deprecated. Use Jackknife(f, jk) instead.",
+                 :Jackknife)
+    return Jackknife(f, jk)
+end
+
+function jk_helper(xs::Vector{Float64})
     s = sum(xs)
     n = length(xs) - 1
     ret = similar(xs)
@@ -33,30 +61,32 @@ end
 count(jk::Jackknife) = length(jk.xs)
 
 mean(jk::Jackknife) = mean(jk.xs)
-function stderror(jk::Jackknife)
-    n = count(jk)
-    if n < 2
-        return NaN
-    else
-        m2 = sum(abs2, jk.xs)
-        m2 /= n
-        m = mean(jk)
-        sigma2 = m2 - m * m
-        sigma2 *= n - 1
-        sigma2 = maxzero(sigma2)
-        return sqrt(sigma2)
-    end
-end
+# function stderror(jk::Jackknife)
+#     n = count(jk)
+#     if n < 2
+#         return NaN
+#     else
+#         m2 = sum(abs2, jk.xs)
+#         m2 /= n
+#         m = mean(jk)
+#         sigma2 = m2 - m*m
+#         sigma2 *= n-1
+#         sigma2 = maxzero(sigma2)
+#         return sqrt(sigma2)
+#     end
+# end
 function var(jk::Jackknife)
     n = count(jk)
     if n < 2
         return NaN
     else
         m = mean(jk)
-        return sum(abs2, jk.xs .- m) * (n - 1)
+
+        return mean(abs2, jk.xs .- m) * (n - 1)
     end
 end
 stddev(jk::Jackknife) = sqrt(var(jk))
+stderror(jk::Jackknife) = stddev(jk)
 
 function confidence_interval(jk::Jackknife, confidence_rate::Real)
     q = 0.5 + 0.5 * confidence_rate
@@ -90,16 +120,15 @@ unary_functions = (:-,
                    :sqrt, :cbrt)
 
 for op in unary_functions
-    @eval Base.$op(jk::Jackknife) = Jackknife(jk, $op)
+    @eval Base.$op(jk::Jackknife) = Jackknife($op, jk)
 end
 
 binary_functions = (:+, :-, :*, :/, :\)
 
 for op in binary_functions
-    @eval Base.$op(jk::Jackknife, rhs::Real) = Jackknife(jk, lhs -> ($op)(lhs, rhs))
-    @eval Base.$op(lhs::Real, jk::Jackknife) = Jackknife(jk, rhs -> ($op)(lhs, rhs))
-    @eval Base.$op(lhs::Jackknife, rhs::Jackknife) = Jackknife(broadcast($op, lhs.xs,
-                                                                         rhs.xs))
+    @eval Base.$op(jk::Jackknife, rhs::Real) = Jackknife(lhs -> ($op)(lhs, rhs), jk)
+    @eval Base.$op(lhs::Real, jk::Jackknife) = Jackknife(rhs -> ($op)(lhs, rhs), jk)
+    @eval Base.$op(lhs::Jackknife, rhs::Jackknife) = Jackknife($op, lhs, rhs)
 end
 
 import Base.^
@@ -109,9 +138,25 @@ import Base.^
 ^(lhs::Integer, rhs::Jackknife) = Jackknife(lhs .^ (rhs.xs))
 ^(lhs::Jackknife, rhs::Jackknife) = Jackknife((lhs.xs) .^ (rhs.xs))
 
+"""
+    JackknifeSet
+
+    Alias of `MCObservableSet{Jackknife}`.
+"""
 const JackknifeSet = MCObservableSet{Jackknife}
 
+@doc doc"""
+    jackknife(obs::ScalarObservable)
+
+    Construct a Jackknife observable from a scalar observable
+"""
 jackknife(obs::ScalarObservable) = Jackknife(obs)
+
+@doc doc"""
+    jackknife(obsset::MCObservableSet)
+
+    Construct a JackknifeSet from a MCObservableSet
+"""
 function jackknife(obsset::MCObservableSet)
     JK = JackknifeSet()
     for (k, v) in obsset
