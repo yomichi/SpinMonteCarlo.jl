@@ -131,6 +131,11 @@ end
 merge(lhs::SimpleVectorObservable, rhs::SimpleVectorObservable) = merge!(deepcopy(lhs), rhs)
 
 export SimpleVectorObservableSet
+"""
+    SimpleObservableSet
+
+    Alias of `MCObservableSet{SimpleVectorObservable}`.
+"""
 const SimpleVectorObservableSet = MCObservableSet{SimpleVectorObservable}
 
 function merge!(obs::SimpleVectorObservableSet, other::SimpleVectorObservableSet)
