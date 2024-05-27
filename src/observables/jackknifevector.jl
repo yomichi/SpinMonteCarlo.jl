@@ -1,5 +1,10 @@
 export JackknifeVector, JackknifeVectorSet
 
+"""
+    JackknifeVector <: VectorObservable
+
+    Jackknife resampling observable for vector-type observable.
+"""
 mutable struct JackknifeVector <: VectorObservable
     xs::Vector{Vector{Float64}}
 end
@@ -21,6 +26,12 @@ end
 
 JackknifeVector() = JackknifeVector(Vector{Float64}[])
 
+"""
+    JackknifeVector(f::Function, jks::JackknifeVector...)
+
+    Construct a JackknifeVector observable by applying `f` to `jks`.
+    For example, `JackknifeVector(mean, jk1, jk2, jk3)` returns a JackknifeVector observable of the means of `jk1`, `jk2`, and `jk3`.
+"""
 function JackknifeVector(f::Function, jks::JackknifeVector...)
     if isempty(jks)
         return JackknifeVector()
@@ -222,8 +233,18 @@ for op in (:*, :/, :\)
                                                                                                  rhs)
 end
 
+"""
+    JackknifeVectorSet
+
+    Alias of `MCObservableSet{JackknifeVector}`.
+"""
 const JackknifeVectorSet = MCObservableSet{JackknifeVector}
 
+"""
+    jackknife(obs::VectorObservable)
+
+    Construct a JackknifeVector observable from a vector observable
+"""
 jackknife(obs::VectorObservable) = JackknifeVector(obs)
 function jackknife(obsset::MCObservableSet{Obs}) where {(Obs <: VectorObservable)}
     JK = JackknifeSet()

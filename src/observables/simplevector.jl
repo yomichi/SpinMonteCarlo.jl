@@ -1,5 +1,10 @@
 export SimpleVectorObservable, stddev
 
+"""
+    SimpleVectorObservable
+
+    A simple observable which stores all the data in memory.   
+"""
 mutable struct SimpleVectorObservable <: VectorObservable
     bins::Vector{Vector{Float64}}
     num::Int64

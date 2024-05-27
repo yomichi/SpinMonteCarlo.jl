@@ -1,5 +1,10 @@
 export SimpleObservable, stddev, binning
 
+"""
+    SimpleObservable
+
+    A simple observable which stores all the data in memory.
+"""
 mutable struct SimpleObservable <: ScalarObservable
     bins::Vector{Float64}
     num::Int64
@@ -107,6 +112,12 @@ end
 merge(lhs::SimpleObservable, rhs::SimpleObservable) = merge!(deepcopy(lhs), rhs)
 
 export SimpleObservableSet
+
+"""
+    SimpleObservableSet
+
+    Alias of `MCObservableSet{SimpleObservable}`.
+"""
 const SimpleObservableSet = MCObservableSet{SimpleObservable}
 
 function merge!(obs::SimpleObservableSet, other::SimpleObservableSet)

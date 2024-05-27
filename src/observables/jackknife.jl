@@ -1,10 +1,21 @@
 export Jackknife, JackknifeSet
 export jackknife
 
+"""
+    Jackknife <: ScalarObservable
+
+    Jackknife resampling observable.
+"""
 mutable struct Jackknife <: ScalarObservable
     xs::Vector{Float64}
 end
 
+"""
+    Jackknife(f::Function, jks::Jackknife...)
+
+    Construct a Jackknife observable by applying `f` to `jks`.
+    For example, `Jackknife(mean, jk1, jk2, jk3)` returns a Jackknife observable of the means of `jk1`, `jk2`, and `jk3`.
+"""
 function Jackknife(f::Function, jks::Jackknife...)
     if isempty(jks)
         return Jackknife(zeros(0))
@@ -127,9 +138,25 @@ import Base.^
 ^(lhs::Integer, rhs::Jackknife) = Jackknife(lhs .^ (rhs.xs))
 ^(lhs::Jackknife, rhs::Jackknife) = Jackknife((lhs.xs) .^ (rhs.xs))
 
+"""
+    JackknifeSet
+
+    Alias of `MCObservableSet{Jackknife}`.
+"""
 const JackknifeSet = MCObservableSet{Jackknife}
 
+@doc doc"""
+    jackknife(obs::ScalarObservable)
+
+    Construct a Jackknife observable from a scalar observable
+"""
 jackknife(obs::ScalarObservable) = Jackknife(obs)
+
+@doc doc"""
+    jackknife(obsset::MCObservableSet)
+
+    Construct a JackknifeSet from a MCObservableSet
+"""
 function jackknife(obsset::MCObservableSet)
     JK = JackknifeSet()
     for (k, v) in obsset
