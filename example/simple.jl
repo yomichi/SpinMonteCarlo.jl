@@ -6,17 +6,16 @@ const lat = "square lattice"
 const L = 16
 const update = SW_update!
 
-const Tc = 2.0/log1p(sqrt(2))
-const Ts = Tc*range(0.85, stop=1.15, length=31)
+const Tc = 2.0 / log1p(sqrt(2))
+const Ts = Tc * range(0.85; stop=1.15, length=31)
 const MCS = 8192
 const Therm = MCS >> 3
 
 for T in Ts
-    param = Parameter("Model"=>model, "Lattice"=>lat,
-                      "L"=>L, "T"=>T, "J"=>1.0,
-                      "Update Method"=>update,
-                      "MCS"=>MCS, "Thermalization"=>Therm,
-                     )
+    param = Parameter("Model" => model, "Lattice" => lat,
+                      "L" => L, "T" => T, "J" => 1.0,
+                      "Update Method" => update,
+                      "MCS" => MCS, "Thermalization" => Therm)
     result = runMC(param)
     @printf("%f %.15f %.15f\n",
             T, mean(result["Specific Heat"]), stderror(result["Specific Heat"]))

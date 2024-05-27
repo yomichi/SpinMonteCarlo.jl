@@ -9,34 +9,34 @@ export source, target, sitetype, bondtype
 export sitecoordinate, bonddirection, cellcoordinate
 
 mutable struct Site
-    id :: Int
-    sitetype :: Int
-    neighborsites :: Vector{Int}
-    neighborbonds :: Vector{Int}
-    coord :: Vector{Float64}
-    localsite :: Int
-    cellcoord :: Vector{Int}
+    id::Int
+    sitetype::Int
+    neighborsites::Vector{Int}
+    neighborbonds::Vector{Int}
+    coord::Vector{Float64}
+    localsite::Int
+    cellcoord::Vector{Int}
 end
 convert(::Type{Int}, s::Site) = s.id
 
 mutable struct Bond
-    id :: Int
-    bondtype :: Int
-    source :: Int
-    target :: Int
-    direction :: Vector{Float64}
+    id::Int
+    bondtype::Int
+    source::Int
+    target::Int
+    direction::Vector{Float64}
 end
 convert(::Type{Int}, b::Bond) = b.id
 
 mutable struct Lattice
-    latticevector :: Matrix{Float64}
-    L :: Vector{Int}
-    sites :: Vector{Site}
-    siteswithtype :: Vector{SubArray{Site,1,Vector{Site},Tuple{Vector{Int}},false}}
-    bonds :: Vector{Bond}
-    bondswithtype :: Vector{SubArray{Bond,1,Vector{Bond},Tuple{Vector{Int}},false}}
+    latticevector::Matrix{Float64}
+    L::Vector{Int}
+    sites::Vector{Site}
+    siteswithtype::Vector{SubArray{Site,1,Vector{Site},Tuple{Vector{Int}},false}}
+    bonds::Vector{Bond}
+    bondswithtype::Vector{SubArray{Bond,1,Vector{Bond},Tuple{Vector{Int}},false}}
 
-    function Lattice(latvec,L,sites,bonds)
+    function Lattice(latvec, L, sites, bonds)
         nsitetypes = 0
         swt = Vector{Int}[]
         for s in sites
@@ -68,8 +68,7 @@ mutable struct Lattice
 
         return new(latvec, L,
                    sites, siteswithtype,
-                   bonds, bondswithtype,
-                  )
+                   bonds, bondswithtype)
     end
 end
 
@@ -79,7 +78,7 @@ end
 
 Returns the dimension of lattice.
 """
-@inline dim(lat::Lattice) = size(lat.latticevector,1)
+@inline dim(lat::Lattice) = size(lat.latticevector, 1)
 @inline dim(model::Model) = dim(model.lat)
 
 @doc """
@@ -91,7 +90,7 @@ Returns the size of lattice.
 @inline size(lat::Lattice) = lat.L
 @inline size(lat::Lattice, dim::Integer) = size(lat)[dim]
 @inline size(model::Model) = size(model.lat)
-@inline size(model::Model, dim::Integer) = size(model.lat,dim)
+@inline size(model::Model, dim::Integer) = size(model.lat, dim)
 
 @doc """
     sites(lat::Lattice, [sitetype::Integer])

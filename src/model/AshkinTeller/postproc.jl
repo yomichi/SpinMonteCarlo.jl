@@ -28,22 +28,25 @@ In the following, $m$ is total magnetization per site and $\epsilon$ is total en
 function postproc(model::AshkinTeller, param::Parameter, obs::MCObservableSet)
     nsites = numsites(model)
     T = convert(Float64, param["T"])
-    beta = 1.0/T
+    beta = 1.0 / T
 
     jk = jackknife(obs)
 
     jk["Binder Ratio"] = jk["|Magnetization|^4"] / (jk["|Magnetization|^2"]^2)
-    jk["Susceptibility"] = (nsites*beta)*jk["|Magnetization|^2"]
-    jk["Connected Susceptibility"] = (nsites*beta)*(jk["|Magnetization|^2"] - jk["|Magnetization|"]^2)
+    jk["Susceptibility"] = (nsites * beta) * jk["|Magnetization|^2"]
+    jk["Connected Susceptibility"] = (nsites * beta) *
+                                     (jk["|Magnetization|^2"] - jk["|Magnetization|"]^2)
 
     jk["Binder Ratio sigma"] = jk["Magnetization sigma^4"] / (jk["Magnetization sigma^2"]^2)
-    jk["Susceptibility sigma"] = (nsites*beta)*jk["Magnetization sigma^2"]
-    jk["Connected Susceptibility sigma"] = (nsites*beta)*(jk["Magnetization sigma^2"] - jk["|Magnetization sigma|"]^2)
+    jk["Susceptibility sigma"] = (nsites * beta) * jk["Magnetization sigma^2"]
+    jk["Connected Susceptibility sigma"] = (nsites * beta) * (jk["Magnetization sigma^2"] -
+                                                              jk["|Magnetization sigma|"]^2)
 
     jk["Binder Ratio tau"] = jk["Magnetization tau^4"] / (jk["Magnetization tau^2"]^2)
-    jk["Susceptibility tau"] = (nsites*beta)*jk["Magnetization tau^2"]
-    jk["Connected Susceptibility tau"] = (nsites*beta)*(jk["Magnetization tau^2"] - jk["|Magnetization tau|"]^2)
+    jk["Susceptibility tau"] = (nsites * beta) * jk["Magnetization tau^2"]
+    jk["Connected Susceptibility tau"] = (nsites * beta) * (jk["Magnetization tau^2"] -
+                                                            jk["|Magnetization tau|"]^2)
 
-    jk["Specific Heat"] = (nsites*beta*beta)*(jk["Energy^2"] - jk["Energy"]^2)
+    jk["Specific Heat"] = (nsites * beta * beta) * (jk["Energy^2"] - jk["Energy"]^2)
     return jk
 end

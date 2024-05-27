@@ -6,8 +6,7 @@ Enumtype including `LET_*`
       LET_FMLink, # [1 0 0 0; 0 0 0 0; 0 0 0 0; 0 0 0 1]
       LET_AFLink, # [0 0 0 0; 0 1 0 0; 0 0 1 0; 0 0 0 1]
       LET_Vertex, # [0 0 0 0; 0 1 1 0; 0 1 1 0; 0 0 0 0]
-      LET_Cross,  # [1 0 0 0; 0 0 1 0; 0 1 0 0; 0 0 0 1]
-     )
+      LET_Cross,)
 
 @doc """
 Loop element depicted as
@@ -121,14 +120,15 @@ or matrix
 
 """
 mutable struct LocalLoopOperator
-    let_type :: LoopElementType
-    isdiagonal :: Bool
-    time :: Float64
-    space :: Int
-    subspace :: Tuple{Int,Int}
-    bottom_id :: Int
-    top_id :: Int
+    let_type::LoopElementType
+    isdiagonal::Bool
+    time::Float64
+    space::Int
+    subspace::Tuple{Int,Int}
+    bottom_id::Int
+    top_id::Int
 end
-function LocalLoopOperator(let_type::LoopElementType, time::Real, space::Int, subspace::Tuple{Int,Int})
-    LocalLoopOperator(let_type, true, time, space, subspace, 0,0)
+function LocalLoopOperator(let_type::LoopElementType, time::Real, space::Int,
+                           subspace::Tuple{Int,Int})
+    return LocalLoopOperator(let_type, true, time, space, subspace, 0, 0)
 end

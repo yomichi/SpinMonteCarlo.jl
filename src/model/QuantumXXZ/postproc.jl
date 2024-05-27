@@ -29,21 +29,20 @@ and $\epsilon$ is total energy per site.
 function postproc(model::QuantumXXZ, param::Parameter, obs::MCObservableSet)
     nsites = numsites(model)
     T = convert(Float64, param["T"])
-    beta = 1.0/T
+    beta = 1.0 / T
 
     jk = jackknife(obs)
 
     for oname in ("Magnetization", "|Magnetization|",
                   "Magnetization^2", "Magnetization^4",
-                  "Energy", "Energy^2",
-                 )
+                  "Energy", "Energy^2")
         jk[oname] = jk["Sign * $oname"] / jk["Sign"]
     end
 
     jk["Binder Ratio"] = jk["Magnetization^4"] / (jk["Magnetization^2"]^2)
-    jk["Susceptibility"] = (nsites*beta)*jk["Magnetization^2"]
-    jk["Connected Susceptibility"] = (nsites*beta)*(jk["Magnetization^2"] - jk["|Magnetization|"]^2)
-    jk["Specific Heat"] = (nsites*beta*beta)*(jk["Energy^2"] - jk["Energy"]^2)
+    jk["Susceptibility"] = (nsites * beta) * jk["Magnetization^2"]
+    jk["Connected Susceptibility"] = (nsites * beta) *
+                                     (jk["Magnetization^2"] - jk["|Magnetization|"]^2)
+    jk["Specific Heat"] = (nsites * beta * beta) * (jk["Energy^2"] - jk["Energy"]^2)
     return jk
 end
-

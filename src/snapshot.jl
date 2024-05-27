@@ -22,7 +22,7 @@ function gen_snapshot!(model::Model, T::Real, N::Integer; MCS::Integer=8192)
     nsites = numsites(model.lat)
     X = zeros(nsites, N)
     for n in 1:N
-        spins[:,n] = gen_snapshot!(model, T, MCS=MCS)
+        spins[:, n] = gen_snapshot!(model, T; MCS=MCS)
     end
     return X
 end
@@ -42,7 +42,8 @@ generate and write `N` snapshots into `io` or `filename`.
 * `MCS::Integer=1` : the number of Monte Carlo steps followed by snapshot generation
 * `sep::String=" "` : field separator of snapshot
 """
-function gensave_snapshot!(io::IO, model::Model, T::Real, N::Integer=1; MCS::Integer=8192, sep::String=" ")
+function gensave_snapshot!(io::IO, model::Model, T::Real, N::Integer=1; MCS::Integer=8192,
+                           sep::String=" ")
     nsites = numsites(model.lat)
     for n in 1:N
         for m in 1:MCS
@@ -57,10 +58,11 @@ function gensave_snapshot!(io::IO, model::Model, T::Real, N::Integer=1; MCS::Int
     end
 end
 
-function gensave_snapshot!(filename::String, model::Model, T::Real, N::Integer=1; MCS::Integer=8192, sep::String=" ", append::Bool=false)
+function gensave_snapshot!(filename::String, model::Model, T::Real, N::Integer=1;
+                           MCS::Integer=8192, sep::String=" ", append::Bool=false)
     c = ifelse(append, "a", "w")
     open(filename, c) do io
-        gensave_snapshot!(io, model, T, N, MCS=MCS, sep=sep)
+        return gensave_snapshot!(io, model, T, N; MCS=MCS, sep=sep)
     end
 end
 
@@ -80,9 +82,9 @@ function load_snapshot_impl(filename::String, splitter)
         end
         produce(float(split(strip(line), splitter)))
     end
-    close(io)
+    return close(io)
 end
-const _default_delims = [' ','\t','\n','\v','\f','\r']
+const _default_delims = [' ', '\t', '\n', '\v', '\f', '\r']
 
 @doc """
     load_snapshot(io, splitter)
@@ -91,6 +93,7 @@ const _default_delims = [' ','\t','\n','\v','\f','\r']
 load snapshot from `io` or `filename`.
 `splitter` is the set of field splitter and will be passed `Base.split` as the second argument (see the doc of `Base.split`).
 """
-load_snapshot(io::IO, splitter = _default_delims) = @task load_snapshot_impl(io, splitter)
-load_snapshot(filename::String, splitter = _default_delims) = @task load_snapshot_impl(filename, splitter)
-
+load_snapshot(io::IO, splitter=_default_delims) = @task load_snapshot_impl(io, splitter)
+function load_snapshot(filename::String, splitter=_default_delims)
+    @task load_snapshot_impl(filename, splitter)
+end

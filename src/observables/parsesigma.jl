@@ -1,4 +1,4 @@
-function parsesigma(confidence_rate_symbol::Symbol = :sigma1)
+function parsesigma(confidence_rate_symbol::Symbol=:sigma1)
     if confidence_rate_symbol == :sigma1
         n = 1
     elseif confidence_rate_symbol == :sigma2
@@ -6,7 +6,7 @@ function parsesigma(confidence_rate_symbol::Symbol = :sigma1)
     elseif confidence_rate_symbol == :sigma3
         n = 3
     else
-        m = match( r"^sigma(\d+)$", string(confidence_rate_symbol) )
+        m = match(r"^sigma(\d+)$", string(confidence_rate_symbol))
         if m == nothing
             n = 0
         end
