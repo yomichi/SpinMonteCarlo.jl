@@ -2,6 +2,8 @@ __precompile__()
 
 module SpinMonteCarlo
 
+@warn "From 2024-05-27, the default branch of SpinMonteCarlo.jl is 'main', but you are in the old branch 'master'. Please migrate to 'main'."
+
 using Random
 using Printf
 using Markdown
