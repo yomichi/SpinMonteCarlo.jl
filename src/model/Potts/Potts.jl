@@ -8,10 +8,10 @@ Order parameter (total magnetization) is defined as
 where $N$ is the number of sites and $N_1$ is the number of $\sigma=1$ spins.
 """
 mutable struct Potts <: Model
-    lat :: Lattice
-    Q :: Int
-    spins :: Matrix{Int}
-    rng :: Random.MersenneTwister
+    lat::Lattice
+    Q::Int
+    spins::Matrix{Int}
+    rng::Random.MersenneTwister
 
     function Potts(lat::Lattice, Q::Integer, rng::Random.AbstractRNG)
         if Q < 2
@@ -23,7 +23,9 @@ mutable struct Potts <: Model
 end
 
 Potts(lat::Lattice, Q::Integer) = Potts(lat, Q, Random.seed!(Random.MersenneTwister(0)))
-Potts(lat::Lattice, Q::Integer, seed) = Potts(lat, Q, Random.seed!(Random.MersenneTwister(0), seed...))
+function Potts(lat::Lattice, Q::Integer, seed)
+    return Potts(lat, Q, Random.seed!(Random.MersenneTwister(0), seed...))
+end
 
 @doc doc"""
     Potts(param)

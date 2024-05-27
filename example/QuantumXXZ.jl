@@ -9,17 +9,16 @@ const Ts = 0.5:0.5:10.01
 const MCS = 8192
 const Therm = MCS >> 3
 
-params = Dict{String, Any}[]
+params = Dict{String,Any}[]
 for L in Ls
     for T in Ts
         push!(params,
-              Parameter("Model"=>QuantumXXZ,
-                        "Lattice"=> "chain lattice",
-                        "L"=>L, "T"=>T, "J"=>J, "S"=>S, "Gamma"=>Gamma,
-                        "Update Method"=>loop_update!,
-                        "MCS"=>MCS, "Therm"=>Therm,
-                        "Verbose"=>true,
-                       ))
+              Parameter("Model" => QuantumXXZ,
+                        "Lattice" => "chain lattice",
+                        "L" => L, "T" => T, "J" => J, "S" => S, "Gamma" => Gamma,
+                        "Update Method" => loop_update!,
+                        "MCS" => MCS, "Therm" => Therm,
+                        "Verbose" => true))
     end
 end
 
@@ -35,21 +34,20 @@ const onames = ["Magnetization",
                 "Connected Susceptibility",
                 "Energy",
                 "MCS per Second",
-                "Time per MCS",
-               ]
+                "Time per MCS"]
 
 const io = open("res-QuantumXXZ.dat", "w")
-i=1
+i = 1
 for pname in pnames
     println(io, "# \$$i : $pname")
-    global i+=1
+    global i += 1
 end
 for oname in onames
     println(io, "# \$$i, $(i+1): $oname")
-    global i+=2
+    global i += 2
 end
 
-for (p,o) in zip(params, obs)
+for (p, o) in zip(params, obs)
     for pname in pnames
         print(io, p[pname], " ")
     end
@@ -58,4 +56,3 @@ for (p,o) in zip(params, obs)
     end
     println(io)
 end
-

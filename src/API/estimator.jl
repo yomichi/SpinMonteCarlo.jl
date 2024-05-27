@@ -1,7 +1,7 @@
 export simple_estimator, improved_estimator, default_estimator
 
 @inline function simple_estimator(model, param::Parameter, _=nothing)
-    p = convert_parameter(model,param)
+    p = convert_parameter(model, param)
     return simple_estimator(model, p..., nothing)
 end
 

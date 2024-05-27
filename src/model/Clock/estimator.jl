@@ -29,8 +29,8 @@ function simple_estimator(model::Clock, T::Real, Js::AbstractArray, _=nothing)
     nsites = numsites(model)
     nbonds = numbonds(model)
     D = dim(model)
-    invN = 1.0/nsites
-    beta = 1.0/T
+    invN = 1.0 / nsites
+    beta = 1.0 / T
 
     M = zeros(2)
     E = 0.0
@@ -61,7 +61,7 @@ function simple_estimator(model::Clock, T::Real, Js::AbstractArray, _=nothing)
     E /= nsites
 
     res = Measurement()
-    for (i,c) in enumerate(["x","y"])
+    for (i, c) in enumerate(["x", "y"])
         res["Magnetization $c"] = M[i]
         res["|Magnetization $c|"] = abs(M[i])
         res["Magnetization $c^2"] = M[i]^2
@@ -77,5 +77,3 @@ function simple_estimator(model::Clock, T::Real, Js::AbstractArray, _=nothing)
 
     return res
 end
-
-

@@ -42,9 +42,10 @@ NOTE: Restart will fail if the version or the system image of julia change (see 
 - "Checkpoint Interval": Time interval between writing checkpoint file in seconds.
     - Default: `0.0`, this means that NO checkpoint file will be loaded and saved.
 """
-function runMC(params::AbstractArray{T}; parallel::Bool=false, autoID::Bool=true) where T<:Dict
+function runMC(params::AbstractArray{T}; parallel::Bool=false,
+               autoID::Bool=true) where {T<:Dict}
     map_fn = ifelse(parallel, pmap, map)
-    return map_fn(enumerate(params)) do (id,p)
+    return map_fn(enumerate(params)) do (id, p)
         if autoID
             p["ID"] = id
         end
@@ -63,18 +64,18 @@ end
 
 function runMC(model, param::Parameter)
     MODEL = typeof(model)
-    verbose = get(param, "Verbose", false) :: Bool
+    verbose = get(param, "Verbose", false)::Bool
     if verbose
         println("Start: ", param)
     end
     cp_filename = @sprintf("%s_%d.dat",
                            get(param, "Checkpoint Filename Prefix", "cp")::String,
                            get(param, "ID", 0)::Int)
-    cp_interval = get(param, "Checkpoint Interval", 0.0) :: Float64
+    cp_interval = get(param, "Checkpoint Interval", 0.0)::Float64
     tm = time()
 
-    MCS = get(param, "MCS", 8192) :: Int
-    Therm = get(param, "Thermalization", MCS>>3) :: Int
+    MCS = get(param, "MCS", 8192)::Int
+    Therm = get(param, "Thermalization", MCS >> 3)::Int
 
     mcs = 0
     MCS += Therm
@@ -86,17 +87,17 @@ function runMC(model, param::Parameter)
         open(cp_filename) do io
             model = deserialize(io)
             obs = deserialize(io)
-            mcs = deserialize(io)
+            return mcs = deserialize(io)
         end
     end
 
-    update! = param["Update Method"] :: Function
+    update! = param["Update Method"]::Function
     if haskey(param, "Estimator")
-        estimator = param["Estimator"] :: Function
+        estimator = param["Estimator"]::Function
     else
         estimator = default_estimator(model, update!)
     end
-    pp = get(param, "Post Process", postproc) :: Function
+    pp = get(param, "Post Process", postproc)::Function
     p = convert_parameter(model, param)
 
     while mcs < MCS
@@ -104,11 +105,11 @@ function runMC(model, param::Parameter)
             update!(model, p...)
         else
             t = @elapsed begin
-                st = update!(model,p...)
+                st = update!(model, p...)
                 localobs = estimator(model, p..., st)
             end
             obs["Time per MCS"] << t
-            obs["MCS per Second"] << (1.0/t)
+            obs["MCS per Second"] << (1.0 / t)
             accumulateObservables!(model, obs, localobs)
         end
         mcs += 1
@@ -116,17 +117,17 @@ function runMC(model, param::Parameter)
             open(cp_filename, "w") do io
                 serialize(io, model)
                 serialize(io, obs)
-                serialize(io, mcs)
+                return serialize(io, mcs)
             end
             tm += cp_interval
-         end
+        end
     end
 
     if cp_interval > 0.0
         open(cp_filename, "w") do io
             serialize(io, model)
             serialize(io, obs)
-            serialize(io, mcs)
+            return serialize(io, mcs)
         end
     end
 

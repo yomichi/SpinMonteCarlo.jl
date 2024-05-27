@@ -44,7 +44,7 @@ end
 """
 macro gen_convert_parameter(model_typename, args...)
     body = Expr(:block)
-    str_model = sprint(Base.show_unquoted,model_typename)
+    str_model = sprint(Base.show_unquoted, model_typename)
 
     document = "    convert_parameter(model::$(str_model), param::Parameter)\n\n"
     document *= "# Keynames:\n"
@@ -56,39 +56,32 @@ macro gen_convert_parameter(model_typename, args...)
         sym = gensym()
         if isa(eval(sz), Function)
             push!(body.args,
-                  esc(:( $(sym) = get(param, $name, $default) ))
-                 )
+                  esc(:($(sym) = get(param, $name, $default))))
             sym2 = gensym()
             push!(syms, sym2)
             push!(body.args,
-                  esc(:( $(sym2) = zeros($eltyp, $sz(model))))
-                 )
+                  esc(:($(sym2) = zeros($eltyp, $sz(model)))))
             push!(body.args,
-                  esc(:( $(sym2) .= $(sym) ))
-                 )
+                  esc(:($(sym2) .= $(sym))))
             document *= "- \"$name\": a vector with `$(sz)(model)` elements (default: $default).\n"
         else
             push!(body.args,
-                  esc(:( $(sym) = convert($eltyp, get(param, $name, $default))))
-                 )
+                  esc(:($(sym) = convert($eltyp, get(param, $name, $default)))))
             push!(syms, sym)
             document *= "- \"$name\": a scalar (default: $default).\n"
         end
     end
-    ret = Tuple( s for s in syms )
-    push!(body.args, 
-          esc(:(return tuple($(syms...))  )) 
-         )
+    ret = Tuple(s for s in syms)
+    push!(body.args,
+          esc(:(return tuple($(syms...)))))
 
     # res_fn = :(function $(esc(:convert_parameter))($(esc(:(model::$model_typename))),
     res_fn = :(function $(esc(:convert_parameter))($(esc(:model))::$(esc(model_typename)),
-                                                   $(esc(:param))::$(esc(:Parameter))
-                                                  )
-                   $body
+                                                   $(esc(:param))::$(esc(:Parameter)))
+                   return $body
                end)
 
-
-    :( @doc $document $res_fn )
+    return :(@doc $document $res_fn)
 end
 
 @doc doc"""

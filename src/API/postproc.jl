@@ -4,4 +4,3 @@
 Post process of observables. For example, Specific heat will be calculated from energy, energy^2, and temperature.
 """
 function postproc end
-

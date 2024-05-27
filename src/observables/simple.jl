@@ -1,15 +1,15 @@
 export SimpleObservable, stddev
 
 mutable struct SimpleObservable <: ScalarObservable
-    bins :: Vector{Float64}
-    num :: Int64
-    sum :: Float64
-    sum2 :: Float64
+    bins::Vector{Float64}
+    num::Int64
+    sum::Float64
+    sum2::Float64
 end
 
 SimpleObservable() = SimpleObservable(zeros(0), 0, 0.0, 0.0)
 
-function reset!(obs :: SimpleObservable)
+function reset!(obs::SimpleObservable)
     obs.bins = zeros(0)
     obs.num = 0
     obs.sum = 0.0
@@ -19,7 +19,7 @@ end
 
 count(obs::SimpleObservable) = obs.num
 
-function push!(obs :: SimpleObservable, value) 
+function push!(obs::SimpleObservable, value)
     push!(obs.bins, value)
     obs.num += 1
     obs.sum += value
@@ -36,28 +36,28 @@ function mean(obs::SimpleObservable)
 end
 
 function var(obs::SimpleObservable)
-    if obs.num  > 1
-        v = (obs.sum2 - obs.sum*obs.sum/obs.num)/(obs.num-1)
+    if obs.num > 1
+        v = (obs.sum2 - obs.sum * obs.sum / obs.num) / (obs.num - 1)
         return maxzero(v)
     elseif obs.num < 2
         return NaN
     end
 end
 stddev(obs::SimpleObservable) = sqrt(var(obs))
-stderror(obs::SimpleObservable) = sqrt(var(obs)/count(obs))
-function confidence_interval(obs::SimpleObservable, confidence_rate :: Real)
+stderror(obs::SimpleObservable) = sqrt(var(obs) / count(obs))
+function confidence_interval(obs::SimpleObservable, confidence_rate::Real)
     if count(obs) < 2
         return Inf
     end
     q = 0.5 + 0.5confidence_rate
-    correction = quantile( TDist(obs.num - 1), q)
+    correction = quantile(TDist(obs.num - 1), q)
     serr = stderror(obs)
     return correction * serr
 end
 
-function confidence_interval(obs::SimpleObservable, confidence_rate_symbol::Symbol = :sigma1)
+function confidence_interval(obs::SimpleObservable, confidence_rate_symbol::Symbol=:sigma1)
     n = parsesigma(confidence_rate_symbol)
-    return confidence_interval(obs, erf(0.5n*sqrt(2.0)))
+    return confidence_interval(obs, erf(0.5n * sqrt(2.0)))
 end
 
 function merge!(obs::SimpleObservable, other::SimpleObservable)

@@ -1,29 +1,27 @@
 const obsnames_ising = ["Energy", "Energy^2", "Specific Heat",
                         "|Magnetization|", "Magnetization^2", "Magnetization^4",
-                        "Susceptibility", "Connected Susceptibility", "Binder Ratio",
-                       ]
+                        "Susceptibility", "Connected Susceptibility", "Binder Ratio"]
 const obsnames_clock = ["Energy", "Energy^2", "Specific Heat",
                         "|Magnetization x|", "Magnetization x^2", "Magnetization x^4",
                         "Susceptibility x", "Connected Susceptibility x", "Binder Ratio x",
                         "|Magnetization y|", "Magnetization y^2", "Magnetization y^4",
                         "Susceptibility y", "Connected Susceptibility y", "Binder Ratio y",
                         "|Magnetization|", "|Magnetization|^2", "|Magnetization|^4",
-                        "Susceptibility", "Connected Susceptibility", "Binder Ratio",
-                       ]
+                        "Susceptibility", "Connected Susceptibility", "Binder Ratio"]
 function loaddata(filename, obsnames)
     Ts = zeros(0)
-    res = Parameter(n=>zeros(0) for n in obsnames)
+    res = Parameter(n => zeros(0) for n in obsnames)
     for line in eachline(filename)
         words = split(line)
         push!(Ts, parse(Float64, words[1]))
-        for (i,n) in enumerate(obsnames)
-            push!(res[n], parse(Float64, words[i+1]))
+        for (i, n) in enumerate(obsnames)
+            push!(res[n], parse(Float64, words[i + 1]))
         end
     end
     return Ts, res
 end
 
-function parse_filename(filename, ::Union{Type{Ising}, Type{XY}})
+function parse_filename(filename, ::Union{Type{Ising},Type{XY}})
     m = match(r"^J_([\d.-]*)__N_([\d.-]*).dat$", filename)
     if m == nothing
         return nothing
@@ -34,7 +32,7 @@ function parse_filename(filename, ::Union{Type{Ising}, Type{XY}})
     return p
 end
 
-function parse_filename(filename, ::Union{Type{Potts}, Type{Clock}})
+function parse_filename(filename, ::Union{Type{Potts},Type{Clock}})
     m = match(r"^Q_(\d*)__J_([\d.-]*)__N_(\d*).dat$", filename)
     if m == nothing
         return nothing
@@ -46,11 +44,11 @@ function parse_filename(filename, ::Union{Type{Potts}, Type{Clock}})
     return p
 end
 
-@testset "$modelstr" for (modelstr, pnames, obsnames) in [("Ising", ("J", "N"), obsnames_ising),
-                                                          ("Potts", ("Q", "J", "N"), obsnames_ising),
-                                                          ("Clock", ("Q", "J", "N"), obsnames_clock),
-                                                          ("XY", ("J", "N"), obsnames_clock),
-                                                         ]
+@testset "$modelstr" for (modelstr, pnames, obsnames) in
+                         [("Ising", ("J", "N"), obsnames_ising),
+                          ("Potts", ("Q", "J", "N"), obsnames_ising),
+                          ("Clock", ("Q", "J", "N"), obsnames_clock),
+                          ("XY", ("J", "N"), obsnames_clock)]
     model = eval(Symbol(modelstr))
     for filename in readdir(joinpath("ref", modelstr))
         p = parse_filename(filename, model)
@@ -62,7 +60,7 @@ end
             testname *= "$(pname)=$(p[pname]) "
         end
         @testset "$testname" begin
-            Ts, exacts = loaddata(joinpath("ref", modelstr, filename),obsnames)
+            Ts, exacts = loaddata(joinpath("ref", modelstr, filename), obsnames)
             nT = length(Ts)
             p["Model"] = model
             p["Lattice"] = "fully connected graph"
@@ -71,8 +69,7 @@ end
             p["Thermalization"] = Therm
             @testset "$(upstr)" for upstr in ("local_update!",
                                               "SW_update!",
-                                              "Wolff_update!",
-                                             )
+                                              "Wolff_update!")
                 p["Update Method"] = eval(Symbol(upstr))
                 res1 = []
                 res2 = []
@@ -93,13 +90,15 @@ end
                         mc1 = r1[n]
                         mc2 = r2[n]
                         ex = exact
-                        if !(p_value(mc1, exact) > alpha/nT || p_value(mc2, exact) > alpha/nT)
+                        if !(p_value(mc1, exact) > alpha / nT ||
+                             p_value(mc2, exact) > alpha / nT)
                             @show T
                             @show exact
                             @show mc1, p_value(mc1, exact)
                             @show mc2, p_value(mc2, exact)
                         end
-                        @test p_value(mc1, exact) > alpha/nT || p_value(mc2, exact) > alpha/nT
+                        @test p_value(mc1, exact) > alpha / nT ||
+                              p_value(mc2, exact) > alpha / nT
                     end
                 end
             end
