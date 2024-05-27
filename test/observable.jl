@@ -5,7 +5,7 @@ function test_single(scalartype, vectortype)
     ndata = 100
     obs_scalar = [scalartype() for i in 1:nobs]
     obs_vector = vectortype()
-    rng = Random.Xoshiro(SEED)
+    rng = Random.MersenneTwister(SEED)
     X = randn(rng, nobs, ndata)
     for i in 1:ndata
         for j in 1:nobs
@@ -30,7 +30,7 @@ function test_binning(scalartype, vectortype)
     ndata = 100
     obs_scalar = [scalartype() for i in 1:nobs]
     obs_vector = vectortype()
-    rng = Random.Xoshiro(SEED)
+    rng = Random.MersenneTwister(SEED)
     X = randn(rng, nobs, ndata)
     for i in 1:ndata
         for j in 1:nobs
@@ -58,7 +58,7 @@ function test_jackknife(scalartype, vectortype)
     obs_vector_x = vectortype()
     obs_scalar_y = [scalartype() for i in 1:nobs]
     obs_vector_y = vectortype()
-    rng = Random.Xoshiro(SEED)
+    rng = Random.MersenneTwister(SEED)
     X = randn(rng, nobs, ndata)
     Y = randn(rng, nobs, ndata)
     for i in 1:ndata
@@ -91,12 +91,12 @@ function test_jackknife(scalartype, vectortype)
 end
 
 @testset "Simple" begin
-    @testset "Simple" test_single(SimpleObservable, SimpleVectorObservable)
-    @testset "Tiny" test_single(TinyObservable, TinyVectorObservable)
+    @testset "Simple" begin test_single(SimpleObservable, SimpleVectorObservable) end
+    @testset "Tiny" begin test_single(TinyObservable, TinyVectorObservable) end
 end
 @testset "Binning" begin
-    @testset "Simple" test_binning(SimpleObservable, SimpleVectorObservable)
+    @testset "Simple" begin test_binning(SimpleObservable, SimpleVectorObservable) end
 end
 @testset "Jackknife" begin
-    @testset "Simple" test_jackknife(SimpleObservable, SimpleVectorObservable)
+    @testset "Simple" begin test_jackknife(SimpleObservable, SimpleVectorObservable) end
 end
