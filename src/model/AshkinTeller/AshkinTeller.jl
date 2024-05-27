@@ -4,21 +4,23 @@ AshkinTeller model with energy
 where ``\sigma_i`` and ``\tau_i`` takes value of 1 (up spin) or -1 (down spin).
 """
 mutable struct AshkinTeller <: Model
-    lat :: Lattice
-    spins :: Matrix{Int}
-    rng :: Random.MersenneTwister
+    lat::Lattice
+    spins::Matrix{Int}
+    rng::Random.MersenneTwister
 
     function AshkinTeller(lat::Lattice, rng::Random.AbstractRNG)
         model = new()
         model.lat = lat
         model.rng = rng
-        model.spins = rand(model.rng, [1,-1], 2, numsites(lat))
+        model.spins = rand(model.rng, [1, -1], 2, numsites(lat))
         return model
     end
 end
 
 AshkinTeller(lat::Lattice) = AshkinTeller(lat, Random.seed!(Random.MersenneTwister(0)))
-AshkinTeller(lat::Lattice, seed) = AshkinTeller(lat, Random.seed!(Random.MersenneTwister(0), seed...))
+function AshkinTeller(lat::Lattice, seed)
+    return AshkinTeller(lat, Random.seed!(Random.MersenneTwister(0), seed...))
+end
 
 @doc doc"""
     AshkinTeller(param)

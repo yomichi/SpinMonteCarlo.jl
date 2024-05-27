@@ -1,17 +1,17 @@
-const P = Dict{Symbol, Any}
+const P = Dict{Symbol,Any}
 mutable struct LatticeParameter
-    dict :: P
+    dict::P
     function LatticeParameter(p::P)
         ld = new(P())
         for key in keys(p)
             val = p[key]
-            if isa(val,AbstractArray)
-                if length(val)>0 && isa(first(val), P)
+            if isa(val, AbstractArray)
+                if length(val) > 0 && isa(first(val), P)
                     setproperty!(ld, key, LatticeParameter.(val))
                 else
                     setproperty!(ld, key, val)
                 end
-            elseif isa(val,P)
+            elseif isa(val, P)
                 setproperty!(ld, key, LatticeParameter(val))
             else
                 setproperty!(ld, key, val)
@@ -27,9 +27,8 @@ getproperty(ld::LatticeParameter, name::Symbol) = getfield(ld, :dict)[name]
 setproperty!(ld::LatticeParameter, name::Symbol, value) = getfield(ld, :dict)[name] = value
 getindex(ld::LatticeParameter, name::Symbol) = ld.name
 setindex!(ld::LatticeParameter, name::Symbol, value) = ld.name = value
-propertynames(ld::LatticeParameter) = keys(getfield(ld,:dict))
+propertynames(ld::LatticeParameter) = keys(getfield(ld, :dict))
 
 generator(ld::LatticeParameter) = get(getfield(ld, :dict), :generator, generatelattice_std)
 
 convert(::Type{LatticeParameter}, p::P) = LatticeParameter(p)
-

@@ -19,10 +19,10 @@ function test_single(scalartype, vectortype)
     var_scalar = [var(obs_scalar[i]) for i in 1:nobs]
     var_vector = var(obs_vector)
 
-    @test mean_scalar ≈ mean(X, dims=2)[:]
-    @test var_scalar ≈ var(X, dims=2)[:]
-    @test mean_vector ≈ mean(X, dims=2)[:]
-    @test var_vector ≈ var(X, dims=2)[:]
+    @test mean_scalar ≈ mean(X; dims=2)[:]
+    @test var_scalar ≈ var(X; dims=2)[:]
+    @test mean_vector ≈ mean(X; dims=2)[:]
+    @test var_vector ≈ var(X; dims=2)[:]
 end
 
 function test_binning(scalartype, vectortype)
@@ -87,16 +87,24 @@ function test_jackknife(scalartype, vectortype)
     # @test vars_scalar ≈ vars_vector
 
     jk_scalar_x[1] + jk_vector_x
-    jk_scalar_x[1] * jk_vector_x
+    return jk_scalar_x[1] * jk_vector_x
 end
 
 @testset "Simple" begin
-    @testset "Simple" begin test_single(SimpleObservable, SimpleVectorObservable) end
-    @testset "Tiny" begin test_single(TinyObservable, TinyVectorObservable) end
+    @testset "Simple" begin
+        test_single(SimpleObservable, SimpleVectorObservable)
+    end
+    @testset "Tiny" begin
+        test_single(TinyObservable, TinyVectorObservable)
+    end
 end
 @testset "Binning" begin
-    @testset "Simple" begin test_binning(SimpleObservable, SimpleVectorObservable) end
+    @testset "Simple" begin
+        test_binning(SimpleObservable, SimpleVectorObservable)
+    end
 end
 @testset "Jackknife" begin
-    @testset "Simple" begin test_jackknife(SimpleObservable, SimpleVectorObservable) end
+    @testset "Simple" begin
+        test_jackknife(SimpleObservable, SimpleVectorObservable)
+    end
 end

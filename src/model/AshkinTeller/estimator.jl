@@ -30,14 +30,15 @@ function simple_estimator(model::AshkinTeller, T::Real, Jsigma, Jtau, K, _=nothi
     nsites = numsites(model)
     nbonds = numbonds(model)
 
-    Ms = mean(model.spins, dims=2)
+    Ms = mean(model.spins; dims=2)
     E = 0.0
     @inbounds for b in bonds(model)
         s1, s2 = source(b), target(b)
         bt = bondtype(b)
-        E += model.spins[1,s1] * model.spins[1,s2] * Jsigma[bt]
-        E += model.spins[2,s1] * model.spins[2,s2] * Jtau[bt]
-        E += model.spins[1,s1] * model.spins[2,s1] * model.spins[1,s2] * model.spins[2,s2] * K[bt]
+        E += model.spins[1, s1] * model.spins[1, s2] * Jsigma[bt]
+        E += model.spins[2, s1] * model.spins[2, s2] * Jtau[bt]
+        E += model.spins[1, s1] * model.spins[2, s1] * model.spins[1, s2] *
+             model.spins[2, s2] * K[bt]
     end
     E /= nsites
 

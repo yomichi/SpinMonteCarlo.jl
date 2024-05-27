@@ -19,9 +19,9 @@ Information of clusters in Swendsen-Wang algorithm.
 - `clusterspin` : Spin variable of each cluster (e.g., 1 or -1 for `Ising`).
 """
 mutable struct SWInfo
-    activated_bonds :: Vector{Int}
-    clustersize :: Vector{Int}
-    clusterspin :: Vector{Int}
+    activated_bonds::Vector{Int}
+    clustersize::Vector{Int}
+    clusterspin::Vector{Int}
 end
 numclusters(sw::SWInfo) = length(sw.clustersize)
 

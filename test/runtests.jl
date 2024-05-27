@@ -9,12 +9,10 @@ const Therm = MCS
 const alpha = 0.001
 
 @testset begin
-    filenames = [
-                 "observable.jl",
+    filenames = ["observable.jl",
                  "classical.jl",
                  "quantum.jl",
-                 "checkpoint.jl",
-                ]
+                 "checkpoint.jl"]
     for filename in filenames
         t = @elapsed include(filename)
         println("$(filename): $t sec")

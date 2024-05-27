@@ -1,17 +1,17 @@
 export generatelattice
 
-function interpolate!(ex,env)
-    if isa(ex,Symbol)
+function interpolate!(ex, env)
+    if isa(ex, Symbol)
         if haskey(env, ex)
             return env[ex]
         end
-    elseif isa(ex,Expr)
-        for (i,x) in enumerate(ex.args)
-            if isa(x,Symbol)
+    elseif isa(ex, Expr)
+        for (i, x) in enumerate(ex.args)
+            if isa(x, Symbol)
                 if haskey(env, x)
                     ex.args[i] = env[x]
                 end
-            elseif isa(x,Expr)
+            elseif isa(x, Expr)
                 ex.args[i] = interpolate!(ex.args[i], env)
             end
         end
@@ -21,9 +21,9 @@ end
 
 function index2coord(index::Integer, L::AbstractArray)
     D = length(L)
-    coord = zeros(Int,D)
+    coord = zeros(Int, D)
     for d in 1:D
-        coord[d] = index%L[d]
+        coord[d] = index % L[d]
         index ÷= L[d]
     end
     return coord
@@ -61,9 +61,10 @@ function generatelattice_std(param)
     ucell = unitcelldict[lat.unitcell]
     @assert lat.dimension == bra.dimension == ucell.dimension
     D = lat.dimension
-    bparams = Dict(name => get(param,String(name),default) for (name, default) in bra.parameters)
+    bparams = Dict(name => get(param, String(name), default)
+                   for (name, default) in bra.parameters)
     for (name, default) in lat.parameters
-        bparams[name] = get(param,String(name),default)
+        bparams[name] = get(param, String(name), default)
     end
 
     bc = get(param, "Periodic Boudary Condition", lat.periodic)
@@ -74,12 +75,12 @@ function generatelattice_std(param)
         L = [param["L"]]
     end
     while length(L) < D
-        push!(L,L[end])
+        push!(L, L[end])
     end
 
     numcell = prod(L)
 
-    latvec = interpolate!(bra.basis, bparams) |> eval
+    latvec = eval(interpolate!(bra.basis, bparams))
 
     usites = ucell.sites
     numsites_in_cell = length(usites)
@@ -108,28 +109,35 @@ function generatelattice_std(param)
     use_index_as_sitetype = get(param, "Use Indicies as Site Types", false)
     use_index_as_bondtype = get(param, "Use Indicies as Bond Types", false)
 
-    for icell in 0:(numcell-1)
+    for icell in 0:(numcell - 1)
         cellcoord = index2coord(icell, L)
         for site in usites
             id = numsites_in_cell * icell + site.id
             coord = latvec * (cellcoord .+ site.coord)
-            s = Site(id, ifelse(use_index_as_sitetype, id, site.sitetype), Int[], Int[], coord, site.id, cellcoord)
-            push!(sites,s)
+            s = Site(id, ifelse(use_index_as_sitetype, id, site.sitetype), Int[], Int[],
+                     coord, site.id, cellcoord)
+            push!(sites, s)
         end
         for bond in ubonds
             for d in 1:D
                 if !(bc[d] || bond.source.offset[d] == bond.source.offset[d])
-                    if !(0 <= cellcoord[d] + (bond.target.offset[d] - bond.source.offset[d]) < L[d] )
+                    if !(0 <=
+                         cellcoord[d] + (bond.target.offset[d] - bond.source.offset[d]) <
+                         L[d])
                         continue
                     end
                 end
             end
-            source = numsites_in_cell * coord2index(cellcoord .+ bond.source.offset, L) + bond.source.id
-            target = numsites_in_cell * coord2index(cellcoord .+ bond.target.offset, L) + bond.target.id
-            dir = latvec * ((bond.target.offset .+ usites[bond.target.id].coord ) 
-                            .- (bond.source.offset .+ usites[bond.source.id].coord ))
+            source = numsites_in_cell * coord2index(cellcoord .+ bond.source.offset, L) +
+                     bond.source.id
+            target = numsites_in_cell * coord2index(cellcoord .+ bond.target.offset, L) +
+                     bond.target.id
+            dir = latvec * ((bond.target.offset .+ usites[bond.target.id].coord)
+                            .-
+                            (bond.source.offset .+ usites[bond.source.id].coord))
             ib += 1
-            b = Bond(ib, ifelse(use_index_as_bondtype, ib, bond.bondtype), source, target, dir) 
+            b = Bond(ib, ifelse(use_index_as_bondtype, ib, bond.bondtype), source, target,
+                     dir)
             push!(bonds, b)
         end
     end
@@ -139,17 +147,17 @@ end
 
 function generate_fully_connected_graph(param)
     N = param["N"]
-    nb = div(N*(N-1),2)
+    nb = div(N * (N - 1), 2)
     sites = Site[]
     bonds = Bond[]
     ib = 0
     for s in 1:N
         push!(sites, Site(s, 1, Int[], Int[], [0.0], 1, [0]))
-        for t in (s+1):N
+        for t in (s + 1):N
             ib += 1
             push!(bonds, Bond(ib, 1, s, t, [0.0]))
         end
     end
-    latvec = zeros(1,1)
+    latvec = zeros(1, 1)
     return Lattice(latvec, [N], sites, bonds)
 end

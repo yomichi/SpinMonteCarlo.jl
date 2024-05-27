@@ -3,9 +3,9 @@ XY model with energy $E = -\sum_{ij} J_{ij} \cos(\theta_i - \theta_j)$,
 where $\theta_i = 2\pi \sigma_i$ and $\sigma_i \in [0, 1)$.
 """
 mutable struct XY <: Model
-    lat :: Lattice
-    spins :: Matrix{Float64}
-    rng :: Random.MersenneTwister
+    lat::Lattice
+    spins::Matrix{Float64}
+    rng::Random.MersenneTwister
 
     function XY(lat::Lattice, rng::Random.AbstractRNG)
         spins = rand(rng, 1, numsites(lat))

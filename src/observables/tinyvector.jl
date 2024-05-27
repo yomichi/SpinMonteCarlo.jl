@@ -1,17 +1,19 @@
 export TinyVectorObservable, stddev
 
 mutable struct TinyVectorObservable <: VectorObservable
-    num :: Int64
-    sum :: Vector{Float64}
-    sum2 :: Vector{Float64}
+    num::Int64
+    sum::Vector{Float64}
+    sum2::Vector{Float64}
 end
 
 TinyVectorObservable() = TinyVectorObservable(0, Float64[], Float64[])
 zero(::Type{TinyVectorObservable}) = TinyVectorObservable()
 zero(o::TinyVectorObservable) = TinyVectorObservable()
-zeros(::Type{TinyVectorObservable}, dims...) = reshape([zero(TinyVectorObservable) for i in 1:prod(dims)],dims)
+function zeros(::Type{TinyVectorObservable}, dims...)
+    return reshape([zero(TinyVectorObservable) for i in 1:prod(dims)], dims)
+end
 
-function reset!(obs :: TinyVectorObservable)
+function reset!(obs::TinyVectorObservable)
     obs.num = 0
     obs.sum = Float64[]
     obs.sum2 = Float64[]
@@ -20,7 +22,7 @@ end
 
 count(obs::TinyVectorObservable) = obs.num
 
-function push!(obs :: TinyVectorObservable, value::Vector)
+function push!(obs::TinyVectorObservable, value::Vector)
     if obs.num == 0
         obs.num = 1
         obs.sum = deepcopy(value)
@@ -37,37 +39,38 @@ end
 
 function mean(obs::TinyVectorObservable)
     if obs.num > 0
-        return obs.sum .* (1.0/obs.num)
+        return obs.sum .* (1.0 / obs.num)
     else
         return [NaN]
     end
 end
 
 function var(obs::TinyVectorObservable)
-    if obs.num  > 1
-        v = (obs.sum2 .- (obs.sum.^2)./obs.num)./(obs.num-1)
+    if obs.num > 1
+        v = (obs.sum2 .- (obs.sum .^ 2) ./ obs.num) ./ (obs.num - 1)
         return map(maxzero, v)
     else
         return fill(NaN, length(obs.sum))
     end
 end
 stddev(obs::TinyVectorObservable) = sqrt.(var(obs))
-stderror(obs::TinyVectorObservable) = sqrt.(var(obs)./count(obs))
-function confidence_interval(obs::TinyVectorObservable, confidence_rate :: Real)
+stderror(obs::TinyVectorObservable) = sqrt.(var(obs) ./ count(obs))
+function confidence_interval(obs::TinyVectorObservable, confidence_rate::Real)
     if count(obs) == 0
         return [Inf]
     elseif count(obs) == 1
         return fill(Inf, length(obs.sum))
     end
     q = 0.5 + 0.5confidence_rate
-    correction = quantile( TDist(obs.num - 1), q)
+    correction = quantile(TDist(obs.num - 1), q)
     serr = stderror(obs)
     return correction * serr
 end
 
-function confidence_interval(obs::TinyVectorObservable, confidence_rate_symbol::Symbol = :sigma1)
+function confidence_interval(obs::TinyVectorObservable,
+                             confidence_rate_symbol::Symbol=:sigma1)
     n = parsesigma(confidence_rate_symbol)
-    return confidence_interval(obs, erf(0.5n*sqrt(2.0)))
+    return confidence_interval(obs, erf(0.5n * sqrt(2.0)))
 end
 
 function merge!(obs::TinyVectorObservable, other::TinyVectorObservable)
@@ -101,4 +104,6 @@ function merge!(obs::TinyVectorObservableSet, other::TinyVectorObservableSet)
     end
     return obs
 end
-merge(lhs::TinyVectorObservableSet, rhs::TinyVectorObservableSet) = merge!(deepcopy(lhs), rhs)
+function merge(lhs::TinyVectorObservableSet, rhs::TinyVectorObservableSet)
+    return merge!(deepcopy(lhs), rhs)
+end

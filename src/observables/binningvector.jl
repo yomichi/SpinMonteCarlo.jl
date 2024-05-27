@@ -4,38 +4,38 @@ export BinningVectorObservableSet
 
 mutable struct BinningVectorObservable <: VectorObservable
     ## index of these vectors denotes the level of bins (each bin stores the mean of 2^(i-1) values)
-    raw_ts :: Vector{Vector{Float64}} ## Time series of raw data
-    bins :: Vector{Vector{Float64}}   ## Time series of bins
-    sum :: Vector{Vector{Float64}}    ## Summation of stored values
-    sum2 :: Vector{Vector{Float64}}   ## Summation of square of bin's mean
-    entries :: Vector{Int}            ## Number of bins
-    binsize :: Int
-    lastbin :: Int
-    minbinnum :: Int
-    maxlevel :: Int
+    raw_ts::Vector{Vector{Float64}} ## Time series of raw data
+    bins::Vector{Vector{Float64}}   ## Time series of bins
+    sum::Vector{Vector{Float64}}    ## Summation of stored values
+    sum2::Vector{Vector{Float64}}   ## Summation of square of bin's mean
+    entries::Vector{Int}            ## Number of bins
+    binsize::Int
+    lastbin::Int
+    minbinnum::Int
+    maxlevel::Int
 
-    function BinningVectorObservable(minbinnum::Int = 128) 
-        Base.depwarn("BinningVectorObservable is deprecated. Use obs=SimpleVectorObservable() and binning(obs) instead.", nothing, force=true)
+    function BinningVectorObservable(minbinnum::Int=128)
+        Base.depwarn("BinningVectorObservable is deprecated. Use obs=SimpleVectorObservable() and binning(obs) instead.",
+                     nothing; force=true)
 
         raw_ts = Vector{Float64}[]
         bins = Vector{Float64}[]
         sum = Vector{Float64}[]
         sum2 = Vector{Float64}[]
-        entries = zeros(Int,1)
+        entries = zeros(Int, 1)
         binsize = 1
         lastbin = 0
         maxlevel = 1
-        new(raw_ts, bins, sum, sum2, entries, binsize, lastbin, minbinnum, maxlevel)
+        return new(raw_ts, bins, sum, sum2, entries, binsize, lastbin, minbinnum, maxlevel)
     end
 end
-
 
 function reset!(b::BinningVectorObservable)
     b.raw_ts = Vector{Float64}[]
     b.bins = Vector{Float64}[]
     b.sum = Vector{Float64}[]
     b.sum2 = Vector{Float64}[]
-    b.entries = zeros(Int,1)
+    b.entries = zeros(Int, 1)
     b.binsize = 1
     b.lastbin = 0
     b.maxlevel = 1
@@ -44,9 +44,9 @@ function reset!(b::BinningVectorObservable)
 end
 
 maxlevel(b::BinningVectorObservable) = b.maxlevel
-count(b::BinningVectorObservable, level::Int = 1) = b.entries[level]
-sum(b::BinningVectorObservable, level::Int = 1) = b.sum[level]
-sum2(b::BinningVectorObservable, level::Int = 1) = b.sum2[level]
+count(b::BinningVectorObservable, level::Int=1) = b.entries[level]
+sum(b::BinningVectorObservable, level::Int=1) = b.sum[level]
+sum2(b::BinningVectorObservable, level::Int=1) = b.sum2[level]
 
 function push!(b::BinningVectorObservable, x::Vector)
     ## time series
@@ -63,8 +63,8 @@ function push!(b::BinningVectorObservable, x::Vector)
         b.lastbin = 0
         if length(b.bins) == 2(b.minbinnum)
             new_bins = Vector{Vector{Float64}}(b.minbinnum)
-            for i in 1:b.minbinnum
-                new_bins[i] = 0.5(b.bins[2i-1]+b.bins[2i])
+            for i in 1:(b.minbinnum)
+                new_bins[i] = 0.5(b.bins[2i - 1] + b.bins[2i])
             end
             b.bins = new_bins
             b.binsize <<= 1
@@ -87,10 +87,10 @@ function push!(b::BinningVectorObservable, x::Vector)
     while i & 1 > 0
         if level > length(b.sum)
             push!(b.sum, zeros(length(x)))
-            push!(b.sum2,zeros(length(x)))
+            push!(b.sum2, zeros(length(x)))
             push!(b.entries, 0)
         end
-        lastbin = b.sum[1]/bsize - b.sum[level]
+        lastbin = b.sum[1] / bsize - b.sum[level]
         if b.entries[level] == 0
             b.sum[level] = lastbin
             b.sum2[level] = squared(lastbin)
@@ -109,40 +109,42 @@ function push!(b::BinningVectorObservable, x::Vector)
     return b
 end
 
-function mean(b::BinningVectorObservable, level::Int = 1)
-    return sum(b, level)./count(b, level)
+function mean(b::BinningVectorObservable, level::Int=1)
+    return sum(b, level) ./ count(b, level)
 end
 
-function var(b::BinningVectorObservable, level::Int = 1)
+function var(b::BinningVectorObservable, level::Int=1)
     n = count(b, level)
     s = sum(b, level)
     s2 = sum2(b, level)
     if n > 1
-        v2 = s2 .- (s.^2)./n
-        return map(maxzero, v2/(n-1))
+        v2 = s2 .- (s .^ 2) ./ n
+        return map(maxzero, v2 / (n - 1))
     else
         return fill(NaN, length(b.sum[1]))
     end
 end
 
-function stderror(b::BinningVectorObservable, level::Int = maxlevel(b))
-    return sqrt.(var(b,level)./count(b,level))
+function stderror(b::BinningVectorObservable, level::Int=maxlevel(b))
+    return sqrt.(var(b, level) ./ count(b, level))
 end
 
-function confidence_interval(b::BinningVectorObservable, confidence_rate::Real, level::Int = maxlevel(b))
-    q = 0.5+0.5*confidence_rate
-    correction = quantile( TDist(count(b,level)), q)
+function confidence_interval(b::BinningVectorObservable, confidence_rate::Real,
+                             level::Int=maxlevel(b))
+    q = 0.5 + 0.5 * confidence_rate
+    correction = quantile(TDist(count(b, level)), q)
     serr = stderror(b, level)
     return correction * serr
 end
-function confidence_interval(b::BinningVectorObservable, confidence_rate_symbol::Symbol = :sigma1, level::Int = maxlevel(b))
+function confidence_interval(b::BinningVectorObservable,
+                             confidence_rate_symbol::Symbol=:sigma1, level::Int=maxlevel(b))
     n = parsesigma(confidence_rate_symbol)
-    return confidence_interval(b, erf(0.5n*sqrt(2.0)), level)
+    return confidence_interval(b, erf(0.5n * sqrt(2.0)), level)
 end
 
-function tau(b::BinningVectorObservable, level::Int = maxlevel(b))
-    binsize = 1<<(level-1)
-    return 0.5.*( (binsize.*var(b,level))./var(b) .- 1.0)
+function tau(b::BinningVectorObservable, level::Int=maxlevel(b))
+    binsize = 1 << (level - 1)
+    return 0.5 .* ((binsize .* var(b, level)) ./ var(b) .- 1.0)
 end
 
 #=
@@ -150,18 +152,22 @@ linearmodel(x::Float64, p::Vector{Float64}) = p[1] + x*p[2]
 linearmodel(xs::Vector{Float64}, p::Vector{Float64}) = map(x->linearmodel(x,p),xs)
 =#
 
-function extrapolate_detail(op :: Function, b::BinningVectorObservable, point::Int)
+function extrapolate_detail(op::Function, b::BinningVectorObservable, point::Int)
     ml = maxlevel(b)
-    ll = max(ml-point+1, 1)
+    ll = max(ml - point + 1, 1)
     levels = ll:ml
-    ns = map( level->1<<(level-1), levels)
+    ns = map(level -> 1 << (level - 1), levels)
     ninvs = ns .\ 1.0
-    ys = map( level->op(b, level), levels)
+    ys = map(level -> op(b, level), levels)
     fit = curve_fit(linearmodel, ninvs, ys, [ys[end], 0.0])
     return fit.param[1], estimate_errors(fit)[1]
 end
-extrapolate_tau(b::BinningVectorObservable, point::Int = 5) = extrapolate_detail(tau, b, point)
-extrapolate_stderror(b::BinningVectorObservable, point::Int = 5) = extrapolate_detail(stderror, b, point)
+function extrapolate_tau(b::BinningVectorObservable, point::Int=5)
+    return extrapolate_detail(tau, b, point)
+end
+function extrapolate_stderror(b::BinningVectorObservable, point::Int=5)
+    return extrapolate_detail(stderror, b, point)
+end
 
 function show(io::IO, obs::BinningVectorObservable)
     if count(obs) > 0
@@ -171,6 +177,4 @@ function show(io::IO, obs::BinningVectorObservable)
     end
 end
 
-
 const BinningVectorObservableSet = MCObservableSet{BinningVectorObservable}
-
