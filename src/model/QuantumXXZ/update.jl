@@ -111,7 +111,7 @@ function loop_update!(model::QuantumXXZ, T::Real,
                 st = ot - 4nbt
                 s = sites(model, st)[rand(rng, 1:numsites(model, st))]
                 ss = rand(rng, 1:S2)
-                push!(ops, LocalLoopOperator(LET_Cut, t, s, (ss, ss)))
+                push!(ops, LocalLoopOperator(LET_Cut, t, s.id, (ss, ss)))
                 t += randexp(rng) * op_dt
             end
         else
