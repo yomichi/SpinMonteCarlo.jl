@@ -114,7 +114,8 @@ function generatelattice_std(param)
         for site in usites
             id = numsites_in_cell * icell + site.id
             coord = latvec * (cellcoord .+ site.coord)
-            s = Site(id, ifelse(use_index_as_sitetype, id, site.sitetype), Int[], Int[], coord, site.id, cellcoord)
+            s = Site(id, ifelse(use_index_as_sitetype, id, site.sitetype), Int[], Int[],
+                     coord, site.id, cellcoord)
             push!(sites, s)
         end
         for bond in ubonds
@@ -124,12 +125,14 @@ function generatelattice_std(param)
             target_coord = cellcoord .+ bond.target.offset
             if all((0 .<= target_coord .< L) .|| bc)
                 source = numsites_in_cell * cellcoord + bond.source.id
-                target = numsites_in_cell * coord2index(cellcoord .+ bond.target.offset, L) + bond.target.id
+                target = numsites_in_cell *
+                         coord2index(cellcoord .+ bond.target.offset, L) + bond.target.id
                 dir = latvec * ((bond.target.offset .+ usites[bond.target.id].coord)
                                 .-
                                 (bond.source.offset .+ usites[bond.source.id].coord))
                 ib += 1
-                b = Bond(ib, ifelse(use_index_as_bondtype, ib, bond.bondtype), source, target, dir)
+                b = Bond(ib, ifelse(use_index_as_bondtype, ib, bond.bondtype), source,
+                         target, dir)
                 push!(bonds, b)
             end
         end
