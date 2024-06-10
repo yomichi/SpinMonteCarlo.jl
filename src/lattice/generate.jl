@@ -124,7 +124,7 @@ function generatelattice_std(param)
             end
             target_coord = cellcoord .+ bond.target.offset
             if all((0 .<= target_coord .< L) .| bc)
-                source = numsites_in_cell * cellcoord + bond.source.id
+                source = numsites_in_cell * coord2index(cellcoord, L) + bond.source.id
                 target = numsites_in_cell *
                          coord2index(cellcoord .+ bond.target.offset, L) + bond.target.id
                 dir = latvec * ((bond.target.offset .+ usites[bond.target.id].coord)
