@@ -114,31 +114,24 @@ function generatelattice_std(param)
         for site in usites
             id = numsites_in_cell * icell + site.id
             coord = latvec * (cellcoord .+ site.coord)
-            s = Site(id, ifelse(use_index_as_sitetype, id, site.sitetype), Int[], Int[],
-                     coord, site.id, cellcoord)
+            s = Site(id, ifelse(use_index_as_sitetype, id, site.sitetype), Int[], Int[], coord, site.id, cellcoord)
             push!(sites, s)
         end
         for bond in ubonds
-            for d in 1:D
-                if !(bc[d] || bond.source.offset[d] == bond.source.offset[d])
-                    if !(0 <=
-                         cellcoord[d] + (bond.target.offset[d] - bond.source.offset[d]) <
-                         L[d])
-                        continue
-                    end
-                end
+            if any(bond.source.offset .!= 0)
+                error("offset in source should be zero")
             end
-            source = numsites_in_cell * coord2index(cellcoord .+ bond.source.offset, L) +
-                     bond.source.id
-            target = numsites_in_cell * coord2index(cellcoord .+ bond.target.offset, L) +
-                     bond.target.id
-            dir = latvec * ((bond.target.offset .+ usites[bond.target.id].coord)
-                            .-
-                            (bond.source.offset .+ usites[bond.source.id].coord))
-            ib += 1
-            b = Bond(ib, ifelse(use_index_as_bondtype, ib, bond.bondtype), source, target,
-                     dir)
-            push!(bonds, b)
+            target_coord = cellcoord .+ bond.target.offset
+            if all((0 .<= target_coord .< L) .|| bc)
+                source = numsites_in_cell * cellcoord + bond.source.id
+                target = numsites_in_cell * coord2index(cellcoord .+ bond.target.offset, L) + bond.target.id
+                dir = latvec * ((bond.target.offset .+ usites[bond.target.id].coord)
+                                .-
+                                (bond.source.offset .+ usites[bond.source.id].coord))
+                ib += 1
+                b = Bond(ib, ifelse(use_index_as_bondtype, ib, bond.bondtype), source, target, dir)
+                push!(bonds, b)
+            end
         end
     end
 
