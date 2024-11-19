@@ -8,7 +8,7 @@ on:
     tags: ['*']
   pull_request:
   schedule:
-    - cron: "0 0 8 1,15 0"
+    - cron: "0 0 8 1,15 *"
 
 permissions:
   actions: write
