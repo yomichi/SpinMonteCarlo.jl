@@ -56,7 +56,7 @@ const root! = root_path_halving!
 @doc doc"""
     unify!(u, n1, n2)
 
-Connects `n1` and `n2` nodes and returns the root.
+Connects `n1` and `n2` nodes using union by weight and returns the root.
 """
 function unify!(u::UnionFind, n1::Integer, n2::Integer)
     r1 = root!(u, n1)
@@ -67,7 +67,7 @@ function unify!(u::UnionFind, n1::Integer, n2::Integer)
             r1, r2 = r2, r1
         end
         u.parents[r2] = r1
-        u.weights[r2] += u.weights[r1]
+        u.weights[r1] += u.weights[r2]
     end
     return r1
 end
