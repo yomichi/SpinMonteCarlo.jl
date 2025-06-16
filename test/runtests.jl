@@ -12,7 +12,8 @@ const alpha = 0.001
     filenames = ["observable.jl",
                  "classical.jl",
                  "quantum.jl",
-                 "checkpoint.jl"]
+                 "checkpoint.jl",
+                 "union_find.jl"]
     for filename in filenames
         t = @elapsed include(filename)
         println("$(filename): $t sec")
