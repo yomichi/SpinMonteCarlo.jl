@@ -4,7 +4,7 @@ using JSON
     files = filter(s -> endswith(s, ".json"), readdir(joinpath("ref", modelname)))
     @testset "$filename" for filename in files
         diagres = JSON.parsefile(joinpath("ref", modelname, filename))
-        param = diagres["Parameter"]
+        param = Dict{String,Any}(diagres["Parameter"])
         ref = diagres["Result"]
         param["Model"] = QuantumXXZ
         param["Lattice"] = "chain lattice"
