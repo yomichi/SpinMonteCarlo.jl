@@ -25,8 +25,8 @@ import Base: getindex, setindex!, getproperty, setproperty!, propertynames, conv
 
 getproperty(ld::LatticeParameter, name::Symbol) = getfield(ld, :dict)[name]
 setproperty!(ld::LatticeParameter, name::Symbol, value) = getfield(ld, :dict)[name] = value
-getindex(ld::LatticeParameter, name::Symbol) = ld.name
-setindex!(ld::LatticeParameter, name::Symbol, value) = ld.name = value
+getindex(ld::LatticeParameter, name::Symbol) = getproperty(ld, name)
+setindex!(ld::LatticeParameter, value, name::Symbol) = setproperty!(ld, name, value)
 propertynames(ld::LatticeParameter) = keys(getfield(ld, :dict))
 
 generator(ld::LatticeParameter) = get(getfield(ld, :dict), :generator, generatelattice_std)
