@@ -19,7 +19,7 @@ end
 function binning(obs::SimpleVectorObservable; binsize::Int=0, numbins::Int=0)
     nobs = count(obs)
     if nobs == 0
-        return SimpleVectorObservable()
+        throw(ArgumentError("Cannot bin an empty observable."))
     end
     ndim = length(obs.bins[1])
     if binsize > 0 && numbins > 0
@@ -30,6 +30,10 @@ function binning(obs::SimpleVectorObservable; binsize::Int=0, numbins::Int=0)
     end
     if binsize > nobs
         binsize = nobs
+    end
+
+    if numbins > nobs
+        throw(ArgumentError("numbins must not exceed the number of observations."))
     end
 
     if binsize > 0
@@ -122,7 +126,7 @@ end
 function merge!(obs::SimpleVectorObservable, other::SimpleVectorObservable)
     append!(obs.bins, other.bins)
     obs.num += other.num
-    for i in 1:length(obs.bins[i])
+    for i in 1:length(other.sum)
         obs.sum[i] += other.sum[i]
         obs.sum2[i] += other.sum2[i]
     end
