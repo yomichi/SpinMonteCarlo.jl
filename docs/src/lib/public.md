@@ -80,13 +80,6 @@ JackknifeVectorSet
 jackknife
 ```
 
-## Snapshots
-```@docs
-gen_snapshot!
-gensave_snapshot!
-load_snapshot
-```
-
 ## Utility
 ```@docs
 Parameter
