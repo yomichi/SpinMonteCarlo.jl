@@ -4,22 +4,22 @@ function local_update!(model::AshkinTeller, T::Real, Jsigma, Jtau, K)
     nbonds = numbonds(model)
     mbeta = -1.0 / T
 
-    @inbounds for kind in 1:2
+    @inbounds for _ in 1:(2 * nsites)
+        kind = rand(rng, 1:2)
         Js = ifelse(kind == 1, Jsigma, Jtau)
         dual_kind = 3 - kind
-        for site in 1:nsites
-            center = model.spins[kind, site]
-            dual_center = model.spins[dual_kind, site]
-            de = 0.0
-            for (n, b) in neighbors(model, site)
-                de += 2center * model.spins[kind, n] *
-                      (Js[bondtype(model, b)]
-                       +
-                       K[bondtype(model, b)] * model.spins[dual_kind, n] * dual_center)
-            end
-            if rand(rng) < exp(mbeta * de)
-                model.spins[kind, site] *= -1
-            end
+        site = rand(rng, 1:nsites)
+        center = model.spins[kind, site]
+        dual_center = model.spins[dual_kind, site]
+        de = 0.0
+        for (n, b) in neighbors(model, site)
+            de += 2center * model.spins[kind, n] *
+                  (Js[bondtype(model, b)]
+                   +
+                   K[bondtype(model, b)] * model.spins[dual_kind, n] * dual_center)
+        end
+        if rand(rng) < exp(mbeta * de)
+            model.spins[kind, site] *= -1
         end
     end
 

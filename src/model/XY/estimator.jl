@@ -2,13 +2,16 @@ function simple_estimator(model::XY, T::Real, Js::AbstractArray, _=nothing)
     nsites = numsites(model)
     nbonds = numbonds(model)
     D = dim(model)
+    if D > 3
+        throw(ArgumentError("Helicity Modulus supports lattice dimension D <= 3."))
+    end
     invN = 1.0 / nsites
     beta = 1.0 / T
 
     M = zeros(2)
     E = 0.0
-    U1 = zeros(2)
-    U2 = zeros(2)
+    U1 = zeros(D)
+    U2 = zeros(D)
 
     @inbounds for s in 1:nsites
         M[1] += cospi(2model.spins[s])
@@ -22,13 +25,16 @@ function simple_estimator(model::XY, T::Real, Js::AbstractArray, _=nothing)
         dt = ifelse(0.5 <= dt, dt - 1.0, dt)
         E -= cospi(2dt) * Js[bondtype(b)]
 
+        J = Js[bondtype(b)]
         for d in 1:D
-            U1[d] += cospi(2dt) * dir[d]^2
-            U2[d] += sinpi(2dt) * dir[d]
+            U1[d] += J * cospi(2dt) * dir[d]^2
+            U2[d] += J * sinpi(2dt) * dir[d]
         end
     end
     for d in 1:2
         M[d] *= invN
+    end
+    for d in 1:D
         U1[d] -= beta * U2[d]^2
         U1[d] *= invN
     end
@@ -40,6 +46,8 @@ function simple_estimator(model::XY, T::Real, Js::AbstractArray, _=nothing)
         res["|Magnetization $c|"] = abs(M[i])
         res["Magnetization $c^2"] = M[i]^2
         res["Magnetization $c^4"] = M[i]^4
+    end
+    for (i, c) in enumerate(["x", "y", "z"][1:D])
         res["Helicity Modulus $c"] = U1[i]
     end
     M2 = sum(abs2, M)

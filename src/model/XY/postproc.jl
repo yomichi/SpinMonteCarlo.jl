@@ -27,20 +27,22 @@ In the following, $m$ is total magnetization per site and $\epsilon$ is total en
 """
 function postproc(model::XY, param::Parameter, obs::MCObservableSet)
     nsites = numsites(model)
+    if dim(model) > 3
+        throw(ArgumentError("Helicity Modulus supports lattice dimension D <= 3."))
+    end
     T = convert(Float64, param["T"])
     beta = 1.0 / T
 
     jk = jackknife(obs)
-    jk["Binder Ratio x"] = jk["Magnetization x^4"] / (jk["Magnetization x^2"]^2)
-    jk["Binder Ratio y"] = jk["Magnetization y^4"] / (jk["Magnetization y^2"]^2)
+    for c in ("x", "y")
+        jk["Binder Ratio $c"] = jk["Magnetization $c^4"] / (jk["Magnetization $c^2"]^2)
+        jk["Susceptibility $c"] = (nsites * beta) * jk["Magnetization $c^2"]
+        jk["Connected Susceptibility $c"] = (nsites * beta) *
+                                            (jk["Magnetization $c^2"] -
+                                             jk["|Magnetization $c|"]^2)
+    end
     jk["Binder Ratio"] = jk["|Magnetization|^4"] / (jk["|Magnetization|^2"]^2)
-    jk["Susceptibility x"] = (nsites * beta) * jk["Magnetization x^2"]
-    jk["Susceptibility y"] = (nsites * beta) * jk["Magnetization y^2"]
     jk["Susceptibility"] = (nsites * beta) * jk["|Magnetization|^2"]
-    jk["Connected Susceptibility x"] = (nsites * beta) *
-                                       (jk["Magnetization x^2"] - jk["|Magnetization x|"]^2)
-    jk["Connected Susceptibility y"] = (nsites * beta) *
-                                       (jk["Magnetization y^2"] - jk["|Magnetization y|"]^2)
     jk["Connected Susceptibility"] = (nsites * beta) *
                                      (jk["|Magnetization|^2"] - jk["|Magnetization|"]^2)
     jk["Specific Heat"] = (nsites * beta * beta) * (jk["Energy^2"] - jk["Energy"]^2)
