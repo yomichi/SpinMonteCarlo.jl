@@ -216,6 +216,22 @@ end
         end
     end
 
+    @testset "zeros of observables" begin
+        ## the dimensions can be given either as a vararg or as a tuple
+        for dims in ((2, 3), ((2, 3),))
+            obs = zeros(SimpleObservable, dims...)
+            @test size(obs) == (2, 3)
+            @test eltype(obs) === SimpleObservable
+
+            ## each element has to be an independent object
+            push!(obs[1, 1], 1.0)
+            @test count(obs[1, 1]) == 1
+            @test count(obs[2, 3]) == 0
+        end
+        @test size(zeros(SimpleVectorObservable, 2)) == (2,)
+        @test size(zeros(TinyVectorObservable, (2,))) == (2,)
+    end
+
     @testset "observable set helpers" begin
         oset = SimpleObservableSet()
         makeMCObservable!(oset, "x")

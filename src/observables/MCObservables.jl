@@ -62,11 +62,18 @@ end
 
 isempty(obs::MCObservable) = count(obs) == 0
 
-zero(::Type{Obs}) where {(Obs <: MCObservable)} = Obs()
+zero(::Type{Obs}) where {(Obs<:MCObservable)} = Obs()
 zero(obs::MCObservable) = zero(typeof(obs))
-function zeros(::Type{Obs}, dim...) where {(Obs <: MCObservable)}
-    return reshape(Obs[Obs() for i in 1:prod(dim)], dim)
+
+## Dimensions are taken as a tuple rather than as a vararg, since a vararg
+## method is ambiguous with the `zeros(::Type, ::Tuple)` methods of Base.
+## Note that each element has to be a distinct object, so `fill`, which Base
+## uses, is not applicable here.
+function zeros(::Type{Obs}, dims::Tuple{Vararg{Integer}}) where {(Obs<:MCObservable)}
+    return reshape(Obs[Obs() for i in 1:prod(dims)], dims)
 end
+zeros(::Type{Obs}, dims::Tuple{}) where {(Obs<:MCObservable)} = reshape(Obs[Obs()], dims)
+zeros(::Type{Obs}, dims::Integer...) where {(Obs<:MCObservable)} = zeros(Obs, dims)
 
 function show(io::IO, obs::MCObservable)
     if !isempty(obs)
@@ -101,9 +108,7 @@ include("binningvector.jl")
 include("jackknife.jl")
 include("jackknifevector.jl")
 
-## these three definitions are needed to resolve ambiguousness with Base.<<(Any,Integer)
-<<(obs::MCObservable, x::Int32) = push!(obs, x)
-<<(obs::MCObservable, x::Int64) = push!(obs, x)
-<<(obs::MCObservable, x::Integer) = push!(obs, x)
-
-<<(obs::MCObservable, x) = push!(obs, x)
+## The value type is constrained; a `<<(::MCObservable, ::Any)` catch-all is
+## ambiguous with the `<<` methods that Base defines for its own types.
+<<(obs::ScalarObservable, x::Real) = push!(obs, x)
+<<(obs::VectorObservable, x::AbstractVector) = push!(obs, x)

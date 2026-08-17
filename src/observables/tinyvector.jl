@@ -9,9 +9,6 @@ end
 TinyVectorObservable() = TinyVectorObservable(0, Float64[], Float64[])
 zero(::Type{TinyVectorObservable}) = TinyVectorObservable()
 zero(o::TinyVectorObservable) = TinyVectorObservable()
-function zeros(::Type{TinyVectorObservable}, dims...)
-    return reshape([zero(TinyVectorObservable) for i in 1:prod(dims)], dims)
-end
 
 function reset!(obs::TinyVectorObservable)
     obs.num = 0
