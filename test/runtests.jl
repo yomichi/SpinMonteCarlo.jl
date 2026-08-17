@@ -9,7 +9,8 @@ const Therm = MCS
 const alpha = 0.001
 
 @testset begin
-    filenames = ["observable.jl",
+    filenames = ["aqua.jl",
+                 "observable.jl",
                  "lattice.jl",
                  "classical.jl",
                  "quantum.jl",

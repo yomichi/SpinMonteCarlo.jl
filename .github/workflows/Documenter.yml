@@ -1,9 +1,13 @@
 name: Documenter
 on:
   push:
-    branches: [main, master]
+    branches: [main]
     tags: [v*]
   pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   Documenter:
@@ -14,7 +18,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      # - uses: julia-actions/julia-buildpkg@v1  # if package requires Pkg.build()
+      # julia-docdeploy does not install Julia; without this it silently uses
+      # whatever version the runner image happens to ship.
+      - uses: julia-actions/setup-julia@v2
+        with:
+          version: '1'
+      - uses: julia-actions/cache@v2
       - uses: julia-actions/julia-docdeploy@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

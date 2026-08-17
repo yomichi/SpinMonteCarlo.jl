@@ -1,6 +1,6 @@
 name = "SpinMonteCarlo"
 uuid = "71c4a2d3-ecf8-5cd9-ab6a-09a504837b4f"
-author = ["Yuichi Motoyama yomichi314@gmail.com"]
+authors = ["Yuichi Motoyama <yomichi314@gmail.com>"]
 version = "1.2.2"
 
 [deps]
@@ -18,16 +18,16 @@ SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 
 [compat]
-DataStructures = "0.11, 0.12, 0.13, 0.14, 0.15, 0.16, 0.17, 0.18"
-Distributions = "0.16, 0.17, 0.18, 0.19, 0.20, 0.21, 0.22, 0.23, 0.24, 0.25"
-LsqFit = "0.8, 0.9, 0.10, 0.11, 0.12, 0.13, 0.14, 0.15"
-MacroTools = "0.4, 0.5"
-SpecialFunctions = "0.7, 0.8, 0.9, 0.10, 1, 2"
-julia = "1"
-
-[extras]
-JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
-Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
-
-[targets]
-test = ["JSON", "Test"]
+DataStructures = "0.18, 0.19"
+Distributed = "1"
+Distributions = "0.25"
+LinearAlgebra = "1"
+LsqFit = "0.15, 0.16"
+MacroTools = "0.5"
+Markdown = "1"
+Printf = "1"
+Random = "1"
+Serialization = "1"
+SpecialFunctions = "2"
+Statistics = "1"
+julia = "1.10"

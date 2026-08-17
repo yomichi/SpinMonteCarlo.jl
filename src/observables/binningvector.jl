@@ -62,7 +62,7 @@ function push!(b::BinningVectorObservable, x::Vector)
         b.bins[end] /= b.binsize
         b.lastbin = 0
         if length(b.bins) == 2(b.minbinnum)
-            new_bins = Vector{Vector{Float64}}(b.minbinnum)
+            new_bins = Vector{Vector{Float64}}(undef, b.minbinnum)
             for i in 1:(b.minbinnum)
                 new_bins[i] = 0.5(b.bins[2i - 1] + b.bins[2i])
             end
@@ -147,20 +147,24 @@ function tau(b::BinningVectorObservable, level::Int=maxlevel(b))
     return 0.5 .* ((binsize .* var(b, level)) ./ var(b) .- 1.0)
 end
 
-#=
-linearmodel(x::Float64, p::Vector{Float64}) = p[1] + x*p[2]
-linearmodel(xs::Vector{Float64}, p::Vector{Float64}) = map(x->linearmodel(x,p),xs)
-=#
-
 function extrapolate_detail(op::Function, b::BinningVectorObservable, point::Int)
     ml = maxlevel(b)
     ll = max(ml - point + 1, 1)
     levels = ll:ml
     ns = map(level -> 1 << (level - 1), levels)
     ninvs = ns .\ 1.0
+    ## ys[i] is the vector of the i-th level, so each element is fitted separately
     ys = map(level -> op(b, level), levels)
-    fit = curve_fit(linearmodel, ninvs, ys, [ys[end], 0.0])
-    return fit.param[1], estimate_errors(fit)[1]
+    ndim = length(ys[end])
+    values = zeros(ndim)
+    errors = zeros(ndim)
+    for i in 1:ndim
+        yi = [y[i] for y in ys]
+        fit = curve_fit(linearmodel, ninvs, yi, [yi[end], 0.0])
+        values[i] = fit.param[1]
+        errors[i] = estimate_errors(fit)[1]
+    end
+    return values, errors
 end
 function extrapolate_tau(b::BinningVectorObservable, point::Int=5)
     return extrapolate_detail(tau, b, point)
