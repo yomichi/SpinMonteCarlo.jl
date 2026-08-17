@@ -216,6 +216,21 @@ end
         end
     end
 
+    @testset "<< accepts what push! accepts" begin
+        for scalartype in (SimpleObservable, TinyObservable, BinningObservable)
+            obs = scalartype()
+            obs << 1
+            obs << 2.0
+            @test count(obs) == 2
+        end
+        for vectortype in (SimpleVectorObservable, TinyVectorObservable,
+                           BinningVectorObservable)
+            obs = vectortype()
+            obs << [1.0, 2.0]
+            @test count(obs) == 1
+        end
+    end
+
     @testset "zeros of observables" begin
         ## the dimensions can be given either as a vararg or as a tuple
         for dims in ((2, 3), ((2, 3),))

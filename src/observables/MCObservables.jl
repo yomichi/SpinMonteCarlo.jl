@@ -110,5 +110,6 @@ include("jackknifevector.jl")
 
 ## The value type is constrained; a `<<(::MCObservable, ::Any)` catch-all is
 ## ambiguous with the `<<` methods that Base defines for its own types.
+## `Vector`, not `AbstractVector`: that is what every `push!` below accepts.
 <<(obs::ScalarObservable, x::Real) = push!(obs, x)
-<<(obs::VectorObservable, x::AbstractVector) = push!(obs, x)
+<<(obs::VectorObservable, x::Vector) = push!(obs, x)
