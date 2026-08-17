@@ -248,7 +248,7 @@ const JackknifeVectorSet = MCObservableSet{JackknifeVector}
     Construct a JackknifeVector observable from a vector observable
 """
 jackknife(obs::VectorObservable) = JackknifeVector(obs)
-function jackknife(obsset::MCObservableSet{Obs}) where {(Obs <: VectorObservable)}
+function jackknife(obsset::MCObservableSet{Obs}) where {(Obs<:VectorObservable)}
     JK = JackknifeVectorSet()
     for (k, v) in obsset
         JK[k] = jackknife(v)

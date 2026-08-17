@@ -80,6 +80,13 @@ JackknifeVectorSet
 jackknife
 ```
 
+## Removed API
+```@docs
+gen_snapshot!
+gensave_snapshot!
+load_snapshot
+```
+
 ## Utility
 ```@docs
 Parameter

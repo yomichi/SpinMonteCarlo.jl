@@ -25,7 +25,7 @@ function exact_ising_chain(L, J, T)
     Z = 0.0
     EZ = 0.0
     E2Z = 0.0
-    for state in 0:(2^L - 1)
+    for state in 0:(2 ^ L - 1)
         E = 0.0
         for i in 1:L
             si = (state >> (i - 1)) & 1 == 1 ? 1 : -1
@@ -46,7 +46,7 @@ end
 function exact_ashkin_teller_chain(L, Jsigma, Jtau, K, T)
     Z = 0.0
     EZ = 0.0
-    for state in 0:(4^L - 1)
+    for state in 0:(4 ^ L - 1)
         x = state
         sigma = zeros(Int, L)
         tau = zeros(Int, L)
@@ -77,15 +77,16 @@ end
     nT = length(Ts)
 
     @testset "Ising chain J=$J $upstr" for (J, updates) in
-                                               [(1.0,
-                                                 ("local_update!",
-                                                  "SW_update!",
-                                                  "Wolff_update!")),
-                                                (-1.0,
-                                                 ("local_update!",
-                                                  "SW_update!",
-                                                  "Wolff_update!"))],
-                                               upstr in updates
+                                           [(1.0,
+                                             ("local_update!",
+                                              "SW_update!",
+                                              "Wolff_update!")),
+                                            (-1.0,
+                                             ("local_update!",
+                                              "SW_update!",
+                                              "Wolff_update!"))],
+                                           upstr in updates
+
         p = Parameter("Model" => Ising,
                       "Lattice" => "chain lattice",
                       "L" => L,

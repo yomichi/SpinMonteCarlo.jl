@@ -27,9 +27,6 @@ In the following, $m$ is total magnetization per site and $\epsilon$ is total en
 """
 function postproc(model::Clock, param::Parameter, obs::MCObservableSet)
     nsites = numsites(model)
-    if dim(model) > 3
-        throw(ArgumentError("Helicity Modulus supports lattice dimension D <= 3."))
-    end
     T = convert(Float64, param["T"])
     beta = 1.0 / T
 

@@ -25,9 +25,11 @@ mutable struct SWInfo
     clusterspin::Vector{Int}
     clustermag::Vector{Int}
 end
-SWInfo(activated_bonds, clustersize, clusterspin) = SWInfo(activated_bonds, clustersize,
-                                                           clusterspin,
-                                                           zeros(Int, length(clustersize)))
+function SWInfo(activated_bonds, clustersize, clusterspin)
+    return SWInfo(activated_bonds, clustersize,
+                  clusterspin,
+                  zeros(Int, length(clustersize)))
+end
 numclusters(sw::SWInfo) = length(sw.clustersize)
 
 @doc """
@@ -44,8 +46,9 @@ Updates spin configuration by Swendsen-Wang algorithm
     acceleration is retained.
     On frustrated lattices (loops with an odd number of antiferromagnetic bonds,
     e.g. an antiferromagnet on the triangular lattice), results are still unbiased,
-    but clusters decouple from the physical correlations and percolate even at high
-    temperature; expect no speedup over `local_update!` (this is a relaxation issue,
+    but clusters decouple from the physical correlations and grow large (eventually
+    percolating) already at temperatures where physical correlations are still
+    short-ranged; expect no speedup over `local_update!` (this is a relaxation issue,
     not a correctness issue).
 """
 @inline function SW_update!(model::Model, param::Parameter)

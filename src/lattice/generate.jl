@@ -74,8 +74,7 @@ function generatelattice_std(param)
     if haskey(param, "Periodic Boundary Condition")
         bc = param["Periodic Boundary Condition"]
     elseif haskey(param, "Periodic Boudary Condition")
-        @warn "\"Periodic Boudary Condition\" is deprecated; use \"Periodic Boundary Condition\"." maxlog =
-            1
+        @warn "\"Periodic Boudary Condition\" is deprecated; use \"Periodic Boundary Condition\"." maxlog = 1
         bc = param["Periodic Boudary Condition"]
     else
         bc = lat.periodic
