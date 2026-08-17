@@ -122,6 +122,8 @@ end
     - `Connected Susceptibility y`
     - `Helicity Modulus x`
     - `Helicity Modulus y`
+    - `Helicity Modulus z`
+        - one component per lattice dimension (e.g., only `x` for `chain lattice`, all of `x`, `y`, `z` for `cubic lattice`)
     - `Energy`
     - `Energy^2`
     - `Specific Heat`

@@ -17,7 +17,7 @@ export makeMCObservable!
 function makeMCObservable!(oset::MCObservableSet{Obs},
                            name::String) where {Obs<:MCObservable}
     if haskey(oset, name)
-        warn("""Observable "$name" already exists. (Skipped)""")
+        @warn """Observable "$name" already exists. (Skipped)"""
     else
         oset[name] = Obs()
     end
@@ -25,7 +25,7 @@ end
 
 function reset!(oset::MCObservableSet)
     for v in values(oset)
-        reset!(oset)
+        reset!(v)
     end
 end
 

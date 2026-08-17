@@ -75,15 +75,20 @@ function improved_estimator(model::Ising, T::Real, Js::AbstractArray, sw::SWInfo
     N2 = 0.0
     N2N2 = 0.0
     N4 = 0.0
-    for (m, s) in zip(sw.clustersize, sw.clusterspin)
-        M += m * invV * s
+    M2sum = 0.0
+    M4sum = 0.0
+    for (m, s, cm) in zip(sw.clustersize, sw.clusterspin, sw.clustermag)
+        M += cm * invV * s
         m2 = (m * invV)^2
         N4 += m2 * m2
         N2N2 += N2 * m2
         N2 += m2
+        cm2 = (cm * invV)^2
+        M2sum += cm2
+        M4sum += cm2 * cm2
     end
-    M4 = N4 + 6 * N2N2
-    M2 = N2
+    M2 = M2sum
+    M4 = 3 * M2sum^2 - 2 * M4sum
 
     # energy
     aJ = 2.0 * abs.(Js)
@@ -93,7 +98,7 @@ function improved_estimator(model::Ising, T::Real, Js::AbstractArray, sw::SWInfo
     Ans = ns .* As
     E0 = 0.0
     for b in 1:numbondtypes(model)
-        E0 += Js[b] * numbonds(model, b)
+        E0 += abs(Js[b]) * numbonds(model, b)
     end
     E = 0.0
     E2 = 0.0

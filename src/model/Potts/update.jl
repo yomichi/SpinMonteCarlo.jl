@@ -21,6 +21,9 @@ function local_update!(model::Potts, T::Real, Js::AbstractArray)
 end
 
 function SW_update!(model::Potts, T::Real, Js::AbstractArray)
+    if any(<(0), Js)
+        throw(ArgumentError("AF Potts cluster updates are not supported; use local_update!."))
+    end
     rng = model.rng
     ps = -expm1.((-1.0 / T) .* Js)
     nsites = numsites(model)
@@ -49,6 +52,9 @@ function SW_update!(model::Potts, T::Real, Js::AbstractArray)
 end
 
 function Wolff_update!(model::Potts, T::Real, Js::AbstractArray)
+    if any(<(0), Js)
+        throw(ArgumentError("AF Potts cluster updates are not supported; use local_update!."))
+    end
     rng = model.rng
     ps = -expm1.((-1.0 / T) .* Js)
     nsites = numsites(model)

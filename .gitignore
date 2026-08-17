@@ -6,3 +6,5 @@ docs/build/
 docs/site/
 Manifest.toml
 test/Manifest.toml
+.github/workflows/id_ed25519
+.github/workflows/id_ed25519.pub

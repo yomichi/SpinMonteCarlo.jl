@@ -17,18 +17,39 @@ Information of clusters in Swendsen-Wang algorithm.
 - `activated_bonds` : The number of activated (connected) bonds of each cluster.
 - `clustersize` : The number of sites in each cluster.
 - `clusterspin` : Spin variable of each cluster (e.g., 1 or -1 for `Ising`).
+- `clustermag` : Signed magnetization of each cluster before cluster flips.
 """
 mutable struct SWInfo
     activated_bonds::Vector{Int}
     clustersize::Vector{Int}
     clusterspin::Vector{Int}
+    clustermag::Vector{Int}
+end
+function SWInfo(activated_bonds, clustersize, clusterspin)
+    return SWInfo(activated_bonds, clustersize,
+                  clusterspin,
+                  zeros(Int, length(clustersize)))
 end
 numclusters(sw::SWInfo) = length(sw.clustersize)
 
 @doc """
     SW_update!(model, param::Parameter)
-    
+
 Updates spin configuration by Swendsen-Wang algorithm
+
+!!! note "Frustrated systems"
+    For `Ising`, cluster updates remain exact for any sign of couplings
+    (antiferromagnetic and mixed-sign cases included): only satisfied bonds
+    (`J σ σ > 0`) are activated, and whole clusters are flipped.
+    On unfrustrated (bipartite) lattices an antiferromagnet is gauge-equivalent
+    to a ferromagnet, and clusters track the staggered correlations, so the usual
+    acceleration is retained.
+    On frustrated lattices (loops with an odd number of antiferromagnetic bonds,
+    e.g. an antiferromagnet on the triangular lattice), results are still unbiased,
+    but clusters decouple from the physical correlations and grow large (eventually
+    percolating) already at temperatures where physical correlations are still
+    short-ranged; expect no speedup over `local_update!` (this is a relaxation issue,
+    not a correctness issue).
 """
 @inline function SW_update!(model::Model, param::Parameter)
     p = convert_parameter(model, param)
@@ -39,6 +60,10 @@ end
     Wolff_update!(model, param::Parameter)
 
 Updates spin configuration by Wolff algorithm
+
+!!! note "Frustrated systems"
+    The same caveat as [`SW_update!`](@ref) applies: exact for any sign of
+    couplings, but no acceleration should be expected on frustrated lattices.
 """
 @inline function Wolff_update!(model::Model, param::Parameter)
     p = convert_parameter(model, param)

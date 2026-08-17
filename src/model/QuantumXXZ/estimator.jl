@@ -56,14 +56,13 @@ function improved_estimator(model::QuantumXXZ, T::Real, Jzs::AbstractArray,
     E2 /= nsites^2
 
     M = 0.0
-    M2 = 0.0
-    M4 = 0.0
+    # Use realized M^2/M^4 after loop flips. Exact E_flips[sign*M^n|graph]
+    # would require a 2^loop sum with sign-loop couplings; sign==1 detection is fragile.
     for m in ms
         M += m
-        m2 = m * m
-        M4 += m2 * m2 + 6M2 * m2
-        M2 += m2
     end
+    M2 = M^2
+    M4 = M2^2
 
     sgn = 1.0
     for op in model.ops

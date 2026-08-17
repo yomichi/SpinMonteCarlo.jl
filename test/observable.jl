@@ -108,3 +108,73 @@ end
         test_jackknife(SimpleObservable, SimpleVectorObservable)
     end
 end
+
+@testset "Observable bug fixes" begin
+    @testset "binning validates inputs" begin
+        scalar = SimpleObservable()
+        vector = SimpleVectorObservable()
+        @test_throws ArgumentError binning(scalar)
+        @test_throws ArgumentError binning(vector)
+
+        push!(scalar, 1.0)
+        push!(scalar, 2.0)
+        push!(vector, [1.0, 2.0])
+        push!(vector, [3.0, 4.0])
+        @test_throws ArgumentError binning(scalar; numbins=3)
+        @test_throws ArgumentError binning(vector; numbins=3)
+
+        param = Parameter("Model" => Ising,
+                          "Lattice" => "fully connected graph",
+                          "N" => 4,
+                          "T" => 1.0,
+                          "Update Method" => local_update!,
+                          "MCS" => 16,
+                          "Thermalization" => 0,
+                          "Seed" => SEED)
+        @test runMC(param) isa AbstractDict
+    end
+
+    @testset "SimpleVectorObservable merge" begin
+        lhs = SimpleVectorObservable()
+        rhs = SimpleVectorObservable()
+        push!(lhs, [1.0, 2.0])
+        push!(rhs, [3.0, 5.0])
+
+        merge!(lhs, rhs)
+        @test count(lhs) == 2
+        @test mean(lhs) ≈ [2.0, 3.5]
+        @test var(lhs) ≈ [2.0, 4.5]
+    end
+
+    @testset "JackknifeVector var initializes accumulator" begin
+        jk = JackknifeVector([[1.0, 2.0], [3.0, 5.0], [5.0, 8.0]])
+        @test var(jk) ≈ [16.0 / 3.0, 12.0]
+    end
+
+    @testset "JackknifeVector manual broadcast methods" begin
+        jk = JackknifeVector([[1.0, 2.0], [3.0, 4.0]])
+        @test mean(broadcast(*, jk, 2.0)) ≈ [4.0, 6.0]
+    end
+
+    @testset "jackknife vector observable set" begin
+        oset = SimpleVectorObservableSet()
+        oset["x"] = SimpleVectorObservable()
+        push!(oset["x"], [1.0, 2.0])
+        push!(oset["x"], [3.0, 4.0])
+
+        jkset = jackknife(oset)
+        @test jkset isa JackknifeVectorSet
+        @test jkset["x"] isa JackknifeVector
+        @test mean(jkset["x"]) ≈ [2.0, 3.0]
+    end
+
+    @testset "observable set helpers" begin
+        oset = SimpleObservableSet()
+        makeMCObservable!(oset, "x")
+        push!(oset["x"], 1.0)
+
+        @test_logs (:warn, r"already exists") makeMCObservable!(oset, "x")
+        reset!(oset)
+        @test count(oset["x"]) == 0
+    end
+end

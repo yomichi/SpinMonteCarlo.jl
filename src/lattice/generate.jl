@@ -1,6 +1,6 @@
 export generatelattice
 
-function interpolate!(ex, env)
+function _interpolate!(ex, env)
     if isa(ex, Symbol)
         if haskey(env, ex)
             return env[ex]
@@ -12,11 +12,15 @@ function interpolate!(ex, env)
                     ex.args[i] = env[x]
                 end
             elseif isa(x, Expr)
-                ex.args[i] = interpolate!(ex.args[i], env)
+                ex.args[i] = _interpolate!(ex.args[i], env)
             end
         end
     end
     return ex
+end
+
+function interpolate(ex, env)
+    return _interpolate!(deepcopy(ex), env)
 end
 
 function index2coord(index::Integer, L::AbstractArray)
@@ -67,10 +71,17 @@ function generatelattice_std(param)
         bparams[name] = get(param, String(name), default)
     end
 
-    bc = get(param, "Periodic Boudary Condition", lat.periodic)
+    if haskey(param, "Periodic Boundary Condition")
+        bc = param["Periodic Boundary Condition"]
+    elseif haskey(param, "Periodic Boudary Condition")
+        @warn "\"Periodic Boudary Condition\" is deprecated; use \"Periodic Boundary Condition\"." maxlog = 1
+        bc = param["Periodic Boudary Condition"]
+    else
+        bc = lat.periodic
+    end
 
-    if isa(param["L"], Vector)
-        L = param["L"]
+    if isa(param["L"], AbstractArray)
+        L = collect(param["L"])
     else
         L = [param["L"]]
     end
@@ -80,7 +91,7 @@ function generatelattice_std(param)
 
     numcell = prod(L)
 
-    latvec = eval(interpolate!(bra.basis, bparams))
+    latvec = eval(interpolate(bra.basis, bparams))
 
     usites = ucell.sites
     numsites_in_cell = length(usites)

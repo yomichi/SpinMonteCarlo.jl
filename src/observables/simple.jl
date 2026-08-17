@@ -25,6 +25,9 @@ SimpleObservable() = SimpleObservable(zeros(0), 0, 0.0, 0.0)
 function binning(obs::SimpleObservable; binsize::Int=0, numbins::Int=0)
     nobs = count(obs)
 
+    if nobs == 0
+        throw(ArgumentError("Cannot bin an empty observable."))
+    end
     if binsize > 0 && numbins > 0
         throw(ArgumentError("Only one of binsize or numbins should be given."))
     end
@@ -33,6 +36,10 @@ function binning(obs::SimpleObservable; binsize::Int=0, numbins::Int=0)
     end
     if binsize > nobs
         binsize = nobs
+    end
+
+    if numbins > nobs
+        throw(ArgumentError("numbins must not exceed the number of observations."))
     end
 
     if binsize > 0

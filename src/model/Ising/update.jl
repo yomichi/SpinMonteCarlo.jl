@@ -4,7 +4,8 @@ function local_update!(model::Ising, T::Real, Js::AbstractArray)
     nbonds = numbonds(model)
     mbeta = -1.0 / T
 
-    @inbounds for site in 1:nsites
+    @inbounds for _ in 1:nsites
+        site = rand(rng, 1:nsites)
         center = model.spins[site]
         de = 0.0
         for (n, b) in neighbors(model, site)
@@ -20,7 +21,7 @@ end
 
 function SW_update!(model::Ising, T::Real, Js::AbstractArray)
     rng = model.rng
-    ps = -expm1.((-2.0 / T) .* Js)
+    ps = -expm1.((-2.0 / T) .* abs.(Js))
     nsites = numsites(model)
     nbonds = numbonds(model)
     nbt = numbondtypes(model)
@@ -29,44 +30,55 @@ function SW_update!(model::Ising, T::Real, Js::AbstractArray)
     @inbounds for bond in bonds(model)
         s1, s2 = source(bond), target(bond)
         bt = bondtype(bond)
-        if model.spins[s1] == model.spins[s2] && rand(rng) < ps[bt]
+        if Js[bt] * model.spins[s1] * model.spins[s2] > 0 && rand(rng) < ps[bt]
             activated_bonds[bt] += 1
             unify!(uf, s1, s2)
         end
     end
     nc = clusterize!(uf)
     clustersize = zeros(Int, nc)
+    clustermag = zeros(Int, nc)
     clusterspin = rand(rng, [1, -1], nc)
 
     @inbounds for site in 1:nsites
         id = clusterid(uf, site)
-        model.spins[site] = clusterspin[id]
         clustersize[id] += 1
+        clustermag[id] += model.spins[site]
+        model.spins[site] *= clusterspin[id]
     end
-    return SWInfo(activated_bonds, clustersize, clusterspin)
+    return SWInfo(activated_bonds, clustersize, clusterspin, clustermag)
 end
 
 function Wolff_update!(model::Ising, T::Real, Js::AbstractArray)
     rng = model.rng
-    ps = -expm1.((-2.0 / T) .* Js)
     nsites = numsites(model)
 
-    clustersize = 0
+    in_cluster = falses(nsites)
+    cluster = Int[]
     st = Stack(Deque{Int}())
     center = rand(rng, 1:nsites)
-    sp = model.spins[center]
-    model.spins[center] *= -1
+    in_cluster[center] = true
+    push!(cluster, center)
     push!(st, center)
     @inbounds while !isempty(st)
-        clustersize += 1
         s = pop!(st)
         for (n, b) in neighbors(model, s)
+            if in_cluster[n]
+                continue
+            end
             bt = bondtype(model, b)
-            if model.spins[n] == sp && rand(rng) < ps[bt]
-                model.spins[n] *= -1
+            x = (-2.0 / T) * Js[bt] * model.spins[s] * model.spins[n]
+            p = -expm1(min(0.0, x))
+            if rand(rng) < p
+                in_cluster[n] = true
+                push!(cluster, n)
                 push!(st, n)
             end
         end
+    end
+
+    @inbounds for site in cluster
+        model.spins[site] *= -1
     end
 
     return nothing

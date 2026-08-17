@@ -31,6 +31,7 @@ JackknifeVector() = JackknifeVector(Vector{Float64}[])
 
     Construct a JackknifeVector observable by applying `f` to `jks`.
     For example, `JackknifeVector(mean, jk1, jk2, jk3)` returns a JackknifeVector observable of the means of `jk1`, `jk2`, and `jk3`.
+    Explicit `broadcast(op, ...)` methods are provided for selected operations, but dotted syntax like `jkv .* 2.0` is not supported.
 """
 function JackknifeVector(f::Function, jks::JackknifeVector...)
     if isempty(jks)
@@ -111,7 +112,7 @@ function var(jk::JackknifeVector)
         return [NaN]
     else
         m = mean(jk)
-        s = similar(m)
+        s = zeros(length(m))
         for data in jk.xs
             s .+= (data .- m) .^ 2
         end
@@ -218,10 +219,11 @@ for op in (:*, :/, :\)
                                                                                                     rhs),
                                                                                        jk)
     @eval broadcast(::typeof($op), jk::JackknifeVector, rhs::Real) = JackknifeVector(lhs -> ($op)(lhs,
-                                                                                                  rhs))
-    @eval broadcast(::typeof($op), jk::JackknifeVector, rhs::Vector) = JackknifeVector(jk,
-                                                                                       lhs -> ($op)(lhs,
-                                                                                                    rhs))
+                                                                                                  rhs),
+                                                                                     jk)
+    @eval broadcast(::typeof($op), jk::JackknifeVector, rhs::Vector) = JackknifeVector(lhs -> ($op)(lhs,
+                                                                                                    rhs),
+                                                                                       jk)
     @eval broadcast(::typeof($op), lhs::Jackknife, rhs::JackknifeVector) = JackknifeVector($op,
                                                                                            lhs,
                                                                                            rhs)
@@ -246,8 +248,8 @@ const JackknifeVectorSet = MCObservableSet{JackknifeVector}
     Construct a JackknifeVector observable from a vector observable
 """
 jackknife(obs::VectorObservable) = JackknifeVector(obs)
-function jackknife(obsset::MCObservableSet{Obs}) where {(Obs <: VectorObservable)}
-    JK = JackknifeSet()
+function jackknife(obsset::MCObservableSet{Obs}) where {(Obs<:VectorObservable)}
+    JK = JackknifeVectorSet()
     for (k, v) in obsset
         JK[k] = jackknife(v)
     end

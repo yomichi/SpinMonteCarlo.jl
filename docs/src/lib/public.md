@@ -80,7 +80,7 @@ JackknifeVectorSet
 jackknife
 ```
 
-## Snapshots
+## Removed API
 ```@docs
 gen_snapshot!
 gensave_snapshot!

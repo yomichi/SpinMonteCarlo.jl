@@ -32,6 +32,7 @@ For example, `local_update!(model::Ising, T, Js)` updates a spin configuration o
 
 ### Example
 Swendsen-Wang algorithm `SW_update!(::Ising, ::Parameter)` returns cluster information `sw::SWInfo` used in `improved_estimator`.
+`SWInfo` contains `activated_bonds`, `clustersize`, `clusterspin`, and `clustermag`, the signed pre-flip magnetization of each cluster.
 
 ## Estimator
 "Estimator" is a function which returns observables of a configuration `model` as a `Dict{String, Any}`.

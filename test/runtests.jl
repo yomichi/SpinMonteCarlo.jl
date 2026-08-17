@@ -10,9 +10,11 @@ const alpha = 0.001
 
 @testset begin
     filenames = ["observable.jl",
+                 "lattice.jl",
                  "classical.jl",
                  "quantum.jl",
                  "checkpoint.jl",
+                 "snapshot.jl",
                  "union_find.jl"]
     for filename in filenames
         t = @elapsed include(filename)

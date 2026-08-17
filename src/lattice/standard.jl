@@ -191,6 +191,7 @@ stdlattices["cubic lattice"] = P(:name => "cubic lattice",
                                  :dimension => 3,
                                  :bravais => "orthorhombic3d",
                                  :unitcell => "simple3d",
+                                 :parameters => [],
                                  :periodic => [true, true, true])
 
 ## special lattices
