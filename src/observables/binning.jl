@@ -138,8 +138,10 @@ function tau(b::BinningObservable, level::Int=maxlevel(b))
     return 0.5 * ((binsize * var(b, level)) / var(b) - 1.0)
 end
 
-linearmodel(x::Float64, p::Vector{Float64}) = p[1] + x * p[2]
-linearmodel(xs::Vector{Float64}, p::Vector{Float64}) = map(x -> linearmodel(x, p), xs)
+linearmodel(x::Real, p::AbstractVector{<:Real}) = p[1] + x * p[2]
+function linearmodel(xs::AbstractVector{<:Real}, p::AbstractVector{<:Real})
+    return map(x -> linearmodel(x, p), xs)
+end
 
 function extrapolate_detail(op::Function, b::BinningObservable, point::Int)
     ml = maxlevel(b)
