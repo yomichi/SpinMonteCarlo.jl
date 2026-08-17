@@ -168,6 +168,54 @@ end
         @test mean(jkset["x"]) ≈ [2.0, 3.0]
     end
 
+    @testset "BinningVectorObservable rebinning" begin
+        nobs = 3
+        ndata = 32
+        minbinnum = 4
+        rng = Random.MersenneTwister(SEED)
+        X = randn(rng, nobs, ndata)
+
+        vector = BinningVectorObservable(minbinnum)
+        scalars = [BinningObservable(minbinnum) for j in 1:nobs]
+        for i in 1:ndata
+            push!(vector, X[:, i])
+            for j in 1:nobs
+                push!(scalars[j], X[j, i])
+            end
+        end
+
+        @test SpinMonteCarlo.maxlevel(vector) == SpinMonteCarlo.maxlevel(scalars[1])
+        @test count(vector) == ndata
+        @test mean(vector) ≈ [mean(s) for s in scalars]
+        @test var(vector) ≈ [var(s) for s in scalars]
+        @test stderror(vector) ≈ [stderror(s) for s in scalars]
+        @test tau(vector) ≈ [tau(s) for s in scalars]
+    end
+
+    @testset "BinningVectorObservable extrapolation" begin
+        nobs = 3
+        ndata = 1024
+        minbinnum = 4
+        rng = Random.MersenneTwister(SEED)
+        X = randn(rng, nobs, ndata)
+
+        vector = BinningVectorObservable(minbinnum)
+        scalars = [BinningObservable(minbinnum) for j in 1:nobs]
+        for i in 1:ndata
+            push!(vector, X[:, i])
+            for j in 1:nobs
+                push!(scalars[j], X[j, i])
+            end
+        end
+
+        for extrapolate in (extrapolate_stderror, extrapolate_tau)
+            values, errors = extrapolate(vector)
+            reference = [extrapolate(s) for s in scalars]
+            @test values ≈ [r[1] for r in reference]
+            @test errors ≈ [r[2] for r in reference]
+        end
+    end
+
     @testset "observable set helpers" begin
         oset = SimpleObservableSet()
         makeMCObservable!(oset, "x")
