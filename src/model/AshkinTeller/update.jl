@@ -72,7 +72,7 @@ function Wolff_update!(model::AshkinTeller, T::Real, Jsigma, Jtau, K)
         ps[:, 2] .= -expm1.(m2beta .* (Js .- K))
         dual_kind = 3 - kind
         clustersize = 0
-        st = Stack(Deque{Int}())
+        st = Int[]
         center = rand(rng, 1:nsites)
         sp = model.spins[kind, center]
         model.spins[kind, center] *= -1

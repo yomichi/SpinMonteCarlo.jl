@@ -6,8 +6,6 @@ using Markdown
 using Statistics
 using LinearAlgebra
 
-using DataStructures
-
 include("observables/MCObservables.jl")
 include("API/api.jl")
 include("model/model.jl")

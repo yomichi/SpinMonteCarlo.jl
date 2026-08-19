@@ -55,7 +55,7 @@ function Wolff_update!(model::Ising, T::Real, Js::AbstractArray)
 
     in_cluster = falses(nsites)
     cluster = Int[]
-    st = Stack(Deque{Int}())
+    st = Int[]
     center = rand(rng, 1:nsites)
     in_cluster[center] = true
     push!(cluster, center)
