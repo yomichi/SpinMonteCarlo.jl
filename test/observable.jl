@@ -1,4 +1,5 @@
 using Random
+using LinearAlgebra
 
 function test_single(scalartype, vectortype)
     nobs = 3
@@ -110,6 +111,33 @@ end
 end
 
 @testset "Observable bug fixes" begin
+    @testset "linear_intercept" begin
+        xs = [1.0, 2.0, 3.0, 4.0]
+        ys = 3.0 .- 2.0 .* xs
+        a, e = SpinMonteCarlo.linear_intercept(xs, ys)
+        @test a ≈ 3.0
+        @test e ≈ 0.0 atol = 1e-12
+
+        noisy_xs = [0.25, 0.5, 1.0, 2.0, 4.0]
+        noisy_ys = [1.4, 1.8, 2.6, 4.1, 7.9]
+        actual_a, actual_e = SpinMonteCarlo.linear_intercept(noisy_xs, noisy_ys)
+        X = hcat(ones(length(noisy_xs)), noisy_xs)
+        β = X \ noisy_ys
+        residuals = noisy_ys - X * β
+        dof = length(noisy_xs) - 2
+        rss = dot(residuals, residuals)
+        expected_e = sqrt.(diag(inv(X'X) * rss / dof))[1]
+        @test actual_a ≈ β[1]
+        @test actual_e ≈ expected_e
+
+        @test_throws ArgumentError SpinMonteCarlo.linear_intercept([1.0, 2.0],
+                                                                   [1.0, 2.0])
+        @test_throws ArgumentError SpinMonteCarlo.linear_intercept([1.0, 1.0, 1.0],
+                                                                   [1.0, 2.0, 3.0])
+        @test_throws ArgumentError SpinMonteCarlo.linear_intercept([1.0, 2.0, 3.0],
+                                                                   [1.0, NaN, 3.0])
+    end
+
     @testset "binning validates inputs" begin
         scalar = SimpleObservable()
         vector = SimpleVectorObservable()

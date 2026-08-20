@@ -160,9 +160,7 @@ function extrapolate_detail(op::Function, b::BinningVectorObservable, point::Int
     errors = zeros(ndim)
     for i in 1:ndim
         yi = [y[i] for y in ys]
-        fit = curve_fit(linearmodel, ninvs, yi, [yi[end], 0.0])
-        values[i] = fit.param[1]
-        errors[i] = estimate_errors(fit)[1]
+        values[i], errors[i] = linear_intercept(ninvs, yi)
     end
     return values, errors
 end

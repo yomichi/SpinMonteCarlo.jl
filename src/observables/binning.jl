@@ -138,11 +138,6 @@ function tau(b::BinningObservable, level::Int=maxlevel(b))
     return 0.5 * ((binsize * var(b, level)) / var(b) - 1.0)
 end
 
-linearmodel(x::Real, p::AbstractVector{<:Real}) = p[1] + x * p[2]
-function linearmodel(xs::AbstractVector{<:Real}, p::AbstractVector{<:Real})
-    return map(x -> linearmodel(x, p), xs)
-end
-
 function extrapolate_detail(op::Function, b::BinningObservable, point::Int)
     ml = maxlevel(b)
     ll = max(ml - point + 1, 1)
@@ -150,9 +145,40 @@ function extrapolate_detail(op::Function, b::BinningObservable, point::Int)
     ns = map(level -> 1 << (level - 1), levels)
     ninvs = ns .\ 1.0
     ys = map(level -> op(b, level), levels)
-    fit = curve_fit(linearmodel, ninvs, ys, [ys[end], 0.0])
-    return fit.param[1], estimate_errors(fit)[1]
+    return linear_intercept(ninvs, ys)
 end
+@doc """
+    extrapolate_tau(b::BinningObservable, point::Int=5)
+    extrapolate_tau(b::BinningVectorObservable, point::Int=5)
+
+Extrapolates the autocorrelation time to the infinite bin size limit.
+
+`tau` is evaluated on the last `point` binning levels and fitted against the
+inverse bin size by unweighted least squares; the intercept is the estimate.
+Returns `(value, error)` for a scalar observable and `(values, errors)` for a
+vector one, where the error is a **1-sigma standard error** on the intercept.
+
+Throws `ArgumentError` if fewer than three binning levels are used for the fit
+(i.e. `min(point, maxlevel(b)) < 3`), or if a level holds fewer than two bins
+and its statistic is therefore not finite.
+!!! note
+    Before v1.3.0 the error was the half-width of a 95% confidence interval,
+    which is the standard error scaled by `quantile(TDist(dof), 0.975)` with
+    `dof` the number of fitted levels minus two.
+""" extrapolate_tau
+
+@doc """
+    extrapolate_stderror(b::BinningObservable, point::Int=5)
+    extrapolate_stderror(b::BinningVectorObservable, point::Int=5)
+
+Extrapolates the standard error to the infinite bin size limit.
+
+Behaves like [`extrapolate_tau`](@ref) but extrapolates `stderror` instead of
+`tau`. The second element of the return value is a **1-sigma standard error**
+on the extrapolated value, not the extrapolated value's own confidence
+interval.
+""" extrapolate_stderror
+
 extrapolate_tau(b::BinningObservable, point::Int=5) = extrapolate_detail(tau, b, point)
 function extrapolate_stderror(b::BinningObservable, point::Int=5)
     return extrapolate_detail(stderror, b, point)
