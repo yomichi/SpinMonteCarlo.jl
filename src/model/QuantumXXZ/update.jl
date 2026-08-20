@@ -1,33 +1,3 @@
-import Random: shuffle
-
-@generated function myshuffle(xs)
-    canShuffleEmpty = try
-        shuffle([])
-        true
-    catch
-        false
-    end
-    if canShuffleEmpty
-        :(shuffle(xs))
-    else
-        :(length(xs) > 0 ? shuffle(xs) : xs)
-    end
-end
-
-@generated function myshuffle(rng, xs)
-    canShuffleEmpty = try
-        shuffle([])
-        true
-    catch
-        false
-    end
-    if canShuffleEmpty
-        :(shuffle(rng, xs))
-    else
-        :(length(xs) > 0 ? shuffle(rng, xs) : xs)
-    end
-end
-
 @doc """
     loop_update!(model, param::Parameter)
     loop_update!(model, T::Real,
@@ -187,10 +157,10 @@ function loop_update!(model::QuantumXXZ, T::Real,
         end
         @assert length(ups0) == length(ups1)
         @assert length(downs0) == length(downs1)
-        for (u, u2) in zip(ups0, myshuffle(rng, ups1))
+        for (u, u2) in zip(ups0, shuffle(rng, ups1))
             unify!(uf, u, currents[u2])
         end
-        for (d, d2) in zip(downs0, myshuffle(rng, downs1))
+        for (d, d2) in zip(downs0, shuffle(rng, downs1))
             unify!(uf, d, currents[d2])
         end
     end

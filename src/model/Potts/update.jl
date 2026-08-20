@@ -60,7 +60,7 @@ function Wolff_update!(model::Potts, T::Real, Js::AbstractArray)
     nsites = numsites(model)
 
     clustersize = 0
-    st = Stack(Deque{Int}())
+    st = Int[]
     center = rand(rng, 1:nsites)
     sp = model.spins[center]
     newsp = mod1(sp + rand(rng, 1:(model.Q - 1)), model.Q)

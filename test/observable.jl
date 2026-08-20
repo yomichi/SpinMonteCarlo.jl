@@ -156,6 +156,21 @@ end
         @test mean(broadcast(*, jk, 2.0)) ≈ [4.0, 6.0]
     end
 
+    @testset "confidence_interval accepts sigma symbols" begin
+        obs = SimpleObservable()
+        tiny = TinyObservable()
+        for x in (1.0, 2.0, 4.0, 8.0)
+            push!(obs, x)
+            push!(tiny, x)
+        end
+
+        cis = [confidence_interval(obs, s) for s in (:sigma1, :sigma2, :sigma3, :sigma4)]
+        @test cis[1] < cis[2] < cis[3] < cis[4]
+        @test confidence_interval(tiny, :sigma4) > confidence_interval(tiny, :sigma3)
+        @test_throws ErrorException confidence_interval(obs, :bogus)
+        @test_throws ErrorException confidence_interval(obs, :sigma0)
+    end
+
     @testset "jackknife vector observable set" begin
         oset = SimpleVectorObservableSet()
         oset["x"] = SimpleVectorObservable()

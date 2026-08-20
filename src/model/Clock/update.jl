@@ -61,7 +61,7 @@ function Wolff_update!(model::Clock, T::Real, Js::AbstractArray)
     b2J = (2.0 / T) .* Js
 
     clustersize = 0
-    st = Stack(Deque{Int}())
+    st = Int[]
 
     m = rand(rng, 1:(model.Q)) - 1
     center = rand(rng, 1:nsites)
