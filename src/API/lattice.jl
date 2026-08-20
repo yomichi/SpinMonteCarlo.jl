@@ -1,6 +1,5 @@
 import Base.size
 import Base.convert
-import Distributions.dim
 import LinearAlgebra.norm
 
 export Lattice
@@ -71,6 +70,11 @@ mutable struct Lattice
                    bonds, bondswithtype)
     end
 end
+
+# Owned by this package rather than an extension of `Distributions.dim`; the
+# spatial dimension of a lattice has nothing to do with a multivariate
+# distribution.
+function dim end
 
 @doc """
     dim(lat::Lattice)

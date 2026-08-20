@@ -1,3 +1,7 @@
+# `import` binds only the module name, so bare `dim` in this file keeps
+# resolving to the one this package owns.
+import Distributions
+
 @testset "lattice generation" begin
     @testset "interpolate does not mutate standard bravais definitions" begin
         lat = generatelattice(Parameter("Lattice" => "chain lattice", "L" => 4, "a" => 2.0))
@@ -9,6 +13,12 @@
         generatelattice(Parameter("Lattice" => "triangular lattice", "L" => 2, "a" => 1.0))
         lat = generatelattice(Parameter("Lattice" => "honeycomb lattice", "L" => 2))
         @test lat.latticevector ≈ [sqrt(3.0) -sqrt(3.0)/2; 0.0 1.5]
+    end
+
+    @testset "dim is owned by this package" begin
+        lat = generatelattice(Parameter("Lattice" => "square lattice", "L" => 4))
+        @test SpinMonteCarlo.dim(lat) == 2
+        @test SpinMonteCarlo.dim !== Distributions.dim
     end
 
     @testset "cubic lattice" begin
