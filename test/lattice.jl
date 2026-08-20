@@ -1,6 +1,6 @@
-# `import` binds only the module name, so bare `dim` in this file keeps
+# Binds only the module name -- not `dim` -- so bare `dim` in this file keeps
 # resolving to the one this package owns.
-import Distributions
+using Distributions: Distributions
 
 @testset "lattice generation" begin
     @testset "interpolate does not mutate standard bravais definitions" begin
