@@ -1,6 +1,6 @@
 import Random.seed!
 seed!(model::Model) = Random.seed!(model.rng)
-seed!(model::Model, seed...) = Random.seed!(model.rng, seed...)
+seed!(model::Model, seed) = Random.seed!(model.rng, seed)
 
 const DEFAULT_RNG = Random.Xoshiro
 @doc doc"""

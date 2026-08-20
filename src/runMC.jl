@@ -60,11 +60,7 @@ end
 
 function runMC(param::Parameter)
     model = param["Model"](param)
-    if "Seed" in keys(param)
-        seed!(model, param["Seed"])
-    end
-    ret = runMC(model, param)
-    return ret
+    return runMC(model, param)
 end
 
 function runMC(model, param::Parameter)

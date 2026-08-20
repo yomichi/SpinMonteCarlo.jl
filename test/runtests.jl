@@ -12,6 +12,7 @@ const alpha = 0.001
     filenames = ["aqua.jl",
                  "observable.jl",
                  "lattice.jl",
+                 "rng.jl",
                  "classical.jl",
                  "quantum.jl",
                  "checkpoint.jl",
