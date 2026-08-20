@@ -158,9 +158,9 @@ inverse bin size by unweighted least squares; the intercept is the estimate.
 Returns `(value, error)` for a scalar observable and `(values, errors)` for a
 vector one, where the error is a **1-sigma standard error** on the intercept.
 
-Throws `ArgumentError` if fewer than three binning levels are available, or if
-a level holds fewer than two bins and its statistic is therefore not finite.
-
+Throws `ArgumentError` if fewer than three binning levels are used for the fit
+(i.e. `min(point, maxlevel(b)) < 3`), or if a level holds fewer than two bins
+and its statistic is therefore not finite.
 !!! note
     Before v1.3.0 the error was the half-width of a 95% confidence interval,
     which is the standard error scaled by `quantile(TDist(dof), 0.975)` with
