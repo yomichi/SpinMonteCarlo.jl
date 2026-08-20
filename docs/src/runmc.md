@@ -39,6 +39,7 @@ The following are optional:
     - default: random (the generator is seeded from system entropy)
     - When "ID" is also given, a child seed is derived from the pair ("Seed", "ID"),
       so simulations sharing one seed still use distinct random number streams.
+      That derivation requires "Seed" to be an integer.
 - "RNG"
     - The *type* (not an instance) of the random number generator, e.g. `Random.MersenneTwister`
     - default: `Random.Xoshiro`
@@ -50,8 +51,11 @@ The following are optional:
     - Suffix of filename of checkpoint file (see the "Restart" section)
     - default: "cp"
 - "ID"
-    - Job ID, used for restarting and for deriving a per-job random number stream
-    - default: 0
+    - Job ID, used for restarting and, together with "Seed", for deriving a per-job
+      random number stream
+    - default: 0, which applies to the checkpoint filename only. No child seed is
+      derived when the key itself is absent, so a single `runMC(param)` depends on
+      "Seed" alone.
 - "Checkpoint Interval"
     - Time interval between saving a calculation state into the checkpoint file in units of second.
     - default: 0.0, this means NO checkpoint files will be loaded and saved.

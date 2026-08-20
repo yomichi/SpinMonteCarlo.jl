@@ -139,6 +139,18 @@ using Random
         @test all(haskey(result, "Energy") for result in results)
     end
 
+    @testset "child seed derivation requires an integer seed" begin
+        seeded = Parameter("Lattice" => "chain lattice", "L" => 4,
+                           "Seed" => "not an integer", "ID" => 1)
+        @test_throws ArgumentError Ising(seeded)
+
+        # Without an "ID" nothing is derived, so the seed goes straight to the RNG
+        # constructor and whatever Julia accepts there keeps working.
+        undivided = Parameter("Lattice" => "chain lattice", "L" => 4,
+                              "Seed" => "not an integer")
+        @test Ising(undivided) isa Ising{Xoshiro}
+    end
+
     @testset "RNG types need only the constructor the parameters call for" begin
         # makerng calls T(seed) when "Seed" is given and T() when it is not, so a
         # generator that offers only T() is usable as long as no seed is supplied.

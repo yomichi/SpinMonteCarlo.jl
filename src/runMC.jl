@@ -44,8 +44,8 @@ NOTE: Restart will fail if the version or the system image of julia change (see 
     - Default: determined randomly (the generator is seeded from system entropy)
     - When "ID" is also given, a child seed is derived from the pair ("Seed", "ID"),
       so simulations sharing one seed still use distinct random number streams.
-      Integer seeds derive reproducibly across julia versions; other seed types go
-      through `hash` and therefore do not.
+      The derivation is arithmetic and reproduces across julia versions; it requires
+      "Seed" to be an integer.
 - "RNG": The *type* (not an instance) of the random number generator.
     - Default: `Random.Xoshiro`
     - Only the constructor the other keys call for is needed: `T(seed)` when
