@@ -2,33 +2,29 @@
 XY model with energy $E = -\sum_{ij} J_{ij} \cos(\theta_i - \theta_j)$,
 where $\theta_i = 2\pi \sigma_i$ and $\sigma_i \in [0, 1)$.
 """
-mutable struct XY <: Model
+mutable struct XY{RNG<:Random.AbstractRNG} <: Model
     lat::Lattice
     spins::Matrix{Float64}
-    rng::Random.MersenneTwister
+    rng::RNG
 
-    function XY(lat::Lattice, rng::Random.AbstractRNG)
+    function XY(lat::Lattice, rng::R) where {R<:Random.AbstractRNG}
         spins = rand(rng, 1, numsites(lat))
-        return new(lat, spins, rng)
+        return new{R}(lat, spins, rng)
     end
 end
 
-XY(lat::Lattice) = XY(lat, Random.seed!(Random.MersenneTwister(0)))
-XY(lat::Lattice, seed) = XY(lat, Random.seed!(Random.MersenneTwister(0), seed...))
+XY(lat::Lattice) = XY(lat, DEFAULT_RNG())
+XY(lat::Lattice, seed) = XY(lat, DEFAULT_RNG(seed))
 
 @doc doc"""
    XY(param)
 
-Generates `XY` using `param["Lattice"]`,  and `param["Seed"]` (if defined).
+Generates `XY` using `param["Lattice"]`, and `param["Seed"]` and `param["RNG"]` (if defined).
 Each spin $\sigma_i$ will be initialized randomly and independently.
 """
 function XY(param::Parameter)
     lat = generatelattice(param)
-    if "Seed" in keys(param)
-        return XY(lat, param["Seed"])
-    else
-        return XY(lat)
-    end
+    return XY(lat, makerng(param))
 end
 
 include("update.jl")

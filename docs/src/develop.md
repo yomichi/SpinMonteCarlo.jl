@@ -4,7 +4,7 @@
 See `src/lattice/standard.jl`.
 
 ## Model
-`Model` should contain following fields: `lat :: Lattice` and `rng :: Random.MersenneTwister`.
+`Model` should contain following fields: `lat :: Lattice` and `rng :: RNG`, with the model type parameterized as `RNG <: Random.AbstractRNG`.
 `Model` also should have a constructor taking `param :: Parameter` as a argument.
 
 You should define `convert_parameter` for your `Model`.

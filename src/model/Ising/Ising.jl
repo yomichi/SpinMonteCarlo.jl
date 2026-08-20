@@ -2,13 +2,13 @@
 Ising model with energy $E = -\sum_{ij} J_{ij} \sigma_i \sigma_j$,
 where $\sigma_i$ takes value of 1 (up spin) or -1 (down spin).
 """
-mutable struct Ising <: Model
+mutable struct Ising{RNG<:Random.AbstractRNG} <: Model
     lat::Lattice
     spins::Matrix{Int}
-    rng::Random.MersenneTwister
+    rng::RNG
 
-    function Ising(lat::Lattice, rng::Random.AbstractRNG)
-        model = new()
+    function Ising(lat::Lattice, rng::R) where {R<:Random.AbstractRNG}
+        model = new{R}()
         model.lat = lat
         model.rng = rng
         model.spins = rand(model.rng, [1, -1], 1, numsites(lat))
@@ -16,22 +16,18 @@ mutable struct Ising <: Model
     end
 end
 
-Ising(lat::Lattice) = Ising(lat, Random.seed!(Random.MersenneTwister(0)))
-Ising(lat::Lattice, seed) = Ising(lat, Random.seed!(Random.MersenneTwister(0), seed...))
+Ising(lat::Lattice) = Ising(lat, DEFAULT_RNG())
+Ising(lat::Lattice, seed) = Ising(lat, DEFAULT_RNG(seed))
 
 @doc doc"""
     Ising(param)
 
-Generates `Ising` using `param["Lattice"]` and `param["Seed"]` (if defined).
+Generates `Ising` using `param["Lattice"]`, and `param["Seed"]` and `param["RNG"]` (if defined).
 Each spin will be initialized randomly and independently.
 """
 function Ising(param::Parameter)
     lat = generatelattice(param)
-    if "Seed" in keys(param)
-        return Ising(lat, param["Seed"])
-    else
-        return Ising(lat)
-    end
+    return Ising(lat, makerng(param))
 end
 
 include("update.jl")
