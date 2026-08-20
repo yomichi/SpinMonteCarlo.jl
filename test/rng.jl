@@ -144,11 +144,10 @@ using Random
                            "Seed" => "not an integer", "ID" => 1)
         @test_throws ArgumentError Ising(seeded)
 
-        # Without an "ID" nothing is derived, so the seed goes straight to the RNG
-        # constructor and whatever Julia accepts there keeps working.
-        undivided = Parameter("Lattice" => "chain lattice", "L" => 4,
-                              "Seed" => "not an integer")
-        @test Ising(undivided) isa Ising{Xoshiro}
+        # Without an "ID" the seed is handed straight to the RNG constructor, so
+        # which non-integer types work is Julia's business and not something this
+        # package promises. Julia 1.10 rejects string seeds while 1.11 accepts
+        # them, so there is nothing stable to assert here.
     end
 
     @testset "RNG types need only the constructor the parameters call for" begin
