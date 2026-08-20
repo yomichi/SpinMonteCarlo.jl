@@ -1,5 +1,4 @@
 using SpecialFunctions
-using LsqFit
 
 import Distributions: TDist, cdf
 
