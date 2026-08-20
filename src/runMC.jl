@@ -48,8 +48,9 @@ NOTE: Restart will fail if the version or the system image of julia change (see 
       through `hash` and therefore do not.
 - "RNG": The *type* (not an instance) of the random number generator.
     - Default: `Random.Xoshiro`
-    - When "Seed" is given, the type must support both `T()` and `T(seed)`;
-      `Random.RandomDevice` and `Random.TaskLocalRNG` do not.
+    - Only the constructor the other keys call for is needed: `T(seed)` when
+      "Seed" is given, `T()` when it is not. `Random.RandomDevice` and
+      `Random.TaskLocalRNG` provide only the latter, so they work only without "Seed".
     - `Random.MersenneTwister` selects the generator used before v1.3.
 - "Checkpoint Filename Prefix": See the "Restart" section.
     - Default: `"cp"`

@@ -138,4 +138,17 @@ using Random
         @test length(results) == 2
         @test all(haskey(result, "Energy") for result in results)
     end
+
+    @testset "RNG types need only the constructor the parameters call for" begin
+        # makerng calls T(seed) when "Seed" is given and T() when it is not, so a
+        # generator that offers only T() is usable as long as no seed is supplied.
+        for T in (Random.RandomDevice, Random.TaskLocalRNG)
+            seedless = Parameter("Lattice" => "chain lattice", "L" => 4, "RNG" => T)
+            @test Ising(seedless) isa Ising{T}
+
+            seeded = copy(seedless)
+            seeded["Seed"] = SEED
+            @test_throws MethodError Ising(seeded)
+        end
+    end
 end

@@ -42,8 +42,10 @@ The following are optional:
 - "RNG"
     - The *type* (not an instance) of the random number generator, e.g. `Random.MersenneTwister`
     - default: `Random.Xoshiro`
-    - When "Seed" is given, the type must support both `T()` and `T(seed)`.
-      `Random.MersenneTwister` selects the generator used before v1.3.
+    - Only the constructor the other keys call for is needed: `T(seed)` when
+      "Seed" is given, `T()` when it is not. `Random.RandomDevice` and
+      `Random.TaskLocalRNG` provide only the latter, so they work only without "Seed".
+    - `Random.MersenneTwister` selects the generator used before v1.3.
 - "Checkpoint Filename Prefix"
     - Suffix of filename of checkpoint file (see the "Restart" section)
     - default: "cp"

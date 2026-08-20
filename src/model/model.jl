@@ -38,10 +38,11 @@ seedvalue(seed) = hash(seed)
 
 Create the random number generator requested by `param`.
 
-`param["RNG"]`, when present, must be an RNG type, not an RNG instance. If
-`param["Seed"]` is also present, that type must support both `T()` and
-`T(seed)` constructors. For example, `Random.RandomDevice` and
-`Random.TaskLocalRNG` cannot be used together with `"Seed"`.
+`param["RNG"]`, when present, must be an RNG type, not an RNG instance. It
+needs only the constructor the other keys call for: `T(seed)` when
+`param["Seed"]` is given, and `T()` when it is not. `Random.RandomDevice` and
+`Random.TaskLocalRNG`, for instance, provide the latter but not the former, so
+they work only without `"Seed"`.
 
 When `param` has both `"Seed"` and `"ID"`, a child seed is derived for that
 ID. `runMC(params)` sets these IDs when `autoID=true`; `runMC(model, param)`
