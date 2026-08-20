@@ -138,11 +138,6 @@ function tau(b::BinningObservable, level::Int=maxlevel(b))
     return 0.5 * ((binsize * var(b, level)) / var(b) - 1.0)
 end
 
-linearmodel(x::Real, p::AbstractVector{<:Real}) = p[1] + x * p[2]
-function linearmodel(xs::AbstractVector{<:Real}, p::AbstractVector{<:Real})
-    return map(x -> linearmodel(x, p), xs)
-end
-
 function extrapolate_detail(op::Function, b::BinningObservable, point::Int)
     ml = maxlevel(b)
     ll = max(ml - point + 1, 1)
@@ -150,8 +145,7 @@ function extrapolate_detail(op::Function, b::BinningObservable, point::Int)
     ns = map(level -> 1 << (level - 1), levels)
     ninvs = ns .\ 1.0
     ys = map(level -> op(b, level), levels)
-    fit = curve_fit(linearmodel, ninvs, ys, [ys[end], 0.0])
-    return fit.param[1], estimate_errors(fit)[1]
+    return linear_intercept(ninvs, ys)
 end
 extrapolate_tau(b::BinningObservable, point::Int=5) = extrapolate_detail(tau, b, point)
 function extrapolate_stderror(b::BinningObservable, point::Int=5)
