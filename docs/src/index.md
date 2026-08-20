@@ -38,6 +38,6 @@ for T in Ts
                      )
     result = runMC(param)
     @printf("%f %.15f %.15f\n",
-            T, mean(result["Specific Heat"]), stderror(result["Specific Heat"])))
+            T, mean(result["Specific Heat"]), stderror(result["Specific Heat"]))
 end
 ```

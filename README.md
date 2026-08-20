@@ -64,6 +64,10 @@ end
     - `L * W`
 - `triangular lattice`
     - `L * W`
+- `honeycomb lattice`
+    - `L * W`
+- `ladder`
+    - `L * W`
 - `cubic lattice`
     - `L * W * H`
 - `fully connected graph`

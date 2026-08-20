@@ -19,11 +19,12 @@ the following optional parameters must be set:
 - "chain lattice"
 - "bond-alternating chain lattice"
 - "square lattice"
+- "J1J2 square lattice"
 - "triangular lattice"
 - "honeycomb lattice"
 - "ladder"
 - "cubic lattice"
-- "fully connected lattice"
+- "fully connected graph"
 
 ## Define your lattice
 A lattice can be defined by combining a Bravais lattice (lattice basic vector) and a unit cell (sublattice structure).
@@ -32,7 +33,7 @@ A lattice, a Bravais lattice, and a unit cell are represented by an instance of 
 ### Lattice
 
 - `:name => String`
-- `:dimenstion => Integer`
+- `:dimension => Integer`
 - `:bravais => String`
 - `:unitcell => String`
 - `:parameters => Vector{Tuple{Symbol, Any}}`
