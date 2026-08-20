@@ -46,6 +46,12 @@ LET_Cross
 LocalLoopOperator
 ```
 
+## Observables
+
+```@docs
+linear_intercept
+```
+
 ## Utility
 ```@docs
 default_estimator

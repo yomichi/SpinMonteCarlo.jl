@@ -78,6 +78,8 @@ JackknifeVector
 JackknifeSet
 JackknifeVectorSet
 jackknife
+extrapolate_tau
+extrapolate_stderror
 ```
 
 ## Removed API
