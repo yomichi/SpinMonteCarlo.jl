@@ -7,3 +7,6 @@ docs/site/
 Manifest*.toml
 .github/workflows/id_ed25519
 .github/workflows/id_ed25519.pub
+.vscode/
+work/
+*.jld2
