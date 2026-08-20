@@ -3,13 +3,13 @@ AshkinTeller model with energy
 ``E = -\sum_{ij} J^\sigma_{ij} \sigma_i \sigma_j + J^\tau_{ij} \tau_i \tau_j + K_{ij} \sigma_i \sigma_j \tau_i \tau_j``,
 where ``\sigma_i`` and ``\tau_i`` takes value of 1 (up spin) or -1 (down spin).
 """
-mutable struct AshkinTeller <: Model
+mutable struct AshkinTeller{RNG<:Random.AbstractRNG} <: Model
     lat::Lattice
     spins::Matrix{Int}
-    rng::Random.MersenneTwister
+    rng::RNG
 
-    function AshkinTeller(lat::Lattice, rng::Random.AbstractRNG)
-        model = new()
+    function AshkinTeller(lat::Lattice, rng::R) where {R<:Random.AbstractRNG}
+        model = new{R}()
         model.lat = lat
         model.rng = rng
         model.spins = rand(model.rng, [1, -1], 2, numsites(lat))
@@ -17,9 +17,9 @@ mutable struct AshkinTeller <: Model
     end
 end
 
-AshkinTeller(lat::Lattice) = AshkinTeller(lat, Random.seed!(Random.MersenneTwister(0)))
+AshkinTeller(lat::Lattice) = AshkinTeller(lat, DEFAULT_RNG())
 function AshkinTeller(lat::Lattice, seed)
-    return AshkinTeller(lat, Random.seed!(Random.MersenneTwister(0), seed...))
+    return AshkinTeller(lat, DEFAULT_RNG(seed))
 end
 
 @doc doc"""
@@ -30,11 +30,7 @@ Each spin will be initialized randomly and independently.
 """
 function AshkinTeller(param::Parameter)
     lat = generatelattice(param)
-    if "Seed" in keys(param)
-        return AshkinTeller(lat, param["Seed"])
-    else
-        return AshkinTeller(lat)
-    end
+    return AshkinTeller(lat, makerng(param))
 end
 
 include("update.jl")

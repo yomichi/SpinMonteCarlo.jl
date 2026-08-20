@@ -7,24 +7,24 @@ Order parameter (total magnetization) is defined as
 \end{equation}
 where $N$ is the number of sites and $N_1$ is the number of $\sigma=1$ spins.
 """
-mutable struct Potts <: Model
+mutable struct Potts{RNG<:Random.AbstractRNG} <: Model
     lat::Lattice
     Q::Int
     spins::Matrix{Int}
-    rng::Random.MersenneTwister
+    rng::RNG
 
-    function Potts(lat::Lattice, Q::Integer, rng::Random.AbstractRNG)
+    function Potts(lat::Lattice, Q::Integer, rng::R) where {R<:Random.AbstractRNG}
         if Q < 2
             error("Q should be 2 or more: Q = $Q")
         end
         spins = rand(rng, 1:Q, 1, numsites(lat))
-        return new(lat, Q, spins, rng)
+        return new{R}(lat, Q, spins, rng)
     end
 end
 
-Potts(lat::Lattice, Q::Integer) = Potts(lat, Q, Random.seed!(Random.MersenneTwister(0)))
+Potts(lat::Lattice, Q::Integer) = Potts(lat, Q, DEFAULT_RNG())
 function Potts(lat::Lattice, Q::Integer, seed)
-    return Potts(lat, Q, Random.seed!(Random.MersenneTwister(0), seed...))
+    return Potts(lat, Q, DEFAULT_RNG(seed))
 end
 
 @doc doc"""
@@ -36,11 +36,7 @@ Each spin will be initialized randomly and independently.
 function Potts(param::Parameter)
     lat = generatelattice(param)
     Q = param["Q"]
-    if "Seed" in keys(param)
-        return Potts(lat, Q, param["Seed"])
-    else
-        return Potts(lat, Q)
-    end
+    return Potts(lat, Q, makerng(param))
 end
 
 include("update.jl")

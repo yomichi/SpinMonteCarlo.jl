@@ -68,7 +68,6 @@ function runMC(param::Parameter)
 end
 
 function runMC(model, param::Parameter)
-    MODEL = typeof(model)
     verbose = get(param, "Verbose", false)::Bool
     if verbose
         println("Start: ", param)

@@ -12,19 +12,19 @@ and ``S^\pm \equiv S^x \pm iS^y`` are ladder operator.
 A state is represented by a product state (spins at ``\tau=0``) of local ``S^z`` diagonal basis and an operator string (perturbations).
 A local spin with length ``S`` is represented by a symmetrical summation of ``2S`` sub spins with length ``1/2``.
 """
-mutable struct QuantumXXZ <: Model
+mutable struct QuantumXXZ{RNG<:Random.AbstractRNG} <: Model
     lat::Lattice
     S2::Int
     spins::Matrix{Int}
     ops::Vector{LocalLoopOperator}
-    rng::Random.MersenneTwister
+    rng::RNG
 
-    function QuantumXXZ(lat::Lattice, S::Real, rng::Random.AbstractRNG)
+    function QuantumXXZ(lat::Lattice, S::Real, rng::R) where {R<:Random.AbstractRNG}
         if round(2S) != 2S
             error("`S` should be integer or half-integer")
         end
         S2 = round(Int, 2S)
-        model = new()
+        model = new{R}()
         model.lat = lat
         model.rng = rng
         model.S2 = S2
@@ -34,10 +34,10 @@ mutable struct QuantumXXZ <: Model
     end
 end
 function QuantumXXZ(lat::Lattice, S::Real)
-    return QuantumXXZ(lat, S, Random.seed!(Random.MersenneTwister(0)))
+    return QuantumXXZ(lat, S, DEFAULT_RNG())
 end
 function QuantumXXZ(lat::Lattice, S::Real, seed)
-    return QuantumXXZ(lat, S, Random.seed!(Random.MersenneTwister(0), seed...))
+    return QuantumXXZ(lat, S, DEFAULT_RNG(seed))
 end
 
 @doc doc"""
@@ -49,11 +49,7 @@ Each subspin will be initialized independently and randomly.
 function QuantumXXZ(param::Parameter)
     lat = generatelattice(param)
     S = param["S"]
-    if "Seed" in keys(param)
-        return QuantumXXZ(lat, S, param["Seed"])
-    else
-        return QuantumXXZ(lat, S)
-    end
+    return QuantumXXZ(lat, S, makerng(param))
 end
 
 @inline site2subspin(site::Integer, ss::Integer, S2::Integer) = (site - 1) * S2 + ss
