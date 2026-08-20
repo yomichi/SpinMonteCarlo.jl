@@ -35,13 +35,20 @@ The following are optional:
     - The number of Monte Carlo steps for thermalization
     - default: "MCS" >> 3
 - "Seed"
-    - The initial seed of the random number generator, `Random.MersenneTwister`
-    - default: random (see the doc of `Random.seed!`)
+    - The initial seed of the random number generator
+    - default: random (the generator is seeded from system entropy)
+    - When "ID" is also given, a child seed is derived from the pair ("Seed", "ID"),
+      so simulations sharing one seed still use distinct random number streams.
+- "RNG"
+    - The *type* (not an instance) of the random number generator, e.g. `Random.MersenneTwister`
+    - default: `Random.Xoshiro`
+    - When "Seed" is given, the type must support both `T()` and `T(seed)`.
+      `Random.MersenneTwister` selects the generator used before v1.3.
 - "Checkpoint Filename Prefix"
     - Suffix of filename of checkpoint file (see the "Restart" section)
     - default: "cp"
 - "ID"
-    - Job ID used for restarting
+    - Job ID, used for restarting and for deriving a per-job random number stream
     - default: 0
 - "Checkpoint Interval"
     - Time interval between saving a calculation state into the checkpoint file in units of second.

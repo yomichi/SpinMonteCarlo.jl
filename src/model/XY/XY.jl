@@ -19,7 +19,7 @@ XY(lat::Lattice, seed) = XY(lat, DEFAULT_RNG(seed))
 @doc doc"""
    XY(param)
 
-Generates `XY` using `param["Lattice"]`,  and `param["Seed"]` (if defined).
+Generates `XY` using `param["Lattice"]`, and `param["Seed"]` and `param["RNG"]` (if defined).
 Each spin $\sigma_i$ will be initialized randomly and independently.
 """
 function XY(param::Parameter)

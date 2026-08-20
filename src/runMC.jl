@@ -21,6 +21,8 @@ NOTE: Restart will fail if the version or the system image of julia change (see 
 
 # Keyward arguments
 - `autoID`: If true, `"ID"`s will be set (overwritten) as `params[i]["ID"] = i`.
+  Because a child seed is derived from `("Seed", "ID")`, this is what makes a set of
+  simulations sharing one `"Seed"` use distinct random number streams.
 - `parallel`: If true, runs simulations in parallel (uses `pmap` instead of `map`).
 
 # Required keys in `param`
@@ -38,12 +40,23 @@ NOTE: Restart will fail if the version or the system image of julia change (see 
 - "Number of Bins": The number of bins
     - Default: `0`
     - If both "Binning Size" and "Number of Bins" are not given, "Binning Size" is set to `floor(sqrt(MCS))`.
-- "Seed": The initial seed of the random number generator, `MersenneTwister`
-    - Default: determined randomly (see the doc of `Random.seed!`)
+- "Seed": The initial seed of the random number generator.
+    - Default: determined randomly (the generator is seeded from system entropy)
+    - When "ID" is also given, a child seed is derived from the pair ("Seed", "ID"),
+      so simulations sharing one seed still use distinct random number streams.
+      Integer seeds derive reproducibly across julia versions; other seed types go
+      through `hash` and therefore do not.
+- "RNG": The *type* (not an instance) of the random number generator.
+    - Default: `Random.Xoshiro`
+    - When "Seed" is given, the type must support both `T()` and `T(seed)`;
+      `Random.RandomDevice` and `Random.TaskLocalRNG` do not.
+    - `Random.MersenneTwister` selects the generator used before v1.3.
 - "Checkpoint Filename Prefix": See the "Restart" section.
     - Default: `"cp"`
-- "ID": See the "Restart" section.
-    - Default: `0`
+- "ID": Job ID. Used both for the checkpoint filename (see the "Restart" section)
+  and, together with "Seed", for deriving a per-job random number stream.
+    - Default: `0`. Note that no child seed is derived when the key itself is absent,
+      so a single `runMC(param)` without "ID" depends on "Seed" alone.
 - "Checkpoint Interval": Time interval between writing checkpoint file in seconds.
     - Default: `0.0`, this means that NO checkpoint file will be loaded and saved.
 """

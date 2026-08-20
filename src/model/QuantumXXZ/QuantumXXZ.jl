@@ -43,7 +43,7 @@ end
 @doc doc"""
     QuantumXXZ(param)
 
-Generates `QuantumXXZ` using `param["Lattice"]`, `param["S"]` and `param["Seed"]` (if defined).
+Generates `QuantumXXZ` using `param["Lattice"]` and `param["S"]`, and `param["Seed"]` and `param["RNG"]` (if defined).
 Each subspin will be initialized independently and randomly.
 """
 function QuantumXXZ(param::Parameter)

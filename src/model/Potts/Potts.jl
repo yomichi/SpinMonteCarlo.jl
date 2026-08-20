@@ -30,7 +30,7 @@ end
 @doc doc"""
     Potts(param)
 
-Generates `Potts` using `param["Lattice"]`, `param["Q"]`, and `param["Seed"]` (if defined).
+Generates `Potts` using `param["Lattice"]` and `param["Q"]`, and `param["Seed"]` and `param["RNG"]` (if defined).
 Each spin will be initialized randomly and independently.
 """
 function Potts(param::Parameter)

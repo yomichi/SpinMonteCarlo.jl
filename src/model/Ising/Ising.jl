@@ -22,7 +22,7 @@ Ising(lat::Lattice, seed) = Ising(lat, DEFAULT_RNG(seed))
 @doc doc"""
     Ising(param)
 
-Generates `Ising` using `param["Lattice"]` and `param["Seed"]` (if defined).
+Generates `Ising` using `param["Lattice"]`, and `param["Seed"]` and `param["RNG"]` (if defined).
 Each spin will be initialized randomly and independently.
 """
 function Ising(param::Parameter)

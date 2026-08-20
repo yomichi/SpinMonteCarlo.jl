@@ -30,7 +30,7 @@ end
 @doc doc"""
     Clock(param)
 
-Generates `Clock` using `param["Lattice"]`, `param["Q"]`,  and `param["Seed"]` (if defined).
+Generates `Clock` using `param["Lattice"]` and `param["Q"]`, and `param["Seed"]` and `param["RNG"]` (if defined).
 Each spin $\sigma_i$ will be initialized randomly and independently.
 """
 function Clock(param::Parameter)

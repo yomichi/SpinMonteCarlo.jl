@@ -27,6 +27,13 @@ numsitetypes
 numbondtypes
 ```
 
+## Random number generator
+
+```@docs
+makerng
+childseed
+```
+
 ## Model
 
 ```@docs

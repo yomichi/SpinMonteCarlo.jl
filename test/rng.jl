@@ -71,4 +71,71 @@ using Random
         @test mean(default_result["Energy"]) != mean(mt_result["Energy"]) ||
               mean(default_result["|Magnetization|"]) != mean(mt_result["|Magnetization|"])
     end
+
+    @testset "childseed fixed values" begin
+        @test SpinMonteCarlo.childseed(0, 0) == 5197578548964807871
+        @test SpinMonteCarlo.childseed(137, 1) == 0x8e7e968bcd197b0e
+        @test SpinMonteCarlo.childseed(137, 2) == 0x1c23f3da2a9bedd6
+        @test SpinMonteCarlo.childseed(137, 3) == 0xaa13ff27c06fbe76
+        @test SpinMonteCarlo.childseed(-2, 5) == 2745338216157443808
+        @test SpinMonteCarlo.childseed(0, -5) == 741713033729228089
+        @test SpinMonteCarlo.childseed(-2, 5) != SpinMonteCarlo.childseed(0, -5)
+        @test SpinMonteCarlo.childseed(0, 0) != 0
+    end
+
+    @testset "makerng derives child streams from IDs" begin
+        rngsample(rng) = rand(rng, UInt64, 4)
+
+        seeded = Parameter("Seed" => SEED)
+        @test rngsample(SpinMonteCarlo.makerng(seeded)) == rngsample(Xoshiro(SEED))
+
+        with_id = Parameter("Seed" => SEED, "ID" => 1)
+        @test rngsample(SpinMonteCarlo.makerng(with_id)) != rngsample(Xoshiro(SEED))
+        @test rngsample(SpinMonteCarlo.makerng(with_id)) ==
+              rngsample(SpinMonteCarlo.makerng(Parameter("Seed" => SEED, "ID" => 1)))
+
+        other_id = Parameter("Seed" => SEED, "ID" => 2)
+        @test rngsample(SpinMonteCarlo.makerng(with_id)) !=
+              rngsample(SpinMonteCarlo.makerng(other_id))
+
+        mt_param = Parameter("Seed" => SEED, "ID" => 1, "RNG" => MersenneTwister)
+        @test SpinMonteCarlo.makerng(mt_param) isa MersenneTwister
+    end
+
+    @testset "runMC array derives per-ID child streams" begin
+        function make_params()
+            return [Parameter("Model" => Ising,
+                              "Lattice" => "chain lattice",
+                              "L" => 4,
+                              "J" => 1.0,
+                              "T" => 1.5,
+                              "MCS" => 200,
+                              "Thermalization" => 100,
+                              "Seed" => SEED,
+                              "Update Method" => local_update!) for _ in 1:3]
+        end
+        result_signature(res) = (mean(res["Energy"]),
+                                 mean(res["|Magnetization|"]),
+                                 mean(res["Magnetization^2"]))
+
+        signatures1 = result_signature.(runMC(make_params()))
+        signatures2 = result_signature.(runMC(make_params()))
+        @test length(unique(signatures1)) == length(signatures1)
+        @test signatures1 == signatures2
+    end
+
+    @testset "parallel runMC array smoke test" begin
+        params = [Parameter("Model" => Ising,
+                            "Lattice" => "chain lattice",
+                            "L" => 4,
+                            "J" => 1.0,
+                            "T" => 1.5,
+                            "MCS" => 100,
+                            "Thermalization" => 50,
+                            "Seed" => SEED,
+                            "Update Method" => local_update!) for _ in 1:2]
+        results = runMC(params; parallel=true)
+        @test length(results) == 2
+        @test all(haskey(result, "Energy") for result in results)
+    end
 end

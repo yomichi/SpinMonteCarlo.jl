@@ -25,7 +25,7 @@ end
 @doc doc"""
     AshkinTeller(param)
 
-Generates `AshkinTeller` using `param["Lattice"]` and `param["Seed"]` (if defined).
+Generates `AshkinTeller` using `param["Lattice"]`, and `param["Seed"]` and `param["RNG"]` (if defined).
 Each spin will be initialized randomly and independently.
 """
 function AshkinTeller(param::Parameter)
