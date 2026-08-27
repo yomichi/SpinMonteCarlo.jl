@@ -799,6 +799,26 @@ end
                                "Snapshot Interval" => 2,
                                "Checkpoint Interval" => Inf)
             @test_throws Exception runMC(p)
+            ## an EOFError on its own reads as a corrupt file; the message has to
+            ## name the file and say the format is what differs
+            msg = snapshot_errmsg(() -> runMC(p))
+            @test occursin("cp_0.dat", msg)
+            @test occursin("checkpoint format", msg)
+        end
+    end
+
+    @testset "an old-format checkpoint fails the same way without snapshots" begin
+        ## the checkpoint gained its fourth item whether or not snapshots are on,
+        ## so a run with them off must report the same thing rather than an EOFError
+        snapshot_in_tempdir() do dir
+            open("cp_0.dat", "w") do io
+                return SpinMonteCarlo.serialize(io, Ising(snapshot_chain(8), SEED))
+            end
+            p = snapshot_param("MCS" => 4, "Thermalization" => 2,
+                               "Checkpoint Interval" => Inf)
+            @test_throws Exception runMC(p)
+            msg = snapshot_errmsg(() -> runMC(p))
+            @test occursin("checkpoint format", msg)
         end
     end
 end

@@ -117,11 +117,24 @@ function runMC(model, param::Parameter)
     restarted = false
     saved_snapshot_state = nothing
     if cp_interval > 0.0 && ispath(cp_filename)
-        open(cp_filename) do io
-            model = deserialize(io)
-            obs = deserialize(io)
-            mcs = deserialize(io)
-            return saved_snapshot_state = deserialize(io)
+        try
+            open(cp_filename) do io
+                model = deserialize(io)
+                obs = deserialize(io)
+                mcs = deserialize(io)
+                return saved_snapshot_state = deserialize(io)
+            end
+        catch err
+            err isa InterruptException && rethrow()
+            # A checkpoint from an earlier version is one item short, so the last
+            # `deserialize` hits end of file. Saying so beats letting an EOFError out,
+            # which reads as a corrupt file rather than an incompatible one.
+            throw(ErrorException("cannot restore the checkpoint \"$cp_filename\": it is " *
+                                 "either corrupt or was written by a version of " *
+                                 "SpinMonteCarlo whose checkpoint format differs from " *
+                                 "this one. Checkpoints do not carry across such a " *
+                                 "change; remove the file to start a fresh run. " *
+                                 "($(sprint(showerror, err)))"))
         end
         restarted = true
     end
