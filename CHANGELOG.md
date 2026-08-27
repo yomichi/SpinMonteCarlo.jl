@@ -73,6 +73,15 @@ well, so a run cannot be reproduced bit-for-bit across this boundary.
 
 ### Fixed
 
+- **QuantumXXZ `loop_update!` crashed for spin lengths `S >= 3/2`** with
+  `AssertionError: length(ups0) == length(ups1)` (issue #39). The
+  imaginary-time periodic boundary pairing selected the bottom (`tau = 0`)
+  world-line segments by the evolved `tau = 1` state and the top segments by
+  the initial state, gluing together segments with different spin values once a
+  site has three or more subspins. For `S = 1/2` and `S = 1` the crossed
+  selection is accidentally always consistent, so their results (and random
+  streams) are unchanged. Exact-diagonalization reference data for `S = 3/2`
+  and `S = 2` now guard this in the test suite.
 - **Ising and AshkinTeller `local_update!` were not ergodic.** A deterministic
   sweep order combined with always accepting `dE = 0` flips made the Markov
   chain reducible: on an L=8 chain the energy came out as -0.485 against the
