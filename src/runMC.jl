@@ -64,7 +64,11 @@ NOTE: Restart will fail if the version or the system image of julia change (see 
     measured in MCS, not seconds. A value of `0` disables snapshots.
     - Default: `0`
     - When restarting with snapshots enabled before and after the checkpoint, changing
-      this value or "Thermalization" is rejected to preserve the snapshot schedule.
+      this value or "Thermalization" is rejected to preserve the snapshot schedule, as
+      is shrinking "MCS" below the progress the checkpoint holds. Parameters driving
+      the chain itself ("Update Method", "T", "J", ...) are not checked: restarting
+      with a different temperature is allowed and produces snapshots that do not
+      correspond to a single simulation.
 - "Snapshot Filename Prefix": Prefix for snapshot files. The filename is
     `"<prefix>_<ID>.txt"`.
     - Default: `"snapshot"`
@@ -129,10 +133,13 @@ function runMC(model, param::Parameter)
         snapshot(model)
     end
 
-    nwritten = 0
+    nwritten::Int = 0
     if restarted
         if snapshot_interval > 0 && mcs > MCS
-            throw(ArgumentError("checkpoint MCS $mcs exceeds the current total MCS $MCS."))
+            throw(ArgumentError("cannot shrink \"MCS\" while snapshots are enabled: the " *
+                                "checkpoint has already reached step $mcs, past the $MCS " *
+                                "steps (\"Thermalization\" $Therm + \"MCS\" " *
+                                "$(MCS - Therm)) this run would take."))
         end
         if !isnothing(saved_snapshot_state) && snapshot_interval > 0
             saved_therm = saved_snapshot_state.therm

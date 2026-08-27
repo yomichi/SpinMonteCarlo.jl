@@ -462,6 +462,63 @@ end
         end
     end
 
+    @testset "restart from a checkpoint written inside the loop" begin
+        ## Every other restart test here runs to completion, so the checkpoint
+        ## left on disk is always the one written after the loop. Nothing then
+        ## reads back what the periodic write produced, and nothing depends on
+        ## snapshots being written before the checkpoint rather than after.
+        snapshot_in_tempdir() do dir
+            mkdir("plain")
+            cd("plain") do
+                return runMC(snapshot_param("MCS" => 8, "Thermalization" => 4,
+                                            "Snapshot Interval" => 2,
+                                            "Checkpoint Interval" => 1e-9))
+            end
+            reference = read("plain/snapshot_0.txt")
+            @test count(==(UInt8('\n')), reference) == 4
+
+            mkdir("crashed")
+            cd("crashed") do
+                calls = Ref(0)
+                crashing = function (model, args...)
+                    calls[] += 1
+                    calls[] > 8 && error("simulated crash")
+                    return local_update!(model, args...)
+                end
+                p = snapshot_param("MCS" => 8, "Thermalization" => 4,
+                                   "Snapshot Interval" => 2,
+                                   "Checkpoint Interval" => 1e-9,
+                                   "Update Method" => crashing)
+                try
+                    runMC(p)
+                catch
+                end
+                @test countlines("snapshot_0.txt") == 2
+
+                runMC(snapshot_param("MCS" => 8, "Thermalization" => 4,
+                                     "Snapshot Interval" => 2,
+                                     "Checkpoint Interval" => 1e-9))
+                @test read("snapshot_0.txt") == reference
+                return nothing
+            end
+        end
+    end
+
+    @testset "the write schedule follows the running measurement step" begin
+        ## Five measurement steps run with snapshots off, then five more with
+        ## interval 3. Counting from the start of the measurements writes at
+        ## steps 6 and 9; counting from the restart would write only at step 3.
+        snapshot_in_tempdir() do dir
+            p = snapshot_param("MCS" => 5, "Thermalization" => 4,
+                               "Checkpoint Interval" => Inf)
+            runMC(p)
+            p["MCS"] = 10
+            p["Snapshot Interval"] = 3
+            @test_logs (:warn,) match_mode = :any runMC(p)
+            @test countlines("snapshot_0.txt") == 2
+        end
+    end
+
     @testset "restarting with a changed schedule is rejected" begin
         @testset "Thermalization changed" begin
             snapshot_in_tempdir() do dir
@@ -469,6 +526,13 @@ end
                                    "Snapshot Interval" => 2,
                                    "Checkpoint Interval" => Inf)
                 runMC(p)
+                ## the file has to be LONGER than the recorded count, or a
+                ## "truncate first, validate later" implementation passes here
+                ## trivially: trimming to the recorded count would be a no-op.
+                @test countlines("snapshot_0.txt") == 4
+                open("snapshot_0.txt", "a") do io
+                    return println(io, "9 9 9 9 9 9 9 9")
+                end
                 before = read("snapshot_0.txt")
 
                 p["Thermalization"] = 6
@@ -683,6 +747,26 @@ end
                 write(filename, "1 1 1\n2 2 2\n3 3")
                 SpinMonteCarlo.truncate_snapshots!(filename, 2)
                 @test read(filename, String) == "1 1 1\n2 2 2\n"
+            end
+        end
+
+        @testset "a partial line goes even when the count falls short" begin
+            ## Asking for more lines than the file holds takes the "too few"
+            ## path, which must still drop the partial line: leaving it in
+            ## place would splice the next appended configuration onto it.
+            snapshot_in_tempdir() do dir
+                model = Ising(snapshot_chain(3), SEED)
+                filename = "s.txt"
+                write(filename, "1 1 1\n2 2 2\n3 3")
+                @test_logs((:warn,), match_mode = :any,
+                           SpinMonteCarlo.truncate_snapshots!(filename, 3))
+                @test read(filename, String) == "1 1 1\n2 2 2\n"
+
+                save_snapshot(filename, model; append=true)
+                @test length(readlines(filename)) == 3
+                m = load_snapshots(Int, filename)
+                @test size(m) == (3, 3)
+                @test m[:, 3] == snapshot(model)
             end
         end
 

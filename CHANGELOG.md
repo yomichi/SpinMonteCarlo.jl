@@ -139,7 +139,12 @@ well, so a run cannot be reproduced bit-for-bit across this boundary.
   the progress the checkpoint recorded, so a restarted run reproduces an
   uninterrupted one byte for byte. Changing `"Thermalization"` or
   `"Snapshot Interval"`, or shrinking `"MCS"` below what the checkpoint already
-  holds, is rejected before anything is written.
+  holds, is rejected before anything is written. Parameters that drive the
+  chain itself -- `"Update Method"`, `"T"`, `"J"`, and whatever else
+  `convert_parameter` reads -- are *not* checked: resuming with a different
+  temperature runs without complaint, and neither the snapshots nor the
+  observables then correspond to a single simulation. That was true of
+  checkpoints before snapshots existed.
 - Aqua.jl quality checks in the test suite.
 - Transfer-matrix-based regression tests on chains (Ising FM/AF for local, SW
   and Wolff updates; AshkinTeller; the `J` dependence of the helicity modulus;

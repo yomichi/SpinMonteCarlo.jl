@@ -84,18 +84,22 @@ function truncate_snapshots!(filename::AbstractString, nlines::Integer)
     end
 
     open(filename, "r+") do io
-        for _ in 1:nlines
-            if eof(io)
-                @warn "Snapshot file $filename has fewer than $nlines lines."
-                return nothing
-            end
+        complete = 0
+        pos = 0
+        while complete < nlines
             line = readuntil(io, '\n'; keep=true)
+            # An empty result means end of file; a result without the delimiter is a
+            # partial line, which an interrupted write can leave behind. Both stop the
+            # scan, and truncating at `pos` drops the partial line so that appending
+            # afterwards cannot splice a new configuration onto it.
             if isempty(line) || line[end] != '\n'
                 @warn "Snapshot file $filename has fewer than $nlines lines."
-                return nothing
+                break
             end
+            complete += 1
+            pos = position(io)
         end
-        return truncate(io, position(io))
+        return truncate(io, pos)
     end
     return nothing
 end
