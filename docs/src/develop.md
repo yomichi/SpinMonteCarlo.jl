@@ -64,3 +64,17 @@ which enables to calculate functions of mean values and these statistical errors
 
 `postproc` returns a `MCObservableSet` (usually `jk::JackknifeObservableSet` above),
 which is also the return value of `runMC`.
+
+## Snapshot
+
+`snapshot(model)` returns the current spin configuration as a vector, and the generic
+method covers any model whose `spins` field is an `AbstractMatrix{<:Number}`: it
+returns `copy(vec(model.spins))`. Most models need nothing further.
+
+Define your own method in two cases. If a spin is not a number — a tuple or a static
+vector, say — the generic method still accepts it, but the text written by
+`save_snapshot` will not parse back, so write a method that flattens the
+configuration into numbers. If the configuration alone does not determine the state,
+throw an `ArgumentError` explaining what else is needed; `QuantumXXZ` does this,
+because its `spins` field holds only the ``\tau=0`` subspins and the operator string
+carries the rest.

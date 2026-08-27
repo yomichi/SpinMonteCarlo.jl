@@ -38,9 +38,14 @@ well, so a run cannot be reproduced bit-for-bit across this boundary.
 #### Removed and changed APIs
 
 - `gen_snapshot!`, `gensave_snapshot!`, and `load_snapshot` are removed and
-  replaced with stubs that raise an informative error. They had been broken
-  since Julia 1.0 and every call path threw immediately. A visualization
-  extension is planned as a replacement (issue #35).
+  replaced with stubs that raise an informative error pointing at the new
+  snapshot API (see "Added"). They had been broken since Julia 1.0 and every
+  call path threw immediately. The replacements are not drop-in: the old
+  functions ran an update loop of their own, which is precisely what kept them
+  from being reusable inside `runMC`.
+- Checkpoint files now carry a fourth item recording the snapshot schedule and
+  how many configurations have been written. Files written before this change
+  cannot be restored, which was already the case for this release.
 - `extrapolate_stderror` and `extrapolate_tau` now return a **1-sigma standard
   error** as the second element. They previously returned the half-width of a
   95% confidence interval, because `LsqFit.estimate_errors` scales the standard
@@ -121,6 +126,20 @@ well, so a run cannot be reproduced bit-for-bit across this boundary.
 
 ### Added
 
+- Spin configuration snapshots. Setting `param["Snapshot Interval"]` to a
+  positive number of measurement MCS makes `runMC` append the configuration to
+  `"$(param["Snapshot Filename Prefix"])_$(param["ID"]).txt"` that often; the
+  file is delimited text, one line per configuration, so `readdlm` and
+  `numpy.loadtxt` read it directly. Thermalization steps are never sampled.
+  `snapshot(model)`, `save_snapshot`, and `load_snapshots` expose the same
+  machinery outside `runMC`. Classical models only: `QuantumXXZ` is rejected,
+  because its `spins` field is the tau=0 subspin state and the operator string
+  is what completes it.
+- Snapshots survive checkpoint restarts. The snapshot file is trimmed back to
+  the progress the checkpoint recorded, so a restarted run reproduces an
+  uninterrupted one byte for byte. Changing `"Thermalization"` or
+  `"Snapshot Interval"`, or shrinking `"MCS"` below what the checkpoint already
+  holds, is rejected before anything is written.
 - Aqua.jl quality checks in the test suite.
 - Transfer-matrix-based regression tests on chains (Ising FM/AF for local, SW
   and Wolff updates; AshkinTeller; the `J` dependence of the helicity modulus;
