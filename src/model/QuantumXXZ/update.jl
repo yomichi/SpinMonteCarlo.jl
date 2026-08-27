@@ -150,10 +150,17 @@ function loop_update!(model::QuantumXXZ, T::Real,
         ups1 = zeros(Int, 0)
         downs0 = zeros(Int, 0)
         downs1 = zeros(Int, 0)
+        ## `u in ups0` is used below as the bottom (tau=0) segment node of the
+        ## union-find, so it must be selected by the tau=0 state `model.spins`;
+        ## `u2 in ups1` is used through `currents[u2]`, the top (tau=1) segment,
+        ## so it must be selected by the evolved tau=1 state `spins`.
+        ## Selecting them the other way round produces world-line gluings whose
+        ## spin values disagree once S2 >= 3, breaking the imaginary-time
+        ## periodicity checked by the assertions (issue #39).
         for ss in 1:S2
             subspin += 1
-            push!(ifelse(spins[subspin] == 1, ups0, downs0), subspin)
-            push!(ifelse(model.spins[subspin] == 1, ups1, downs1), subspin)
+            push!(ifelse(model.spins[subspin] == 1, ups0, downs0), subspin)
+            push!(ifelse(spins[subspin] == 1, ups1, downs1), subspin)
         end
         @assert length(ups0) == length(ups1)
         @assert length(downs0) == length(downs1)
