@@ -60,6 +60,18 @@ NOTE: Restart will fail if the version or the system image of julia change (see 
       so a single `runMC(param)` without "ID" depends on "Seed" alone.
 - "Checkpoint Interval": Time interval between writing checkpoint file in seconds.
     - Default: `0.0`, this means that NO checkpoint file will be loaded and saved.
+- "Snapshot Interval": Number of measurement MCS between snapshot writes. This is
+    measured in MCS, not seconds. A value of `0` disables snapshots.
+    - Default: `0`
+    - When restarting with snapshots enabled before and after the checkpoint, changing
+      this value or "Thermalization" is rejected to preserve the snapshot schedule, as
+      is shrinking "MCS" below the progress the checkpoint holds. Parameters driving
+      the chain itself ("Update Method", "T", "J", ...) are not checked: restarting
+      with a different temperature is allowed and produces snapshots that do not
+      correspond to a single simulation.
+- "Snapshot Filename Prefix": Prefix for snapshot files. The filename is
+    `"<prefix>_<ID>.txt"`.
+    - Default: `"snapshot"`
 """
 function runMC(params::AbstractArray{T}; parallel::Bool=false,
                autoID::Bool=true) where {T<:Dict}
@@ -86,6 +98,10 @@ function runMC(model, param::Parameter)
                            get(param, "Checkpoint Filename Prefix", "cp")::String,
                            get(param, "ID", 0)::Int)
     cp_interval = get(param, "Checkpoint Interval", 0.0)::Float64
+    snapshot_interval = get(param, "Snapshot Interval", 0)::Int
+    snapshot_filename = @sprintf("%s_%d.txt",
+                                 get(param, "Snapshot Filename Prefix", "snapshot")::String,
+                                 get(param, "ID", 0)::Int)
     tm = time()
 
     MCS = get(param, "MCS", 8192)::Int
@@ -98,11 +114,67 @@ function runMC(model, param::Parameter)
     makeMCObservable!(obs, "Time per MCS")
     makeMCObservable!(obs, "MCS per Second")
 
+    restarted = false
+    saved_snapshot_state = nothing
     if cp_interval > 0.0 && ispath(cp_filename)
-        open(cp_filename) do io
-            model = deserialize(io)
-            obs = deserialize(io)
-            return mcs = deserialize(io)
+        try
+            open(cp_filename) do io
+                model = deserialize(io)
+                obs = deserialize(io)
+                mcs = deserialize(io)
+                return saved_snapshot_state = deserialize(io)
+            end
+        catch err
+            err isa InterruptException && rethrow()
+            # A checkpoint from an earlier version is one item short, so the last
+            # `deserialize` hits end of file. Saying so beats letting an EOFError out,
+            # which reads as a corrupt file rather than an incompatible one.
+            throw(ErrorException("cannot restore the checkpoint \"$cp_filename\": it is " *
+                                 "either corrupt or was written by a version of " *
+                                 "SpinMonteCarlo whose checkpoint format differs from " *
+                                 "this one. Checkpoints do not carry across such a " *
+                                 "change; remove the file to start a fresh run. " *
+                                 "($(sprint(showerror, err)))"))
+        end
+        restarted = true
+    end
+
+    snapshot_interval < 0 &&
+        throw(ArgumentError("Snapshot Interval must be nonnegative; got " *
+                            "$snapshot_interval."))
+    if snapshot_interval > 0
+        snapshot(model)
+    end
+
+    nwritten::Int = 0
+    if restarted
+        if snapshot_interval > 0 && mcs > MCS
+            throw(ArgumentError("cannot shrink \"MCS\" while snapshots are enabled: the " *
+                                "checkpoint has already reached step $mcs, past the $MCS " *
+                                "steps (\"Thermalization\" $Therm + \"MCS\" " *
+                                "$(MCS - Therm)) this run would take."))
+        end
+        if !isnothing(saved_snapshot_state) && snapshot_interval > 0
+            saved_therm = saved_snapshot_state.therm
+            saved_interval = saved_snapshot_state.interval
+            if saved_therm != Therm
+                throw(ArgumentError("Thermalization changed from saved value " *
+                                    "$saved_therm to current value $Therm."))
+            end
+            if saved_interval != snapshot_interval
+                throw(ArgumentError("Snapshot Interval changed from saved value " *
+                                    "$saved_interval to current value " *
+                                    "$snapshot_interval."))
+            end
+            nwritten = saved_snapshot_state.nwritten
+            truncate_snapshots!(snapshot_filename, nwritten)
+        elseif isnothing(saved_snapshot_state) && snapshot_interval > 0
+            @warn "Snapshots were enabled while restarting; starting a new snapshot file."
+            open(snapshot_filename, "w") do io
+            end
+        end
+    elseif snapshot_interval > 0
+        open(snapshot_filename, "w") do io
         end
     end
 
@@ -128,11 +200,22 @@ function runMC(model, param::Parameter)
             accumulateObservables!(model, obs, localobs)
         end
         mcs += 1
+        if snapshot_interval > 0 && mcs > Therm &&
+           (mcs - Therm) % snapshot_interval == 0
+            open(snapshot_filename, "a") do io
+                return save_snapshot(io, model)
+            end
+            nwritten += 1
+        end
         if cp_interval > 0.0 && time() - tm > cp_interval
             open(cp_filename, "w") do io
                 serialize(io, model)
                 serialize(io, obs)
-                return serialize(io, mcs)
+                serialize(io, mcs)
+                snapshot_state = snapshot_interval > 0 ?
+                                 (therm=Therm, interval=snapshot_interval,
+                                  nwritten=nwritten) : nothing
+                return serialize(io, snapshot_state)
             end
             tm += cp_interval
         end
@@ -142,7 +225,11 @@ function runMC(model, param::Parameter)
         open(cp_filename, "w") do io
             serialize(io, model)
             serialize(io, obs)
-            return serialize(io, mcs)
+            serialize(io, mcs)
+            snapshot_state = snapshot_interval > 0 ?
+                             (therm=Therm, interval=snapshot_interval,
+                              nwritten=nwritten) : nothing
+            return serialize(io, snapshot_state)
         end
     end
 

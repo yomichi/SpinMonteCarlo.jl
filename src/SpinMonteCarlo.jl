@@ -10,6 +10,6 @@ include("observables/MCObservables.jl")
 include("API/api.jl")
 include("model/model.jl")
 include("lattice/Lattices.jl")
-include("runMC.jl")
 include("snapshot.jl")
+include("runMC.jl")
 end # of module
